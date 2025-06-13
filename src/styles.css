@@ -1,0 +1,92 @@
+@import "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap";
+
+@import "tailwindcss";
+
+@layer utilities {
+  .bricolage-grotesque-light {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+    font-variation-settings: "width" 100;
+  }
+  
+  .bricolage-grotesque-regular {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings: "width" 100;
+  }
+  
+  .bricolage-grotesque-bold {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+    font-variation-settings: "width" 100;
+  }
+
+}
+
+body {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-variation-settings: "width" 100;
+  font-size: 1rem;
+  background: #000;
+  color: #ffffff;
+}
+
+button {
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: none;
+}
+
+a:hover {
+  transition: all 0.3s ease-in-out;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 1em;
+  width: 1em;
+  border-radius: 50em;
+  background: url("https://www.svgrepo.com/show/112623/close.svg") no-repeat 50% 50%;
+  background-size: contain;
+  opacity: 0;
+  pointer-events: none;
+  position: relative;
+  right: 20px;
+}
+
+input[type="search"]:focus::-webkit-search-cancel-button {
+  opacity: 1;
+  pointer-events: all;
+}
+
+::-webkit-scrollbar {
+  width: 6px; /* horizontal scrollbar width */
+  height: 6px; /* vertical scrollbar height */
+  display: none;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* scrollbar track background */
+  border-radius: 10px; /* scrollbar track rounded corners */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #fff; /* scrollbar thumb color */
+  border-radius: 10px; /* scrollbar thumb rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ddd; /* scrollbar thumb hover color */
+}
