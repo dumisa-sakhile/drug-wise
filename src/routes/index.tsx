@@ -161,7 +161,7 @@ function App() {
             }}>
             <h2 className="text-xl font-semibold text-white mb-2">Our Team</h2>
             <p className="text-gray-300">
-              Led by Tahidso Meko (CEO, AI), Tebogo Phasha (CBO), Philani
+              Led by Tshidiso Meko (CEO, AI), Tebogo Phasha (CBO), Philani
               Dlamini (CIO), and Sakhile Dumisa (Developer).
             </p>
           </motion.div>
@@ -226,6 +226,13 @@ function App() {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: index * 0.2 + 0.4, duration: 0.5 }}>
                 {member.role}
+              </motion.p>
+              <motion.p
+                className="text-sm text-gray-200"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: index * 0.2 + 0.4, duration: 0.5 }}>
+                {member.expertise}
               </motion.p>
             </motion.div>
           ))}

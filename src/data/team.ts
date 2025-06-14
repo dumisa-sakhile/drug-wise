@@ -2,7 +2,7 @@
 const teamData = () => {
     const teamData = [
         {
-          "name": "Tahidso Meko",
+          "name": "Tshidiso Meko",
           "role": "Founder & CEO",
           "expertise": "AI Development",
           "image": "https://wallpapers.com/images/hd/blank-white-background-xbsfzsltjksfompa.jpg"
