@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { auth } from "../config/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import male from "/male.jpg?url";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +15,7 @@ const Header: React.FC = () => {
     photoURL?: string;
   }>(null);
   const [loading, setLoading] = useState(true);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -34,14 +37,30 @@ const Header: React.FC = () => {
     try {
       await signOut(auth);
       setUser(null);
+      toast.success("Logout successful");
       navigate({ to: "/auth" });
     } catch (error) {
+      toast.error("Logout failed");
       console.error("Logout failed:", error);
     }
   };
 
   const getFallbackImage = () => {
     return user?.photoURL || male;
+  };
+
+  const handleSignOutClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    handleLogout();
+    setShowConfirm(false);
+  };
+
+  const handleCancelLogout = () => {
+    setShowConfirm(false);
   };
 
   return (
@@ -85,7 +104,7 @@ const Header: React.FC = () => {
                 />
               </Link>
               <button
-                onClick={handleLogout}
+                onClick={handleSignOutClick}
                 className="px-4 py-2 bg-white text-black rounded-full hover:bg-gray-200 transition">
                 Sign Out
               </button>
@@ -93,6 +112,60 @@ const Header: React.FC = () => {
           )}
         </div>
       </div>
+
+      {showConfirm && (
+        <motion.div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-60"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}>
+          <motion.div
+            className="bg-[#1C1C1E] p-6 rounded-lg shadow-xl max-w-sm w-full text-center"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 120,
+              damping: 15,
+              delay: 0.1,
+            }}>
+            <motion.h3
+              className="text-xl font-semibold mb-4 text-white"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}>
+              Confirm Sign Out
+            </motion.h3>
+            <motion.p
+              className="text-gray-300 mb-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}>
+              Are you sure you want to sign out?
+            </motion.p>
+            <div className="flex justify-center gap-4">
+              <motion.button
+                onClick={handleConfirmLogout}
+                className="px-4 py-2 bg-red-700 text-white rounded-full hover:bg-red-900 transition"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.3 }}>
+                Yes, Sign Out
+              </motion.button>
+              <motion.button
+                onClick={handleCancelLogout}
+                className="px-4 py-2 bg-[#131313] text-white rounded-full hover:bg-[#1C1C1E] hover:ring-1 hover:ring-white/10 transition"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.3 }}>
+                Cancel
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </header>
   );
 };
