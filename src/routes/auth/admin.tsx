@@ -42,6 +42,12 @@ function Admin() {
   const [editedUsers, setEditedUsers] = useState<{
     [uid: string]: Partial<UserData> & { uid: string };
   }>({});
+  const [showFields, setShowFields] = useState({
+    dob: false,
+    joinedAt: false,
+    lastLogin: false,
+    isAdmin: false,
+  });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pageSize = 10;
@@ -181,8 +187,8 @@ function Admin() {
         typeof updatedData.dob === "string"
           ? updatedData.dob
           : updatedData.dob instanceof Timestamp
-          ? updatedData.dob.toDate().toISOString().split("T")[0]
-          : ""
+            ? updatedData.dob.toDate().toISOString().split("T")[0]
+            : ""
       )
     ) {
       toast.error("Invalid date of birth");
@@ -282,6 +288,41 @@ function Admin() {
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
             Manage Users
           </h2>
+          {/* Filter Buttons */}
+          <div className="mb-4 flex gap-2 flex-wrap">
+            <button
+              onClick={() =>
+                setShowFields((prev) => ({ ...prev, dob: !prev.dob }))
+              }
+              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
+              {showFields.dob ? "Hide DOB" : "Show DOB"}
+            </button>
+            <button
+              onClick={() =>
+                setShowFields((prev) => ({ ...prev, joinedAt: !prev.joinedAt }))
+              }
+              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
+              {showFields.joinedAt ? "Hide Joined At" : "Show Joined At"}
+            </button>
+            <button
+              onClick={() =>
+                setShowFields((prev) => ({
+                  ...prev,
+                  lastLogin: !prev.lastLogin,
+                }))
+              }
+              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
+              {showFields.lastLogin ? "Hide Last Login" : "Show Last Login"}
+            </button>
+            <button
+              onClick={() =>
+                setShowFields((prev) => ({ ...prev, isAdmin: !prev.isAdmin }))
+              }
+              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
+              {showFields.isAdmin ? "Hide Admin" : "Show Admin"}
+            </button>
+          </div>
+
           {allUsersLoading ? (
             <div className="flex justify-center items-center p-4">
               <svg
@@ -319,11 +360,21 @@ function Admin() {
                       <th className="px-4 py-2">Surname</th>
                       <th className="px-4 py-2">Email</th>
                       <th className="px-4 py-2">Gender</th>
-                      <th className="px-4 py-2">Date of Birth</th>
-                      <th className="px-4 py-2">Joined At</th>
-                      <th className="px-4 py-2">Last Login</th>
-                      <th className="px-4 py-2">Admin</th>
-                      <th className="px-4 py-2">Actions</th>
+                      {showFields.dob && (
+                        <th className="px-4 py-2">Date of Birth</th>
+                      )}
+                      {showFields.joinedAt && (
+                        <th className="px-4 py-2">Joined At</th>
+                      )}
+                      {showFields.lastLogin && (
+                        <th className="px-4 py-2">Last Login</th>
+                      )}
+                      {showFields.isAdmin && (
+                        <th className="px-4 py-2">Admin</th>
+                      )}
+                      {Object.keys(editedUsers).length > 0 && (
+                        <th className="px-4 py-2">Actions</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -375,48 +426,60 @@ function Admin() {
                             <option value="non-binary">Non-binary</option>
                           </select>
                         </td>
-                        <td className="px-4 py-2">
-                          <input
-                            type="date"
-                            value={formatDateForInput(
-                              editedUsers[u.uid]?.dob ?? u.dob
-                            )}
-                            onChange={(e) =>
-                              handleInputChange(u, "dob", e.target.value)
-                            }
-                            className="bg-[#2A2A2D] text-white px-2 py-1 rounded text-sm w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
-                          />
-                        </td>
-                        <td className="px-4 py-2 text-gray-200 text-sm">
-                          {formatDate(u.joinedAt)}
-                        </td>
-                        <td className="px-4 py-2 text-gray-200 text-sm">
-                          {formatDate(u.lastLogin)}
-                        </td>
-                        <td className="px-4 py-2">
-                          <input
-                            type="checkbox"
-                            checked={editedUsers[u.uid]?.isAdmin ?? u.isAdmin}
-                            onChange={(e) =>
-                              handleInputChange(u, "isAdmin", e.target.checked)
-                            }
-                            className="bg-[#2A2A2D] text-white rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
-                          />
-                        </td>
-                        <td className="px-4 py-2 flex gap-2">
-                          <button
-                            onClick={() => handleSaveUser(u.uid)}
-                            className="bg-white text-black font-semibold px-3 py-1 rounded-full hover:opacity-90 transition-all text-sm"
-                            disabled={!editedUsers[u.uid]}>
-                            Save
-                          </button>
-                          <button
-                            onClick={() => handleResetUser(u.uid)}
-                            className="text-sm text-gray-400 hover:text-white px-3 py-1 rounded-full transition"
-                            disabled={!editedUsers[u.uid]}>
-                            Reset
-                          </button>
-                        </td>
+                        {showFields.dob && (
+                          <td className="px-4 py-2">
+                            <input
+                              type="date"
+                              value={formatDateForInput(
+                                editedUsers[u.uid]?.dob ?? u.dob
+                              )}
+                              onChange={(e) =>
+                                handleInputChange(u, "dob", e.target.value)
+                              }
+                              className="bg-[#2A2A2D] text-white px-2 py-1 rounded text-sm w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            />
+                          </td>
+                        )}
+                        {showFields.joinedAt && (
+                          <td className="px-4 py-2 text-gray-200 text-sm">
+                            {formatDate(u.joinedAt)}
+                          </td>
+                        )}
+                        {showFields.lastLogin && (
+                          <td className="px-4 py-2 text-gray-200 text-sm">
+                            {formatDate(u.lastLogin)}
+                          </td>
+                        )}
+                        {showFields.isAdmin && (
+                          <td className="px-4 py-2">
+                            <input
+                              type="checkbox"
+                              checked={editedUsers[u.uid]?.isAdmin ?? u.isAdmin}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  u,
+                                  "isAdmin",
+                                  e.target.checked
+                                )
+                              }
+                              className="bg-[#2A2A2D] text-white rounded focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            />
+                          </td>
+                        )}
+                        {editedUsers[u.uid] && (
+                          <td className="px-4 py-2 flex gap-2">
+                            <button
+                              onClick={() => handleSaveUser(u.uid)}
+                              className="bg-white text-black font-semibold px-3 py-1 rounded-full hover:opacity-90 transition-all text-sm">
+                              Save
+                            </button>
+                            <button
+                              onClick={() => handleResetUser(u.uid)}
+                              className="text-sm text-gray-400 hover:text-white px-3 py-1 rounded-full transition">
+                              Reset
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
