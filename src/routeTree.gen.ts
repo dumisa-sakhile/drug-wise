@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ModelRouteImport } from './routes/model'
 import { Route as IndexRouteImport } from './routes/index'
@@ -18,6 +20,16 @@ import { Route as AuthSign_upRouteImport } from './routes/auth/sign_up'
 import { Route as AuthProfileRouteImport } from './routes/auth/profile'
 import { Route as AuthAdminRouteImport } from './routes/auth/admin'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -63,6 +75,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/sign_up': typeof AuthSign_upRoute
@@ -73,6 +87,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/sign_up': typeof AuthSign_upRoute
@@ -84,6 +100,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/sign_up': typeof AuthSign_upRoute
@@ -96,6 +114,8 @@ export interface FileRouteTypes {
     | '/'
     | '/model'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/auth/admin'
     | '/auth/profile'
     | '/auth/sign_up'
@@ -106,6 +126,8 @@ export interface FileRouteTypes {
     | '/'
     | '/model'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/auth/admin'
     | '/auth/profile'
     | '/auth/sign_up'
@@ -116,6 +138,8 @@ export interface FileRouteTypes {
     | '/'
     | '/model'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/auth/admin'
     | '/auth/profile'
     | '/auth/sign_up'
@@ -127,6 +151,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ModelRoute: typeof ModelRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   AuthAdminRoute: typeof AuthAdminRoute
   AuthProfileRoute: typeof AuthProfileRoute
   AuthSign_upRoute: typeof AuthSign_upRoute
@@ -136,6 +162,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -199,6 +239,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ModelRoute: ModelRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   AuthAdminRoute: AuthAdminRoute,
   AuthProfileRoute: AuthProfileRoute,
   AuthSign_upRoute: AuthSign_upRoute,
