@@ -291,7 +291,7 @@ function RouteComponent() {
                     id="gender"
                     value={gender}
                     onChange={handleGenderChange}
-                    className="w-full bg-[rgba(255,255,255,0.1)] text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgba(255,255,255,0.1)]"
+                    className="w-full bg-[#2A2A2D] text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgba(255,255,255,0.1)]"
                     required
                     aria-invalid={!isValidGender}>
                     <option value="">Select gender</option>
