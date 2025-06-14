@@ -33,7 +33,7 @@ function RouteComponent() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate({ to: "/"});
+        navigate({ to: "/" });
         toast.info("You are already signed in!");
       }
     });
@@ -168,7 +168,7 @@ function RouteComponent() {
           name: name || user.displayName || "Anonymous",
           surname: surname || "",
           joinedAt: Timestamp.now(),
-          role: "user",
+          isAdmin: false,
         },
         { merge: true }
       );

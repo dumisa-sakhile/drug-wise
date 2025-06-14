@@ -16,6 +16,7 @@ import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthVerifyRouteImport } from './routes/auth/verify'
 import { Route as AuthSign_upRouteImport } from './routes/auth/sign_up'
 import { Route as AuthProfileRouteImport } from './routes/auth/profile'
+import { Route as AuthAdminRouteImport } from './routes/auth/admin'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -52,11 +53,17 @@ const AuthProfileRoute = AuthProfileRouteImport.update({
   path: '/auth/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthAdminRoute = AuthAdminRouteImport.update({
+  id: '/auth/admin',
+  path: '/auth/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
+  '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/sign_up': typeof AuthSign_upRoute
   '/auth/verify': typeof AuthVerifyRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
+  '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/sign_up': typeof AuthSign_upRoute
   '/auth/verify': typeof AuthVerifyRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
+  '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
   '/auth/sign_up': typeof AuthSign_upRoute
   '/auth/verify': typeof AuthVerifyRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/model'
     | '/pricing'
+    | '/auth/admin'
     | '/auth/profile'
     | '/auth/sign_up'
     | '/auth/verify'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/model'
     | '/pricing'
+    | '/auth/admin'
     | '/auth/profile'
     | '/auth/sign_up'
     | '/auth/verify'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/model'
     | '/pricing'
+    | '/auth/admin'
     | '/auth/profile'
     | '/auth/sign_up'
     | '/auth/verify'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ModelRoute: typeof ModelRoute
   PricingRoute: typeof PricingRoute
+  AuthAdminRoute: typeof AuthAdminRoute
   AuthProfileRoute: typeof AuthProfileRoute
   AuthSign_upRoute: typeof AuthSign_upRoute
   AuthVerifyRoute: typeof AuthVerifyRoute
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/admin': {
+      id: '/auth/admin'
+      path: '/auth/admin'
+      fullPath: '/auth/admin'
+      preLoaderRoute: typeof AuthAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ModelRoute: ModelRoute,
   PricingRoute: PricingRoute,
+  AuthAdminRoute: AuthAdminRoute,
   AuthProfileRoute: AuthProfileRoute,
   AuthSign_upRoute: AuthSign_upRoute,
   AuthVerifyRoute: AuthVerifyRoute,

@@ -38,7 +38,7 @@ function VerifyMagicLink() {
             name,
             surname,
             joinedAt: Timestamp.now(),
-            role: "user",
+            isAdmin: false,
           },
           { merge: true }
         );

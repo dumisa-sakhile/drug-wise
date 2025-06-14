@@ -107,7 +107,7 @@ function RouteComponent() {
           name: user.displayName || "Anonymous",
           surname: "",
           joinedAt: Timestamp.now(),
-          role: "user",
+          isAdmin: false,
           lastLogin: Timestamp.now(),
         });
       } else {
@@ -134,9 +134,7 @@ function RouteComponent() {
       <title>Drug Wise - Login</title>
       <section className="w-full h-lvh flex items-center justify-center bg-inherit text-white">
         <div className="bg-[#222222] backdrop-blur-sm ring-1 ring-[rgba(255,255,255,0.1)] p-8 rounded-lg shadow-lg w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6">
-            Welcome back to Drug Wise
-          </h2>
+          <h2 className="text-2xl font-bold mb-6">Welcome back to Drug Wise</h2>
 
           {error && (
             <div className="mb-4 text-red-500 text-sm" aria-live="assertive">

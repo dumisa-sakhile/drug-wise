@@ -6,7 +6,6 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { db } from "@/config/firebase";
 
-// Interface for user data in Firestore
 interface UserData {
   uid: string;
   email: string;
@@ -15,7 +14,7 @@ interface UserData {
   name: string;
   surname: string;
   joinedAt: Timestamp;
-  role: string;
+  isAdmin: boolean;
   lastLogin?: Timestamp | null;
 }
 
@@ -48,7 +47,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const [dob, setDob] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize form with user data
   useEffect(() => {
     if (userData?.name) setName(userData.name);
     else if (user?.displayName) setName(user.displayName);
@@ -62,7 +60,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
     }
   }, [user, userData]);
 
-  // Validation functions
   const validateName = (value: string) => value.trim().length >= 2;
   const validateSurname = (value: string) => value.trim().length >= 2;
   const validateEmail = (email: string) =>
@@ -97,7 +94,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
     }) => {
       if (!user) throw new Error("Not authenticated");
 
-      // Validate inputs
       if (!validateName(name))
         throw new Error("Name must be at least 2 characters long");
       if (!validateSurname(surname))
@@ -106,20 +102,17 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
       if (!validateGender(gender)) throw new Error("Invalid gender selection");
       if (!validateDob(dob)) throw new Error("Invalid date of birth");
 
-      // Update Firebase Auth
       await updateProfile(user, { displayName: name });
       if (email !== user.email) {
         await updateEmail(user, email);
       }
 
-      // Fetch existing user data to preserve non-editable fields
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       if (!userDoc.exists()) throw new Error("User document not found");
 
       const existingData = userDoc.data() as UserData;
 
-      // Update Firestore with all required fields
       await setDoc(userDocRef, {
         uid: existingData.uid,
         email,
@@ -128,7 +121,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
         name,
         surname,
         joinedAt: existingData.joinedAt,
-        role: existingData.role,
+        isAdmin: existingData.isAdmin,
         lastLogin: existingData.lastLogin || null,
       });
     },
@@ -162,7 +155,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
       <div className="relative w-full max-w-md bg-[#1C1C1E] text-white rounded-2xl shadow-xl p-6 md:p-8 animate-slide-up">
-        {/* Close Button */}
         <button
           onClick={hide}
           className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30 rounded-full"
@@ -181,7 +173,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
           </svg>
         </button>
 
-        {/* Heading */}
         <div className="text-center">
           <h2 className="text-2xl max-sm:text-xl font-semibold mb-2">
             Edit Your Profile
@@ -191,17 +182,14 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
           </p>
         </div>
 
-        {/* Error */}
         {error && (
           <div className="text-red-300 text-sm font-medium mb-5 p-3 rounded-md bg-[rgba(255,75,75,0.15)] backdrop-blur-sm border border-[rgba(255,75,75,0.25)] text-center">
             {error}
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Name */}
             <div>
               <label
                 htmlFor="name"
@@ -219,7 +207,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
               />
             </div>
 
-            {/* Surname */}
             <div>
               <label
                 htmlFor="surname"
@@ -238,7 +225,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             </div>
           </div>
 
-          {/* Email */}
           <div>
             <label htmlFor="email" className="text-sm text-gray-300 block mb-1">
               Email*
@@ -254,7 +240,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             />
           </div>
 
-          {/* Gender */}
           <div>
             <label
               htmlFor="gender"
@@ -274,7 +259,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             </select>
           </div>
 
-          {/* Date of Birth */}
           <div>
             <label htmlFor="dob" className="text-sm text-gray-300 block mb-1">
               Date of Birth*
@@ -289,7 +273,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             />
           </div>
 
-          {/* Buttons */}
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="submit"
