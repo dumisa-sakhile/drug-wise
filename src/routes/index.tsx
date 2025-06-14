@@ -159,10 +159,10 @@ function App() {
               boxShadow:
                 "0 0 10px rgba(147, 51, 234, 0.7), 0 0 20px rgba(147, 51, 234, 0.5)",
             }}>
-            <h2 className="text-xl font-semibold text-white mb-2">Our Team</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">Our Ask</h2>
             <p className="text-gray-300">
-              Led by Tshidiso Meko (CEO, AI), Tebogo Phasha (CBO), Philani
-              Dlamini (CIO), and Sakhile Dumisa (Developer).
+              We’re raising R1 million to fund device manufacturing and pilot
+              distribution in South Africa.
             </p>
           </motion.div>
 
