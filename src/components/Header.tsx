@@ -50,7 +50,7 @@ const Header: React.FC = () => {
         <Link to="/" className="hidden md:block text-xl font-bold text-white">
           DrugWise
         </Link>
-        <nav className="flex space-x-6">
+        <nav className="flex space-x-6 bg-[#131313] px-4 py-2 rounded-full ring-1 ring-white/20">
           <Link
             to="/"
             className={`text-gray-200 hover:text-white transition ${location.pathname === "/" ? "font-bold" : ""}`}>
