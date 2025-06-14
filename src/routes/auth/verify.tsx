@@ -4,6 +4,7 @@ import { auth, db } from "../../config/firebase";
 import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
 import { doc, setDoc, Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/auth/verify")({
   component: VerifyMagicLink,
@@ -93,15 +94,47 @@ function VerifyMagicLink() {
   };
 
   return (
-    <section className="w-full h-lvh flex items-center justify-center bg-inherit text-white">
-      <div className="bg-[#222222] backdrop-blur-sm ring-1 ring-[rgba(255,255,255,0.1)] p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6">Verifying Your Sign-In</h2>
+    <motion.section
+      className="w-full h-lvh flex items-center justify-center bg-inherit text-white"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}>
+      <motion.div
+        className="bg-[#222222] backdrop-blur-sm ring-1 ring-[rgba(255,255,255,0.1)] p-8 rounded-lg shadow-lg w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}>
+        <motion.h2
+          className="text-2xl font-bold mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}>
+          Verifying Your Sign-In
+        </motion.h2>
         {isLoading ? (
-          <div>Verifying your sign-in link...</div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}>
+            Verifying your sign-in link...
+          </motion.div>
         ) : error ? (
-          <>
-            <div className="text-red-500 text-sm mb-4">{error}</div>
-            <div className="mb-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}>
+            <motion.div
+              className="text-red-500 text-sm mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}>
+              {error}
+            </motion.div>
+            <motion.div
+              className="mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}>
               <label className="block text-sm mb-2" htmlFor="email">
                 Enter your email to continue
               </label>
@@ -113,18 +146,26 @@ function VerifyMagicLink() {
                 onChange={(e) => setManualEmail(e.target.value)}
                 className="w-full bg-[rgba(255,255,255,0.1)] text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgba(255,255,255,0.1)]"
               />
-            </div>
-            <button
+            </motion.div>
+            <motion.button
               onClick={handleManualSignIn}
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg disabled:opacity-50">
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg disabled:opacity-50"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.7, duration: 0.5 }}>
               {isLoading ? "Verifying..." : "Verify Email"}
-            </button>
-          </>
+            </motion.button>
+          </motion.div>
         ) : (
-          <div>Sign-in successful! Redirecting...</div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}>
+            Sign-in successful! Redirecting...
+          </motion.div>
         )}
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }

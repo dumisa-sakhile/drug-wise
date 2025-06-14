@@ -9,12 +9,13 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/auth/sign_up")({
-  component: RouteComponent,
+  component: SignUp,
 });
 
-function RouteComponent() {
+function SignUp() {
   const [name, setName] = useState<string>("");
   const [surname, setSurname] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -186,39 +187,71 @@ function RouteComponent() {
   return (
     <>
       <title>Drug Wise - Sign Up</title>
-      <section className="w-full h-lvh flex items-center justify-center bg-inherit text-white">
-        <div className="bg-[#222222] backdrop-blur-sm ring-1 ring-[rgba(255,255,255,0.1)] p-8 rounded-lg shadow-lg w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6">
+      <motion.section
+        className="w-full h-lvh flex items-center justify-center bg-inherit text-white"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}>
+        <motion.div
+          className="bg-[#222222] backdrop-blur-sm ring-1 ring-[rgba(255,255,255,0.1)] p-8 rounded-lg shadow-lg w-full max-w-md"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}>
+          <motion.h2
+            className="text-2xl font-bold mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}>
             Create an account on Drug Wise
-          </h2>
+          </motion.h2>
 
           {error && (
-            <div className="mb-4 text-red-500 text-sm" aria-live="assertive">
+            <motion.div
+              className="mb-4 text-red-500 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              aria-live="assertive">
               {error}
-            </div>
+            </motion.div>
           )}
 
           {isLinkSent ? (
-            <div className="mb-4 text-center">
-              <div className="mb-4 text-green-500 text-sm" aria-live="polite">
+            <motion.div
+              className="mb-4 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.5 }}>
+              <motion.div
+                className="mb-4 text-green-500 text-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                aria-live="polite">
                 Sign-up link sent! Please check your email to complete
                 registration.
-              </div>
-              <a
+              </motion.div>
+              <motion.a
                 href={getEmailProviderUrl(
                   window.localStorage.getItem("emailForSignIn") || ""
                 )}
                 rel="noopener noreferrer"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg inline-block">
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg inline-block"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}>
                 Open Email
-              </a>
-            </div>
+              </motion.a>
+            </motion.div>
           ) : (
             <>
-              <button
+              <motion.button
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
                 className="w-full flex items-center justify-center bg-white text-black py-2 px-4 rounded-lg mb-4 hover:bg-[#e5e5e5] disabled:opacity-50"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
                 aria-label="Sign up with Google">
                 <img
                   src="https://www.google.com/favicon.ico"
@@ -226,16 +259,28 @@ function RouteComponent() {
                   className="w-5 h-5 mr-2"
                 />
                 Sign up with Google
-              </button>
+              </motion.button>
 
-              <div className="flex items-center my-4">
+              <motion.div
+                className="flex items-center my-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}>
                 <div className="flex-grow border-t border-white/10"></div>
                 <span className="mx-4 text-white">or</span>
                 <div className="flex-grow border-t border-white/10"></div>
-              </div>
+              </motion.div>
 
-              <form onSubmit={handleSignUp}>
-                <div className="mb-4">
+              <motion.form
+                onSubmit={handleSignUp}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}>
+                <motion.div
+                  className="mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7, duration: 0.5 }}>
                   <label className="block text-sm mb-2" htmlFor="name">
                     Name
                   </label>
@@ -249,9 +294,13 @@ function RouteComponent() {
                     required
                     aria-invalid={!isValidName}
                   />
-                </div>
+                </motion.div>
 
-                <div className="mb-4">
+                <motion.div
+                  className="mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8, duration: 0.5 }}>
                   <label className="block text-sm mb-2" htmlFor="surname">
                     Surname
                   </label>
@@ -265,9 +314,13 @@ function RouteComponent() {
                     required
                     aria-invalid={!isValidSurname}
                   />
-                </div>
+                </motion.div>
 
-                <div className="mb-4">
+                <motion.div
+                  className="mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9, duration: 0.5 }}>
                   <label className="block text-sm mb-2" htmlFor="email">
                     Email
                   </label>
@@ -281,9 +334,13 @@ function RouteComponent() {
                     required
                     aria-invalid={!isValidEmail}
                   />
-                </div>
+                </motion.div>
 
-                <div className="mb-4">
+                <motion.div
+                  className="mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.0, duration: 0.5 }}>
                   <label className="block text-sm mb-2" htmlFor="gender">
                     Gender
                   </label>
@@ -299,9 +356,13 @@ function RouteComponent() {
                     <option value="female">Female</option>
                     <option value="non-binary">Non-binary</option>
                   </select>
-                </div>
+                </motion.div>
 
-                <div className="mb-4">
+                <motion.div
+                  className="mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.1, duration: 0.5 }}>
                   <label className="block text-sm mb-2" htmlFor="dob">
                     Date of Birth
                   </label>
@@ -314,9 +375,9 @@ function RouteComponent() {
                     required
                     aria-invalid={!isValidDob}
                   />
-                </div>
+                </motion.div>
 
-                <button
+                <motion.button
                   type="submit"
                   disabled={
                     isLoading ||
@@ -326,23 +387,30 @@ function RouteComponent() {
                     !isValidGender ||
                     !isValidDob
                   }
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mb-4 disabled:opacity-50">
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mb-4 disabled:opacity-50"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.2, duration: 0.5 }}>
                   {isLoading ? "Sending..." : "Sign Up"}
-                </button>
-              </form>
+                </motion.button>
+              </motion.form>
             </>
           )}
 
-          <p className="text-sm text-center">
+          <motion.p
+            className="text-sm text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.3, duration: 0.5 }}>
             Already have an account?{" "}
             <Link
               to="/auth"
               className="text-base font-bold text-white hover:underline">
               Log in here
             </Link>
-          </p>
-        </div>
-      </section>
+          </motion.p>
+        </motion.div>
+      </motion.section>
     </>
   );
 }

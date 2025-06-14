@@ -5,6 +5,7 @@ import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { db } from "@/config/firebase";
+import { motion } from "framer-motion";
 
 interface UserData {
   uid: string;
@@ -153,11 +154,28 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
   if (!isShowing) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-      <div className="relative w-full max-w-md bg-[#1C1C1E] text-white rounded-2xl shadow-xl p-6 md:p-8 animate-slide-up">
-        <button
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}>
+      <motion.div
+        className="relative w-full max-w-md bg-[#1C1C1E] text-white rounded-2xl shadow-xl p-6 md:p-8 animate-slide-up"
+        initial={{ y: 50, opacity: 0 }}
+        animate={{
+          y: 0,
+          opacity: 1,
+          transition: { type: "spring", stiffness: 100, damping: 15 },
+        }}
+        exit={{ y: 50, opacity: 0 }}
+        transition={{ delay: 0.1, duration: 0.5 }}>
+        <motion.button
           onClick={hide}
           className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30 rounded-full"
+          initial={{ opacity: 0, rotate: -90 }}
+          animate={{ opacity: 1, rotate: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
           aria-label="Close">
           <svg
             className="w-5 h-5"
@@ -171,26 +189,60 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
               d="M6 18L18 6M6 6l12 12"
             />
           </svg>
-        </button>
+        </motion.button>
 
-        <div className="text-center">
-          <h2 className="text-2xl max-sm:text-xl font-semibold mb-2">
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.4 }}>
+          <motion.h2
+            className="text-2xl max-sm:text-xl font-semibold mb-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.4 }}>
             Edit Your Profile
-          </h2>
-          <p className="text-sm text-gray-400 mb-6">
+          </motion.h2>
+          <motion.p
+            className="text-sm text-gray-400 mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}>
             Update your personal details below.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         {error && (
-          <div className="text-red-300 text-sm font-medium mb-5 p-3 rounded-md bg-[rgba(255,75,75,0.15)] backdrop-blur-sm border border-[rgba(255,75,75,0.25)] text-center">
+          <motion.div
+            className="text-red-300 text-sm font-medium mb-5 p-3 rounded-md bg-[rgba(255,75,75,0.15)] backdrop-blur-sm border border-[rgba(255,75,75,0.25)] text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}>
             {error}
-          </div>
+          </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+        <motion.form
+          onSubmit={handleSubmit}
+          className="space-y-5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.4 }}>
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: { staggerChildren: 0.1 },
+              },
+            }}>
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}>
               <label
                 htmlFor="name"
                 className="text-sm text-gray-300 block mb-1">
@@ -205,9 +257,13 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                 required
               />
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}>
               <label
                 htmlFor="surname"
                 className="text-sm text-gray-300 block mb-1">
@@ -222,10 +278,13 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                 required
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.4 }}>
             <label htmlFor="email" className="text-sm text-gray-300 block mb-1">
               Email*
             </label>
@@ -238,9 +297,12 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
               className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
               required
             />
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.4 }}>
             <label
               htmlFor="gender"
               className="text-sm text-gray-300 block mb-1">
@@ -257,9 +319,12 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
               <option value="female">Female</option>
               <option value="non-binary">Non-binary</option>
             </select>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0, duration: 0.4 }}>
             <label htmlFor="dob" className="text-sm text-gray-300 block mb-1">
               Date of Birth*
             </label>
@@ -271,25 +336,42 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
               className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
               required
             />
-          </div>
+          </motion.div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
+          <motion.div
+            className="flex justify-end gap-3 pt-4"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: {
+                transition: { staggerChildren: 0.1 },
+              },
+            }}>
+            <motion.button
               type="submit"
               disabled={profileMutation.isPending}
-              className="bg-white text-black font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-all">
+              className="bg-white text-black font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-all"
+              variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1 },
+              }}>
               {profileMutation.isPending ? "Updating..." : "Save"}
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               type="button"
               onClick={hide}
-              className="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-full transition">
+              className="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-full transition"
+              variants={{
+                hidden: { opacity: 0, scale: 0.95 },
+                visible: { opacity: 1, scale: 1 },
+              }}>
               Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            </motion.button>
+          </motion.div>
+        </motion.form>
+      </motion.div>
+    </motion.div>
   );
 };
 

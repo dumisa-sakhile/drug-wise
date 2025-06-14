@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 interface UserData {
   uid: string;
@@ -278,53 +279,79 @@ function Admin() {
     <>
       <title>Drug Wise - Admin</title>
 
-      <div className="w-full min-h-screen flex flex-col gap-6 py-4 px-6 mx-auto max-w-6xl text-gray-200">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+      <motion.div
+        className="w-full min-h-screen flex flex-col gap-6 py-4 px-6 mx-auto max-w-6xl text-gray-200"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}>
+        <motion.h1
+          className="text-3xl sm:text-4xl font-bold tracking-tight text-white"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}>
           Admin Dashboard
-        </h1>
+        </motion.h1>
         <div className="border-t border-white/10"></div>
 
-        <section className="mt-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+        <motion.section
+          className="mt-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}>
+          <motion.h2
+            className="text-2xl sm:text-3xl font-bold text-white mb-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}>
             Manage Users
-          </h2>
+          </motion.h2>
           {/* Filter Buttons */}
-          <div className="mb-4 flex gap-2 flex-wrap">
-            <button
-              onClick={() =>
-                setShowFields((prev) => ({ ...prev, dob: !prev.dob }))
-              }
-              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
-              {showFields.dob ? "Hide DOB" : "Show DOB"}
-            </button>
-            <button
-              onClick={() =>
-                setShowFields((prev) => ({ ...prev, joinedAt: !prev.joinedAt }))
-              }
-              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
-              {showFields.joinedAt ? "Hide Joined At" : "Show Joined At"}
-            </button>
-            <button
-              onClick={() =>
-                setShowFields((prev) => ({
-                  ...prev,
-                  lastLogin: !prev.lastLogin,
-                }))
-              }
-              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
-              {showFields.lastLogin ? "Hide Last Login" : "Show Last Login"}
-            </button>
-            <button
-              onClick={() =>
-                setShowFields((prev) => ({ ...prev, isAdmin: !prev.isAdmin }))
-              }
-              className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all">
-              {showFields.isAdmin ? "Hide Admin" : "Show Admin"}
-            </button>
-          </div>
+          <motion.div
+            className="mb-4 flex gap-2 flex-wrap"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.1,
+                },
+              },
+            }}>
+            {[
+              { key: "dob", label: "DOB" },
+              { key: "joinedAt", label: "Joined At" },
+              { key: "lastLogin", label: "Last Login" },
+              { key: "isAdmin", label: "Admin" },
+            ].map(({ key, label }) => (
+              <motion.button
+                key={key}
+                onClick={() =>
+                  setShowFields((prev) => ({
+                    ...prev,
+                    [key as keyof typeof showFields]: !prev[key as keyof typeof showFields],
+                  }))
+                }
+                className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-3 py-1 rounded-full hover:scale-105 transition-all"
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}>
+                {showFields[key as keyof typeof showFields]
+                  ? `Hide ${label}`
+                  : `Show ${label}`}
+              </motion.button>
+            ))}
+          </motion.div>
 
           {allUsersLoading ? (
-            <div className="flex justify-center items-center p-4">
+            <motion.div
+              className="flex justify-center items-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}>
               <svg
                 className="animate-spin h-8 w-8 text-white"
                 xmlns="http://www.w3.org/2000/svg"
@@ -344,15 +371,23 @@ function Admin() {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-            </div>
+            </motion.div>
           ) : allUsers?.length === 0 ? (
-            <p className="text-gray-300 text-lg font-light p-4">
+            <motion.p
+              className="text-gray-300 text-lg font-light p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}>
               No users found.
-            </p>
+            </motion.p>
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="min-w-full bg-[#1C1C1E] rounded-lg">
+                <motion.table
+                  className="min-w-full bg-[#1C1C1E] rounded-lg"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}>
                   <thead>
                     <tr className="text-left text-white text-sm">
                       <th className="px-4 py-2">UID</th>
@@ -377,9 +412,26 @@ function Admin() {
                       )}
                     </tr>
                   </thead>
-                  <tbody>
+                  <motion.tbody
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          staggerChildren: 0.1,
+                        },
+                      },
+                    }}>
                     {allUsers?.map((u) => (
-                      <tr key={u.uid} className="border-t border-white/10">
+                      <motion.tr
+                        key={u.uid}
+                        className="border-t border-white/10"
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          visible: { opacity: 1, y: 0 },
+                        }}>
                         <td className="px-4 py-2 text-gray-200 text-sm">
                           {u.uid.slice(0, 8)}...
                         </td>
@@ -480,12 +532,16 @@ function Admin() {
                             </button>
                           </td>
                         )}
-                      </tr>
+                      </motion.tr>
                     ))}
-                  </tbody>
-                </table>
+                  </motion.tbody>
+                </motion.table>
               </div>
-              <div className="flex justify-between mt-4">
+              <motion.div
+                className="flex justify-between mt-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.5 }}>
                 <button
                   onClick={handlePrevPage}
                   disabled={page === 1}
@@ -501,11 +557,11 @@ function Admin() {
                   className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-5 py-2 rounded-full hover:scale-105 transition-all shadow-md disabled:opacity-50">
                   Next
                 </button>
-              </div>
+              </motion.div>
             </>
           )}
-        </section>
-      </div>
+        </motion.section>
+      </motion.div>
     </>
   );
 }
