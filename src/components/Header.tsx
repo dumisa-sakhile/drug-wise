@@ -105,8 +105,15 @@ const Header: React.FC = () => {
               </Link>
               <button
                 onClick={handleSignOutClick}
-                className="px-4 py-2 bg-white text-black rounded-full hover:bg-gray-200 transition">
-                Sign Out
+                className="flex items-center justify-center w-10 h-10 bg-white text-black rounded-full hover:bg-gray-200 transition">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="20px"
+                  viewBox="0 -960 960 960"
+                  width="20px"
+                  fill="#000">
+                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-56-56 104-104H360v-80h328L584-624l56-56 200 200-200 200Z" />
+                </svg>
               </button>
             </>
           )}
