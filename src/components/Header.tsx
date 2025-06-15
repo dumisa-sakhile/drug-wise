@@ -87,6 +87,20 @@ const Header: React.FC = () => {
             className={`text-gray-200 hover:text-white transition text-sm sm:text-base ${location.pathname === "/model" ? "font-bold" : ""}`}>
             Model
           </Link>
+          {!loading && user && (
+            <>
+              <Link
+                to="/auth/profile"
+                className={`md:hidden text-gray-200 hover:text-white transition text-sm sm:text-base ${location.pathname === "/auth/profile" ? "font-bold" : ""}`}>
+                Profile
+              </Link>
+              <button
+                onClick={handleSignOutClick}
+                className="md:hidden text-gray-200 hover:text-white transition text-sm sm:text-base ">
+                sign out
+              </button>
+            </>
+          )}
         </nav>
         <div className="flex items-center space-x-2 sm:space-x-4">
           {!loading && !user && (
@@ -98,7 +112,7 @@ const Header: React.FC = () => {
           )}
           {!loading && user && (
             <>
-              <Link to="/auth/profile">
+              <Link to="/auth/profile" className="hidden md:block">
                 <img
                   src={getFallbackImage()}
                   alt={user.displayName || "Profile"}
@@ -107,8 +121,8 @@ const Header: React.FC = () => {
               </Link>
               <button
                 onClick={handleSignOutClick}
-                className="flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-black rounded-full hover:bg-gray-200 transition">
-               sign out
+                className="hidden text-sm sm:text-base md:flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-black rounded-full hover:bg-gray-200 transition">
+                sign out
               </button>
             </>
           )}
@@ -123,7 +137,7 @@ const Header: React.FC = () => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}>
           <motion.div
-            className="bg-[#1C1C1E] p-4 sm:p-6 rounded-lg shadow-xl max-w-[90%] sm:max-w-sm w-full text-center"
+            className="bg-[#111] p-2 sm:p-6 rounded-lg shadow-xl max-w-[90%] sm:max-w-sm w-full text-center ring-1 ring-white/10"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
@@ -134,35 +148,37 @@ const Header: React.FC = () => {
               delay: 0.1,
             }}>
             <motion.h3
-              className="text-lg sm:text-xl font-semibold mb-4 text-white"
+              className="text-lg sm:text-xl font-semibold mb-4 text-white text-left"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}>
-              Confirm Sign Out
+              Are you sure you want to sign out?
             </motion.h3>
             <motion.p
-              className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base"
+              className="text-gray-300 mb-4 sm:mb-6 text-xs text-left"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}>
-              Are you sure you want to sign out?
+              You will have to sign in again to access your account.
             </motion.p>
-            <div className="flex justify-center gap-2 sm:gap-4">
+            <div className="flex justify-end gap-2 sm:gap-4">
               <motion.button
-                onClick={handleConfirmLogout}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-700 text-white rounded-full hover:bg-red-900 transition text-sm sm:text-base"
+                onClick={handleCancelLogout}
+                className="px-4 py-2 bg-red-600 text-black rounded hover:bg-red-700 transition text-sm sm:text-base"
+                style={{ borderRadius: "10px" }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.3 }}>
-                Yes, Sign Out
+                Cancel
               </motion.button>
               <motion.button
-                onClick={handleCancelLogout}
-                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#131313] text-white rounded-full hover:bg-[#1C1C1E] hover:ring-1 hover:ring-white/10 transition text-sm sm:text-base"
+                onClick={handleConfirmLogout}
+                className="px-4 py-2 bg-lime-600 text-black  hover:bg-lime-700 transition text-sm sm:text-base"
+                style={{ borderRadius: "10px" }}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.3 }}>
-                Cancel
+                Continue
               </motion.button>
             </div>
           </motion.div>
