@@ -64,32 +64,34 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="w-full h-16 bg-black flex items-center px-6 fixed top-0 left-0 z-50">
-      <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
-        <Link to="/" className="hidden md:block text-xl font-bold text-white">
+    <header className="w-full h-16 bg-black flex items-center px-4 sm:px-6 fixed top-0 left-0 z-50">
+      <div className="flex items-center justify-evenly md:justify-between w-full max-w-6xl mx-auto">
+        <Link
+          to="/"
+          className="hidden md:block text-lg sm:text-xl font-bold text-white">
           DrugWise
         </Link>
-        <nav className="flex space-x-6 bg-[#131313] px-4 py-2 rounded-full ring-1 ring-white/20">
+        <nav className="flex space-x-4 sm:space-x-6 bg-[#131313] px-3 sm:px-4 py-2 rounded-full ring-1 ring-white/20">
           <Link
             to="/"
-            className={`text-gray-200 hover:text-white transition ${location.pathname === "/" ? "font-bold" : ""}`}>
+            className={`text-gray-200 hover:text-white transition text-sm sm:text-base ${location.pathname === "/" ? "font-bold" : ""}`}>
             Home
           </Link>
           <Link
             to="/pricing"
-            className={`text-gray-200 hover:text-white transition ${location.pathname === "/pricing" ? "font-bold" : ""}`}>
+            className={`text-gray-200 hover:text-white transition text-sm sm:text-base ${location.pathname === "/pricing" ? "font-bold" : ""}`}>
             Pricing
           </Link>
           <Link
             to="/model"
-            className={`text-gray-200 hover:text-white transition ${location.pathname === "/model" ? "font-bold" : ""}`}>
+            className={`text-gray-200 hover:text-white transition text-sm sm:text-base ${location.pathname === "/model" ? "font-bold" : ""}`}>
             Model
           </Link>
         </nav>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {!loading && !user && (
             <Link to="/auth">
-              <button className="px-4 py-2 bg-white text-black rounded-full hover:bg-gray-200 transition">
+              <button className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-black rounded-full hover:bg-gray-200 transition text-sm sm:text-base">
                 Sign In
               </button>
             </Link>
@@ -105,15 +107,8 @@ const Header: React.FC = () => {
               </Link>
               <button
                 onClick={handleSignOutClick}
-                className="flex items-center justify-center w-10 h-10 bg-white text-black rounded-full hover:bg-gray-200 transition">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  height="20px"
-                  viewBox="0 -960 960 960"
-                  width="20px"
-                  fill="#000">
-                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-56-56 104-104H360v-80h328L584-624l56-56 200 200-200 200Z" />
-                </svg>
+                className="flex items-center justify-center px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-black rounded-full hover:bg-gray-200 transition">
+               sign out
               </button>
             </>
           )}
@@ -128,7 +123,7 @@ const Header: React.FC = () => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}>
           <motion.div
-            className="bg-[#1C1C1E] p-6 rounded-lg shadow-xl max-w-sm w-full text-center"
+            className="bg-[#1C1C1E] p-4 sm:p-6 rounded-lg shadow-xl max-w-[90%] sm:max-w-sm w-full text-center"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
@@ -139,23 +134,23 @@ const Header: React.FC = () => {
               delay: 0.1,
             }}>
             <motion.h3
-              className="text-xl font-semibold mb-4 text-white"
+              className="text-lg sm:text-xl font-semibold mb-4 text-white"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}>
               Confirm Sign Out
             </motion.h3>
             <motion.p
-              className="text-gray-300 mb-6"
+              className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}>
               Are you sure you want to sign out?
             </motion.p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-2 sm:gap-4">
               <motion.button
                 onClick={handleConfirmLogout}
-                className="px-4 py-2 bg-red-700 text-white rounded-full hover:bg-red-900 transition"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-700 text-white rounded-full hover:bg-red-900 transition text-sm sm:text-base"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.3 }}>
@@ -163,7 +158,7 @@ const Header: React.FC = () => {
               </motion.button>
               <motion.button
                 onClick={handleCancelLogout}
-                className="px-4 py-2 bg-[#131313] text-white rounded-full hover:bg-[#1C1C1E] hover:ring-1 hover:ring-white/10 transition"
+                className="px-3 sm:px-4 py-1.5 sm:py-2 bg-[#131313] text-white rounded-full hover:bg-[#1C1C1E] hover:ring-1 hover:ring-white/10 transition text-sm sm:text-base"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5, duration: 0.3 }}>
