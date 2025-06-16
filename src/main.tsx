@@ -48,7 +48,7 @@ if (rootElement && !rootElement.innerHTML) {
       <QueryClientProvider client={queryClient}>
         
           <RouterProvider router={router} />
-          <Toaster richColors theme="dark"/>
+          <Toaster richColors />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </StrictMode>
