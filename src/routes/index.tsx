@@ -99,12 +99,12 @@ function App() {
                 "0 0 10px rgba(30, 144, 255, 0.7), 0 0 20px rgba(30, 144, 255, 0.5)",
             }}>
             <h2 className="text-xl font-semibold text-white mb-2">
-              The Problem
+              Our Vision
             </h2>
             <p className="text-gray-300">
-              Patients with chronic diseases face adverse drug interactions,
-              leading to hospital stays costing ~R4000/night and avoidable
-              claims.
+              To become Africa’s leading digital health platform,
+              revolutionizing how people take medication by making drug safety
+              intuitive, accessible, and personalized for every patient.
             </p>
           </motion.div>
 
@@ -159,10 +159,14 @@ function App() {
               boxShadow:
                 "0 0 10px rgba(147, 51, 234, 0.7), 0 0 20px rgba(147, 51, 234, 0.5)",
             }}>
-            <h2 className="text-xl font-semibold text-white mb-2">Our Ask</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">
+              Our Mission
+            </h2>
             <p className="text-gray-300">
-              We’re raising R1 million to fund device manufacturing and pilot
-              distribution in South Africa.
+              To empower individuals and healthcare providers with real-time,
+              personalized medication management solutions that reduce harmful
+              drug interactions, improve health outcomes, and lower healthcare
+              costs.
             </p>
           </motion.div>
 

@@ -48,7 +48,7 @@ function SignUp() {
     return emailRegex.test(email);
   };
   const validateGender = (gender: string): boolean =>
-    ["male", "female", "non-binary", ""].includes(gender);
+    ["male", "female"].includes(gender);
   const validateDob = (dob: string): boolean => {
     if (!dob) return false;
     const date = new Date(dob);
@@ -354,7 +354,6 @@ function SignUp() {
                     <option value="">Select gender</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
-                    <option value="non-binary">Non-binary</option>
                   </select>
                 </motion.div>
 
@@ -405,7 +404,7 @@ function SignUp() {
             Already have an account?{" "}
             <Link
               to="/auth"
-              className="text-base font-bold text-white hover:underline">
+              className="text-base font-bold text-blue-500 hover:underline">
               Log in here
             </Link>
           </motion.p>

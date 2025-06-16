@@ -2,23 +2,21 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { auth, db } from "@/config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import type { User } from "firebase/auth";
+import type { User as FirebaseUser } from "firebase/auth";
 import {
   collection,
   query,
-  limit,
   getDocs,
   doc,
   getDoc,
   setDoc,
   Timestamp,
   orderBy,
-  startAfter,
-  where,
 } from "firebase/firestore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search } from "lucide-react";
 
 interface UserData {
   uid: string;
@@ -29,7 +27,6 @@ interface UserData {
   surname: string;
   joinedAt: Timestamp;
   isAdmin: boolean;
-  lastLogin: Timestamp | null;
 }
 
 export const Route = createFileRoute("/auth/admin")({
@@ -37,24 +34,27 @@ export const Route = createFileRoute("/auth/admin")({
 });
 
 function Admin() {
-  const [user, setUser] = useState<User | null>(null);
-  const [page, setPage] = useState(1);
-  const [lastDoc, setLastDoc] = useState<any>(null);
-  const [prevDocs, setPrevDocs] = useState<any[]>([]);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [editedUsers, setEditedUsers] = useState<{
     [uid: string]: Partial<UserData> & { uid: string };
   }>({});
-  const [showFields, setShowFields] = useState({ dob: false, joinedAt: false });
   const [searchTerm, setSearchTerm] = useState("");
   const [filterGender, setFilterGender] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) =>
-      setUser(currentUser)
-    );
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const lastLogin = Timestamp.fromDate(new Date());
+        setDoc(
+          doc(db, "users", currentUser.uid),
+          { lastLogin },
+          { merge: true }
+        );
+      }
+    });
     return () => unsubscribe();
   }, []);
 
@@ -66,6 +66,7 @@ function Admin() {
       return userDoc.exists() ? (userDoc.data() as UserData) : ({} as UserData);
     },
     enabled: !!user,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -75,34 +76,26 @@ function Admin() {
     }
   }, [user, userData, navigate]);
 
-  const {
-    data: allUsers,
-    isLoading: allUsersLoading,
-    refetch,
-  } = useQuery<UserData[]>({
-    queryKey: ["allUsers", page, searchTerm, filterGender],
+  const { data: allUsers, isLoading: allUsersLoading } = useQuery<UserData[]>({
+    queryKey: ["allUsers"],
     queryFn: async () => {
       if (!user || !userData?.isAdmin) return [];
       const usersRef = collection(db, "users");
-      let q = query(usersRef, orderBy("joinedAt", "desc"), limit(pageSize));
-      if (lastDoc) q = query(q, startAfter(lastDoc), limit(pageSize));
-      if (searchTerm)
-        q = query(
-          q,
-          where("uid", ">=", searchTerm),
-          where("uid", "<=", searchTerm + "\uf8ff")
-        );
-      if (filterGender) q = query(q, where("gender", "==", filterGender));
+      const q = query(usersRef, orderBy("joinedAt", "desc"));
       const snapshot = await getDocs(q);
-      const users = snapshot.docs.map((doc) => doc.data() as UserData);
-      if (users.length === 0 && (searchTerm || filterGender)) {
-        setLastDoc(null);
-        setPage(1);
-        setPrevDocs([]);
-      } else setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-      return users;
+      return snapshot.docs.map((doc) => doc.data() as UserData);
     },
     enabled: !!user && userData?.isAdmin,
+    refetchOnWindowFocus: false,
+  });
+
+  const filteredUsers = allUsers?.filter((u) => {
+    const matchesSearchTerm =
+      u.uid.includes(searchTerm) ||
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.surname.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGender = filterGender ? u.gender === filterGender : true;
+    return matchesSearchTerm && matchesGender;
   });
 
   const updateUserMutation = useMutation({
@@ -147,7 +140,7 @@ function Admin() {
   const handleSaveUser = (uid: string) => {
     const updatedData = editedUsers[uid];
     if (!updatedData) return toast.info("No changes to save.");
-    const user = allUsers?.find((u) => u.uid === uid);
+    const user = filteredUsers?.find((u) => u.uid === uid);
     if (!user) return toast.error("User not found");
     if (updatedData.email && !validateEmail(updatedData.email))
       return toast.error("Invalid email address");
@@ -178,21 +171,11 @@ function Admin() {
     toast.info("Changes reset.");
   };
 
-  const handleNextPage = () =>
-    allUsers &&
-    allUsers.length === pageSize &&
-    (setPrevDocs((prev) => [...prev, lastDoc]), setPage((prev) => prev + 1));
-  const handlePrevPage = () =>
-    page > 1 &&
-    (setPrevDocs((prev) => prev.slice(0, -1)),
-    setLastDoc(prevDocs[prevDocs.length - 2] || null),
-    setPage((prev) => prev - 1));
-
   const validateName = (value: string) => value.trim().length >= 2;
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validateGender = (gender: string) =>
-    ["male", "female", "non-binary", ""].includes(gender);
+    ["male", "female"].includes(gender);
   const validateDob = (dob: string) => {
     if (!dob) return false;
     const date = new Date(dob);
@@ -215,339 +198,286 @@ function Admin() {
         : dob.toDate().toISOString().split("T")[0]
       : "";
 
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-  const totalUsers = allUsers?.length || 0;
-  const joinedThisMonth =
-    allUsers?.filter(
-      (u) =>
-        u.joinedAt.toDate().getMonth() === currentMonth &&
-        u.joinedAt.toDate().getFullYear() === currentYear
-    ).length || 0;
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        when: "beforeChildren",
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const tableRowVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.3 },
+    },
+  };
 
   if (!user)
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-black">
-        <p className="text-white text-xl font-light">
+      <motion.div
+        className="w-full min-h-screen flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}>
+        <p className="text-white text-xl font-inter font-medium">
           Please log in to access this page
         </p>
-      </div>
+      </motion.div>
     );
 
   if (!userData?.isAdmin) return null;
 
   return (
     <>
-      <title>Admin Dashboard</title>
+      <title>Drug Wise - Admin Dashboard</title>
       <motion.div
-        className="w-full min-h-screen flex flex-col gap-8 py-8 px-12 mx-auto max-w-7xl bg-black text-white"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}>
-        <motion.h1
-          className="text-5xl font-bold tracking-tight text-white"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}>
-          Admin Dashboard
-        </motion.h1>
-        <div className="border-t border-white/10"></div>
-        <motion.section
-          className="mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}>
-          <div className="flex justify-between mb-8 items-center">
-            <div className="flex gap-6 items-center">
-              <input
-                type="text"
-                placeholder="Search by UID..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setPage(1);
-                  setLastDoc(null);
-                  setPrevDocs([]);
-                  refetch();
-                }}
-                className="bg-white/10 backdrop-blur-md text-white px-6 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-80 h-12"
-              />
-              <button
-                onClick={() =>
-                  setShowFields((prev) => ({ ...prev, dob: !prev.dob }))
-                }
-                className={`text-white px-6 py-3 rounded-full focus:outline-none w-40 h-12 ${showFields.dob ? "bg-blue-600" : "bg-white/10 backdrop-blur-md"}`}>
-                DOB
-              </button>
-              <button
-                onClick={() =>
-                  setShowFields((prev) => ({
-                    ...prev,
-                    joinedAt: !prev.joinedAt,
-                  }))
-                }
-                className={`text-white px-6 py-3 rounded-full focus:outline-none w-44 h-12 ${showFields.joinedAt ? "bg-blue-600" : "bg-white/10 backdrop-blur-md"}`}>
-                Joined At
-              </button>
-            </div>
-            <div className="flex gap-6 items-center">
-              <select
-                value={filterGender}
-                onChange={(e) => {
-                  setFilterGender(e.target.value);
-                  setPage(1);
-                  setLastDoc(null);
-                  setPrevDocs([]);
-                  refetch();
-                }}
-                className="bg-[#131313] backdrop-blur-md text-white px-6 py-3 rounded-full focus:outline-none w-40 h-12">
-                <option value="">All Genders</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="non-binary">Non-binary</option>
-              </select>
-            </div>
+        className="w-full min-h-1/2 flex flex-col gap-6 py-8 px-6 text-white"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible">
+        <br />
+
+        {/* Header */}
+        <motion.header
+          variants={itemVariants}
+          className="flex justify-between  items-center gap-4 border-b border-white/10 pb-4">
+          <div>
+            <h1 className="text-2xl md:text-5xl font-bold text-white">
+              Admin Dashboard
+            </h1>
+            <p className="text-sm font-light">
+              Welcome, {user.displayName} to the Drug Wise Admin Dashboard
+            </p>
           </div>
-          <motion.div className="grid grid-cols-4 gap-8 mb-8">
-            <div className="text-center p-6 bg-white/5 rounded-lg">
-              <p className="text-gray-400 text-xl">Total Users</p>
-              <p className="text-3xl font-bold text-white">{totalUsers}</p>
-            </div>
-            <div className="text-center p-6 bg-white/5 rounded-lg">
-              <p className="text-gray-400 text-xl">Joined This Month</p>
-              <p className="text-3xl font-bold text-white">{joinedThisMonth}</p>
-            </div>
-            <div className="text-center p-6 bg-white/5 rounded-lg">
-              <p className="text-gray-400 text-xl">Admin Users</p>
-              <p className="text-3xl font-bold text-white">
-                {allUsers?.filter((u) => u.isAdmin).length || 0}
-              </p>
-            </div>
-            <div className="text-center p-6 bg-white/5 rounded-lg">
-              <p className="text-gray-400 text-xl">Active Users</p>
-              <p className="text-3xl font-bold text-white">
-                {allUsers?.filter((u) => u.lastLogin).length || 0}
-              </p>
-            </div>
+          <button onClick={() => navigate({ to: "/auth/profile" })} className="bg-[#1a1a1a] hover:bg-[#333] ring-1 ring-white/20 transition px-4 py-2 rounded"> {"<<"} Back to Profile</button>
+        </motion.header>
+        
+
+        {/* Table */}
+        {allUsersLoading ? (
+          <motion.div
+            className="flex justify-center items-center p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}>
+            <svg
+              className="animate-spin h-8 w-8 text-blue-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
           </motion.div>
-          {allUsersLoading && (
-            <motion.div
-              className="flex justify-center items-center p-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}>
-              <svg
-                className="animate-spin h-10 w-10 text-blue-500"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            </motion.div>
-          )}
-          {!allUsersLoading && (!allUsers || allUsers.length === 0) && (
-            <motion.p
-              className="text-gray-400 text-xl font-light p-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}>
-              No users found.
-            </motion.p>
-          )}
-          {!allUsersLoading && allUsers && allUsers.length > 0 && (
-            <div className="overflow-x-auto">
-              <motion.table
-                className="min-w-full"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}>
-                <thead>
-                  <tr className="text-left text-gray-200 text-base">
-                    <th className="px-8 py-4">#</th>
-                    <th className="px-8 py-4">UID</th>
-                    <th className="px-8 py-4">Name</th>
-                    <th className="px-8 py-4">Surname</th>
-                    <th className="px-8 py-4">Email</th>
-                    <th className="px-8 py-4">Gender</th>
-                    {showFields.dob && (
-                      <th className="px-8 py-4">Date of Birth</th>
-                    )}
-                    {showFields.joinedAt && (
-                      <th className="px-8 py-4">Joined At</th>
-                    )}
-                    {Object.keys(editedUsers).some(
-                      (uid) =>
-                        editedUsers[uid] &&
-                        Object.keys(editedUsers[uid]).length > 1
-                    ) && <th className="px-8 py-4">Actions</th>}
-                  </tr>
-                </thead>
-                <motion.tbody
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.1 },
-                    },
-                  }}>
-                  {allUsers.map((u, index) => {
+        ) : !filteredUsers || filteredUsers.length === 0 ? (
+          <motion.p
+            className="text-white text-lg text-center py-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}>
+            No users found.
+          </motion.p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg">
+            <table className="min-w-full roboto-condensed-light text-sm rounded-lg bg-[#2a2a2a]">
+              <thead>
+                <tr className="text-left text-white bg-[#2a2a2a]">
+                  <th className="px-6 py-4" colSpan={9}>
+                    <motion.div
+                      className="relative w-full"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}>
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white" />
+                      <input
+                        type="text"
+                        placeholder="Search by UID, Name, or Surname..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-32 py-4 bg-[#333333] text-white placeholder-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-normal"
+                      />
+                      <motion.select
+                        value={filterGender}
+                        onChange={(e) => setFilterGender(e.target.value)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-3 bg-blue-500 *:bg-[#333333] text-white rounded-md focus:outline-none border-none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3, delay: 0.1 }}>
+                        <option value="">All Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </motion.select>
+                    </motion.div>
+                  </th>
+                </tr>
+                <tr className="text-left text-white bg-[#2a2a2a]">
+                  <th className="px-6 py-4">#</th>
+                  <th className="px-6 py-4">UID</th>
+                  <th className="px-6 py-4">Name</th>
+                  <th className="px-6 py-4">Surname</th>
+                  <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">Gender</th>
+                  <th className="px-6 py-4">Date of Birth</th>
+                  <th className="px-6 py-4">Joined At</th>
+                  {Object.keys(editedUsers).some(
+                    (uid) =>
+                      editedUsers[uid] &&
+                      Object.keys(editedUsers[uid]).length > 1
+                  ) && <th className="px-6 py-4">Actions</th>}
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence>
+                  {filteredUsers.map((u, index) => {
                     const hasChanges =
                       editedUsers[u.uid] &&
                       Object.keys(editedUsers[u.uid]).length > 1;
-                    const globalIndex = (page - 1) * pageSize + index + 1;
                     return (
                       <motion.tr
                         key={u.uid}
-                        className="border-t border-white/10 hover:bg-[#131313]/50 rounded-md"
-                        variants={{
-                          hidden: { opacity: 0, y: 20 },
-                          visible: { opacity: 1, y: 0 },
-                        }}>
-                        <td className="px-8 py-4 text-gray-300 text-base">
-                          {globalIndex}
-                        </td>
-                        <td className="px-8 py-4 text-gray-300 text-base">
+                        variants={tableRowVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit={{ opacity: 0, y: 10 }}
+                        className="hover:bg-[#2a2a2a] transition border-b border-white/10">
+                        <td className="px-6 py-4 text-white/70">{index + 1}</td>
+                        <td className="px-6 py-4 text-white">
                           {u.uid.slice(0, 8)}...
                         </td>
-                        <td className="px-8 py-4">
-                          <input
+                        <td className="px-6 py-4">
+                          <motion.input
                             type="text"
                             value={editedUsers[u.uid]?.name ?? u.name}
                             onChange={(e) =>
                               handleInputChange(u, "name", e.target.value)
                             }
-                            className="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full h-10"
+                            className="w-full px-3 py-2  text-white placeholder-white/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter name"
+                            whileFocus={{ scale: 1.02 }}
+                            transition={{ duration: 0.2 }}
                           />
                         </td>
-                        <td className="px-8 py-4">
-                          <input
+                        <td className="px-6 py-4">
+                          <motion.input
                             type="text"
                             value={editedUsers[u.uid]?.surname ?? u.surname}
                             onChange={(e) =>
                               handleInputChange(u, "surname", e.target.value)
                             }
-                            className="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full h-10"
+                            className="w-full px-3 py-2  text-white placeholder-white/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter surname"
+                            whileFocus={{ scale: 1.02 }}
+                            transition={{ duration: 0.2 }}
                           />
                         </td>
-                        <td className="px-8 py-4">
-                          <input
+                        <td className="px-6 py-4">
+                          <motion.input
                             type="email"
                             value={editedUsers[u.uid]?.email ?? u.email}
                             onChange={(e) =>
                               handleInputChange(u, "email", e.target.value)
                             }
-                            className="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full h-10"
+                            className="w-full px-3 py-2  text-white placeholder-white/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter email"
+                            whileFocus={{ scale: 1.02 }}
+                            transition={{ duration: 0.2 }}
                           />
                         </td>
-                        <td className="px-8 py-4">
-                          <select
+                        <td className="px-6 py-4">
+                          <motion.select
                             value={editedUsers[u.uid]?.gender ?? u.gender}
                             onChange={(e) =>
                               handleInputChange(u, "gender", e.target.value)
                             }
-                            className="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full h-10">
+                            className="w-full px-3 py-2  text-white *:bg-[#333333] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 roboto-condensed-regular"
+                            whileFocus={{ scale: 1.02 }}
+                            transition={{ duration: 0.2 }}>
                             <option value="">Select</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="non-binary">Non-binary</option>
-                          </select>
+                            <option value="male">M</option>
+                            <option value="female">F</option>
+                          </motion.select>
                         </td>
-                        {showFields.dob && (
-                          <td className="px-8 py-4">
-                            <input
-                              type="date"
-                              value={formatDateForInput(
-                                editedUsers[u.uid]?.dob ?? u.dob
-                              )}
-                              onChange={(e) =>
-                                handleInputChange(u, "dob", e.target.value)
-                              }
-                              className="bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 w-full h-10"
-                            />
-                          </td>
-                        )}
-                        {showFields.joinedAt && (
-                          <td className="px-8 py-4 text-gray-300 text-base">
-                            {formatDate(u.joinedAt)}
-                          </td>
-                        )}
+                        <td className="px-6 py-4">
+                          <motion.input
+                            type="date"
+                            value={formatDateForInput(
+                              editedUsers[u.uid]?.dob ?? u.dob
+                            )}
+                            onChange={(e) =>
+                              handleInputChange(u, "dob", e.target.value)
+                            }
+                            className="w-full px-3 py-2  text-white placeholder-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            whileFocus={{ scale: 1.02 }}
+                            transition={{ duration: 0.2 }}
+                          />
+                        </td>
+                        <td className="px-6 py-4 text-white">
+                          {formatDate(u.joinedAt)}
+                        </td>
                         {hasChanges && (
-                          <td className="px-8 py-4 flex gap-4">
-                            <button
+                          <td className="px-6 py-4 flex gap-2">
+                            <motion.span
                               onClick={() => handleSaveUser(u.uid)}
-                              className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-full hover:bg-blue-700 text-base h-10">
+                              className="bg-lime-500 text-black px-3 py-2 rounded-md hover:bg-lime-600 transition flex items-center gap-1 text-sm cursor-pointer"
+                              title="Save changes"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}>
                               Save
-                            </button>
-                            <button
+                            </motion.span>
+                            <motion.span
                               onClick={() => handleResetUser(u.uid)}
-                              className="text-base text-gray-400 hover:text-white px-4 py-2 rounded-full transition h-10">
-                              Reset
-                            </button>
+                              className="bg-red-600 text-black px-3 py-2 rounded-md hover:bg-red-700 transition flex items-center gap-1 text-sm cursor-pointer"
+                              title="Cancel changes"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}>
+                              Cancel
+                            </motion.span>
                           </td>
                         )}
                       </motion.tr>
                     );
                   })}
-                </motion.tbody>
-              </motion.table>
-            </div>
-          )}
-          <motion.div
-            className="flex justify-between mt-8 items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.5 }}>
-            <button
-              onClick={handlePrevPage}
-              disabled={page === 1}
-              className="bg-blue-600 text-white font-semibold text-base px-6 py-3 rounded-full hover:bg-blue-700 transition-all disabled:opacity-50 h-12">
-              Previous
-            </button>
-            <span className="text-gray-400 text-base">
-              Showing {(page - 1) * pageSize + 1} to{" "}
-              {page * pageSize > (allUsers?.length || 0)
-                ? allUsers?.length
-                : page * pageSize}{" "}
-              of {allUsers?.length || 0} results
-            </span>
-            <div className="flex gap-4 items-center">
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(parseInt(e.target.value));
-                  setPage(1);
-                  setLastDoc(null);
-                  setPrevDocs([]);
-                  refetch();
-                }}
-                className="bg-[#131313] backdrop-blur-md text-white px-6 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-40 h-12">
-                <option value="10">10 per page</option>
-                <option value="25">25 per page</option>
-                <option value="50">50 per page</option>
-              </select>
-              <button
-                onClick={handleNextPage}
-                disabled={allUsers && allUsers.length < pageSize}
-                className="bg-blue-600 text-white font-semibold text-base px-6 py-3 rounded-full hover:bg-blue-700 transition-all disabled:opacity-50 h-12">
-                Next
-              </button>
-            </div>
-          </motion.div>
-        </motion.section>
+                </AnimatePresence>
+              </tbody>
+            </table>
+            <br />
+            <motion.div
+              className="p-4 text-white/70 text-sm text-center"
+              variants={itemVariants}>
+              Showing {filteredUsers?.length || 0} of{" "}
+              {filteredUsers?.length || 0} users
+            </motion.div>
+          </div>
+        )}
       </motion.div>
     </>
   );

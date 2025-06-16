@@ -24,15 +24,15 @@ const teamData = () => {
         role: "Developer",
         expertise: "Software Development",
         image:
-          "https://wallpapers.com/images/hd/blank-white-background-xbsfzsltjksfompa.jpg",
+          "/sakhile.jpg",
       },
-      {
-        name: "Sbusiso Buna",
-        role: "Advisor",
-        expertise: "Founder & CEO @JOBOX",
-        image:
-          "/sbusiso.png",
-      },
+      // {
+      //   name: "Sbusiso Buna",
+      //   role: "Advisor",
+      //   expertise: "Founder & CEO @JOBOX",
+      //   image:
+      //     "/sbusiso.png",
+      // },
     ];
       
   

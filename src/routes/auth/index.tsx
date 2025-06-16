@@ -134,7 +134,7 @@ function Login() {
     <>
       <title>Drug Wise - Login</title>
       <motion.section
-        className="w-full h-lvh flex items-center justify-center bg-inherit text-white"
+        className="w-full min-h-[650px] flex items-center justify-center bg-inherit text-white"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}>
@@ -258,7 +258,7 @@ function Login() {
             Don’t have an account yet?{" "}
             <Link
               to="/auth/sign_up"
-              className="text-base font-bold text-white hover:underline">
+              className="text-base font-bold text-blue-400 hover:underline">
               Sign up here
             </Link>
           </motion.p>
