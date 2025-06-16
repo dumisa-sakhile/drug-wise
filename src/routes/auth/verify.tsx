@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { auth, db } from "../../config/firebase";
 import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
-import { doc, setDoc, Timestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -23,26 +23,40 @@ function VerifyMagicLink() {
 
       const user = auth.currentUser;
       if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
         const name =
           window.localStorage.getItem("nameForSignIn") || "Anonymous";
         const surname = window.localStorage.getItem("surnameForSignIn") || "";
         const gender = window.localStorage.getItem("genderForSignIn") || "";
         const dob = window.localStorage.getItem("dobForSignIn") || "1970-01-01";
 
-        await setDoc(
-          doc(db, "users", user.uid),
-          {
+        if (!userDoc.exists()) {
+          // Create new user document if it doesn't exist
+          await setDoc(userDocRef, {
             uid: user.uid,
             email: user.email || "",
-            gender,
+            gender: gender || "",
             dob: Timestamp.fromDate(new Date(dob)),
-            name,
-            surname,
+            name: name,
+            surname: surname,
             joinedAt: Timestamp.now(),
             isAdmin: false,
-          },
-          { merge: true }
-        );
+          });
+        } else {
+          // Update existing document, only setting new fields if they exist, and merge with existing data
+          const updateData: any = {
+            lastLogin: Timestamp.now(),
+          };
+          if (name !== "Anonymous") updateData.name = name;
+          if (surname) updateData.surname = surname;
+          if (gender) updateData.gender = gender;
+          if (dob !== "1970-01-01")
+            updateData.dob = Timestamp.fromDate(new Date(dob));
+
+          await setDoc(userDocRef, updateData, { merge: true });
+        }
 
         window.localStorage.removeItem("nameForSignIn");
         window.localStorage.removeItem("surnameForSignIn");
