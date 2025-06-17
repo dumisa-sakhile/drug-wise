@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { auth, db } from "../../config/firebase";
 import {
@@ -10,6 +10,7 @@ import {
 import { doc, setDoc, getDoc, Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Circle } from "lucide-react";
 
 export const Route = createFileRoute("/auth/")({
   component: Login,
@@ -25,11 +26,15 @@ function Login() {
   const [isLinkSent, setIsLinkSent] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  const buttonBaseStyles =
+    "w-full py-2 px-4 rounded-lg transition-all duration-200";
+  const disabledStyles =
+    "opacity-50 cursor-not-allowed bg-gray-600 hover:bg-gray-600";
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         navigate({ to: "/auth/profile" });
-        toast.info("You are already signed in!");
       }
     });
     return () => unsubscribe();
@@ -94,12 +99,10 @@ function Login() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if user document exists
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (!userDoc.exists()) {
-        // Create new user document with all required fields
         await setDoc(userDocRef, {
           uid: user.uid,
           email: user.email || "",
@@ -112,7 +115,6 @@ function Login() {
           lastLogin: Timestamp.now(),
         });
       } else {
-        // Update lastLogin for existing user
         await setDoc(
           userDocRef,
           { lastLogin: Timestamp.now() },
@@ -148,7 +150,7 @@ function Login() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}>
-            Welcome back to Drug Wise
+            Login or sign up with email to Drug Wise
           </motion.h2>
 
           {error && (
@@ -181,7 +183,7 @@ function Login() {
                   window.localStorage.getItem("emailForSignIn") || ""
                 )}
                 rel="noopener noreferrer"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg inline-block"
+                className={`${buttonBaseStyles} bg-blue-600 hover:bg-blue-700 text-white inline-block`}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.6, duration: 0.5 }}>
@@ -193,7 +195,9 @@ function Login() {
               <motion.button
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center bg-white text-black py-2 px-4 rounded-lg mb-4 hover:bg-[#e5e5e5] disabled:opacity-50"
+                className={`${buttonBaseStyles} flex items-center justify-center bg-white text-black mb-4 hover:bg-gray-200 ${
+                  isLoading ? disabledStyles : ""
+                }`}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
@@ -203,7 +207,7 @@ function Login() {
                   alt="Google Icon"
                   className="w-5 h-5 mr-2"
                 />
-                Log in with Google
+                Log in or Sign up with Google
               </motion.button>
 
               <motion.div
@@ -235,12 +239,26 @@ function Login() {
                     required
                     aria-invalid={!isValidEmail}
                   />
+                  {!isValidEmail && email && (
+                    <motion.div
+                      className="text-red-500 text-sm mt-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2, duration: 0.5 }}
+                      aria-live="assertive">
+                      Please enter a valid email address.
+                    </motion.div>
+                  )}
                 </div>
 
                 <motion.button
                   type="submit"
-                  disabled={isLoading || !isValidEmail}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg mb-4 disabled:opacity-50"
+                  disabled={isLoading || !isValidEmail || !email}
+                  className={`${buttonBaseStyles} bg-blue-600 text-white mb-4 ${
+                    isLoading || !isValidEmail || !email
+                      ? disabledStyles
+                      : "hover:bg-blue-700"
+                  }`}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.7, duration: 0.5 }}>
@@ -250,20 +268,28 @@ function Login() {
             </>
           )}
 
-          <motion.p
-            className="text-sm text-center"
+          <motion.div
+            className="text-sm text-left"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.5 }}>
-            Don’t have an account yet?{" "}
-            <Link
-              to="/auth/sign_up"
-              className="text-base font-bold text-blue-400 hover:underline">
-              Sign up here
-            </Link>
-          </motion.p>
+            <ul className="list-none space-y-2">
+              <li className="flex items-start">
+                <Circle className="w-4 h-4 mr-2 mt-1 text-white/60" />
+                If you created an account using email login, you can also sign
+                in with Google, and your account will be linked.
+              </li>
+              <li className="flex items-start">
+                <Circle className="w-4 h-4 mr-2 mt-1 text-white/60" />
+                If you don't have an account, one will be created automatically
+                upon signing in.
+              </li>
+            </ul>
+          </motion.div>
         </motion.div>
       </motion.section>
     </>
   );
 }
+
+export default Login;

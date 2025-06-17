@@ -233,11 +233,11 @@ function Admin() {
   if (!user)
     return (
       <motion.div
-        className="w-full min-h-screen flex items-center justify-center"
+        className="w-full min-h-screen flex items-center justify-center bg-[#1a1a1a]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}>
-        <p className="text-white text-xl font-inter font-medium">
+        <p className="text-white text-xl font-sans font-medium">
           Please log in to access this page
         </p>
       </motion.div>
@@ -249,37 +249,38 @@ function Admin() {
     <>
       <title>Drug Wise - Admin Dashboard</title>
       <motion.div
-        className="w-full min-h-1/2 flex flex-col gap-6 py-8 px-6 text-white"
+        className="w-full min-h-screen flex flex-col gap-8 py-12 px-8 mx-auto max-w-7xl text-white "
         variants={containerVariants}
         initial="hidden"
         animate="visible">
-        <br />
-
         {/* Header */}
         <motion.header
           variants={itemVariants}
-          className="flex justify-between  items-center gap-4 border-b border-white/10 pb-4">
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-[#222222] p-6 rounded-xl shadow-lg border border-white/10">
           <div>
-            <h1 className="text-2xl md:text-5xl font-bold text-white">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white font-sans">
               Admin Dashboard
             </h1>
-            <p className="text-sm font-light">
+            <p className="text-sm text-gray-300 font-sans mt-2">
               Welcome, {user.displayName} to the Drug Wise Admin Dashboard
             </p>
           </div>
-          <button onClick={() => navigate({ to: "/auth/profile" })} className="bg-[#1a1a1a] hover:bg-[#333] ring-1 ring-white/20 transition px-4 py-2 rounded"> {"<<"} Back to Profile</button>
+          <button
+            onClick={() => navigate({ to: "/auth/profile" })}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-sans font-semibold px-6 py-3 rounded-lg transition-all shadow-md">
+            &larr; Back to Profile
+          </button>
         </motion.header>
-        
 
         {/* Table */}
         {allUsersLoading ? (
           <motion.div
-            className="flex justify-center items-center p-6"
+            className="flex justify-center items-center p-8 bg-[#222222] rounded-xl shadow-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}>
             <svg
-              className="animate-spin h-8 w-8 text-blue-500"
+              className="animate-spin h-10 w-10 text-blue-500"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24">
@@ -300,59 +301,61 @@ function Admin() {
           </motion.div>
         ) : !filteredUsers || filteredUsers.length === 0 ? (
           <motion.p
-            className="text-white text-lg text-center py-6"
+            className="text-white text-lg text-center py-8 bg-[#222222] rounded-xl shadow-lg font-sans"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}>
             No users found.
           </motion.p>
         ) : (
-          <div className="overflow-x-auto rounded-lg">
-            <table className="min-w-full roboto-condensed-light text-sm rounded-lg bg-[#2a2a2a]">
+          <div className="overflow-x-auto rounded-xl shadow-lg bg-[#222222] border border-white/10">
+            <table className="min-w-full text-sm font-sans">
               <thead>
-                <tr className="text-left text-white bg-[#2a2a2a]">
+                <tr className="text-left text-gray-300 bg-[#2a2a2a]">
                   <th className="px-6 py-4" colSpan={9}>
                     <motion.div
-                      className="relative w-full"
+                      className="relative w-full flex flex-col sm:flex-row gap-4 items-center"
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}>
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white" />
-                      <input
-                        type="text"
-                        placeholder="Search by UID, Name, or Surname..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-32 py-4 bg-[#333333] text-white placeholder-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-normal"
-                      />
+                      <div className="relative w-full sm:w-3/4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search by UID, Name, or Surname..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 bg-[#333333] text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+                        />
+                      </div>
                       <motion.select
                         value={filterGender}
                         onChange={(e) => setFilterGender(e.target.value)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-3 bg-blue-500 *:bg-[#333333] text-white rounded-md focus:outline-none border-none"
+                        className="w-full sm:w-1/4 px-4 py-3 bg-[#333333] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3, delay: 0.1 }}>
-                        <option value="">All Gender</option>
+                        <option value="">All Genders</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                       </motion.select>
                     </motion.div>
                   </th>
                 </tr>
-                <tr className="text-left text-white bg-[#2a2a2a]">
-                  <th className="px-6 py-4">#</th>
-                  <th className="px-6 py-4">UID</th>
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Surname</th>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4">Gender</th>
-                  <th className="px-6 py-4">Date of Birth</th>
-                  <th className="px-6 py-4">Joined At</th>
+                <tr className="text-left text-gray-300 bg-[#2a2a2a] border-b border-white/10">
+                  <th className="px-6 py-4 font-medium">No.</th>
+                  <th className="px-6 py-4 font-medium">UID</th>
+                  <th className="px-6 py-4 font-medium">Name</th>
+                  <th className="px-6 py-4 font-medium">Surname</th>
+                  <th className="px-6 py-4 font-medium">Email</th>
+                  <th className="px-6 py-4 font-medium">Gender</th>
+                  <th className="px-6 py-4 font-medium">Date of Birth</th>
+                  <th className="px-6 py-4 font-medium">Joined At</th>
                   {Object.keys(editedUsers).some(
                     (uid) =>
                       editedUsers[uid] &&
                       Object.keys(editedUsers[uid]).length > 1
-                  ) && <th className="px-6 py-4">Actions</th>}
+                  ) && <th className="px-6 py-4 font-medium">Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -368,8 +371,8 @@ function Admin() {
                         initial="hidden"
                         animate="visible"
                         exit={{ opacity: 0, y: 10 }}
-                        className="hover:bg-[#2a2a2a] transition border-b border-white/10">
-                        <td className="px-6 py-4 text-white/70">{index + 1}</td>
+                        className="hover:bg-[#333333] transition-all border-b border-white/10 last:border-none">
+                        <td className="px-6 py-4 text-gray-300">{index + 1}</td>
                         <td className="px-6 py-4 text-white">
                           {u.uid.slice(0, 8)}...
                         </td>
@@ -380,7 +383,7 @@ function Admin() {
                             onChange={(e) =>
                               handleInputChange(u, "name", e.target.value)
                             }
-                            className="w-full px-3 py-2  text-white placeholder-white/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 bg-[#333333] text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans border border-white/10"
                             placeholder="Enter name"
                             whileFocus={{ scale: 1.02 }}
                             transition={{ duration: 0.2 }}
@@ -393,7 +396,7 @@ function Admin() {
                             onChange={(e) =>
                               handleInputChange(u, "surname", e.target.value)
                             }
-                            className="w-full px-3 py-2  text-white placeholder-white/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 bg-[#333333] text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans border border-white/10"
                             placeholder="Enter surname"
                             whileFocus={{ scale: 1.02 }}
                             transition={{ duration: 0.2 }}
@@ -403,10 +406,8 @@ function Admin() {
                           <motion.input
                             type="email"
                             value={editedUsers[u.uid]?.email ?? u.email}
-                            onChange={(e) =>
-                              handleInputChange(u, "email", e.target.value)
-                            }
-                            className="w-full px-3 py-2  text-white placeholder-white/70 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            readOnly
+                            className="w-full px-3 py-2 bg-[#333333] text-gray-400 placeholder-gray-400 rounded-lg focus:outline-none cursor-not-allowed font-sans border border-white/10"
                             placeholder="Enter email"
                             whileFocus={{ scale: 1.02 }}
                             transition={{ duration: 0.2 }}
@@ -418,7 +419,7 @@ function Admin() {
                             onChange={(e) =>
                               handleInputChange(u, "gender", e.target.value)
                             }
-                            className="w-full px-3 py-2  text-white *:bg-[#333333] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 roboto-condensed-regular"
+                            className="w-full px-3 py-2 bg-[#333333] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans border border-white/10"
                             whileFocus={{ scale: 1.02 }}
                             transition={{ duration: 0.2 }}>
                             <option value="">Select</option>
@@ -435,19 +436,19 @@ function Admin() {
                             onChange={(e) =>
                               handleInputChange(u, "dob", e.target.value)
                             }
-                            className="w-full px-3 py-2  text-white placeholder-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 bg-[#333333] text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans border border-white/10"
                             whileFocus={{ scale: 1.02 }}
                             transition={{ duration: 0.2 }}
                           />
                         </td>
-                        <td className="px-6 py-4 text-white">
+                        <td className="px-6 py-4 text-gray-300">
                           {formatDate(u.joinedAt)}
                         </td>
                         {hasChanges && (
-                          <td className="px-6 py-4 flex gap-2">
+                          <td className="px-6 py-4 flex gap-3">
                             <motion.span
                               onClick={() => handleSaveUser(u.uid)}
-                              className="bg-lime-500 text-black px-3 py-2 rounded-md hover:bg-lime-600 transition flex items-center gap-1 text-sm cursor-pointer"
+                              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-sans font-medium cursor-pointer transition-all"
                               title="Save changes"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}>
@@ -455,7 +456,7 @@ function Admin() {
                             </motion.span>
                             <motion.span
                               onClick={() => handleResetUser(u.uid)}
-                              className="bg-red-600 text-black px-3 py-2 rounded-md hover:bg-red-700 transition flex items-center gap-1 text-sm cursor-pointer"
+                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-sans font-medium cursor-pointer transition-all"
                               title="Cancel changes"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}>
@@ -469,12 +470,11 @@ function Admin() {
                 </AnimatePresence>
               </tbody>
             </table>
-            <br />
             <motion.div
-              className="p-4 text-white/70 text-sm text-center"
+              className="p-6 text-gray-300 text-sm text-center font-sans"
               variants={itemVariants}>
-              Showing {filteredUsers?.length || 0} of{" "}
-              {filteredUsers?.length || 0} users
+              Showing {filteredUsers?.length || 0} of {allUsers?.length || 0}{" "}
+              users
             </motion.div>
           </div>
         )}

@@ -46,6 +46,11 @@ function Profile() {
     enabled: !!user,
   });
 
+  // Check if profile is incomplete
+  const isProfileIncomplete =
+    userData &&
+    (!userData.gender || userData.name === "Anonymous" || !userData.surname);
+
   if (!user) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center bg-inherit backdrop-blur-sm">
@@ -64,14 +69,12 @@ function Profile() {
         className="w-full min-h-screen flex flex-col gap-6 py-4 px-6 mx-auto max-w-6xl text-gray-200"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+        transition={{ duration: 0.6 }}>
         <motion.h1
           className="text-3xl sm:text-4xl font-bold tracking-tight text-white"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
+          transition={{ delay: 0.2, duration: 0.5 }}>
           Profile
         </motion.h1>
 
@@ -87,22 +90,19 @@ function Profile() {
                 staggerChildren: 0.1,
               },
             },
-          }}
-        >
+          }}>
           <motion.aside
             className="flex items-center gap-6 flex-col md:flex-row"
             variants={{
               hidden: { opacity: 0, y: 20 },
               visible: { opacity: 1, y: 0 },
-            }}
-          >
+            }}>
             <motion.div
               className="relative"
               variants={{
                 hidden: { opacity: 0, y: 20 },
                 visible: { opacity: 1, y: 0 },
-              }}
-            >
+              }}>
               <img
                 src={user?.photoURL || defaultAvatar}
                 alt="Profile"
@@ -113,19 +113,26 @@ function Profile() {
                   className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 px-2 py-1 rounded-full shadow-md border border-white/20"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
-                >
+                  transition={{ delay: 0.3, duration: 0.4 }}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="12"
                     height="12"
                     fill="currentColor"
                     className="bi bi-patch-check-fill"
-                    viewBox="0 0 16 16"
-                  >
+                    viewBox="0 0 16 16">
                     <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708" />
                   </svg>
                   Admin
+                </motion.span>
+              )}
+              {isProfileIncomplete && (
+                <motion.span
+                  className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-semibold text-white bg-red-600 px-2 py-1 rounded-full shadow-md border border-white/20"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}>
+                  Incomplete
                 </motion.span>
               )}
             </motion.div>
@@ -134,27 +141,36 @@ function Profile() {
               variants={{
                 hidden: { opacity: 0, y: 20 },
                 visible: { opacity: 1, y: 0 },
-              }}
-            >
+              }}>
               <motion.h3
                 className="text-md sm:text-lg font-light text-white"
-                variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-              >
+                variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>
                 {userData?.name || user?.displayName || "Anonymous"}
               </motion.h3>
               <motion.p
                 className="text-sm text-gray-400"
-                variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-              >
+                variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>
                 {userData?.email || user?.email || "-"}
               </motion.p>
+              {isProfileIncomplete && (
+                <motion.p
+                  className="text-sm text-red-500"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1 },
+                  }}>
+                  Please edit your profile to complete your information.
+                </motion.p>
+              )}
               {userData?.isAdmin && (
                 <motion.div
-                  variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
-                >
+                  variants={{
+                    hidden: { opacity: 0, y: 10 },
+                    visible: { opacity: 1, y: 0 },
+                  }}>
                   <Link to="/auth/admin">
-                    <button className="px-4 py-2 bg-[#333]/50 backdrop-blur-md text-white text-sm font-semibold rounded-full hover:bg-[#444]/50 transition-all shadow-md">
-                      Go to Admin Portal
+                    <button className="px-4 py-2 bg-blue-600 backdrop-blur-md text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-all shadow-md">
+                      Go to Admin Portal {">"}
                     </button>
                   </Link>
                 </motion.div>
@@ -166,8 +182,7 @@ function Profile() {
             className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-5 py-3 rounded-full hover:scale-105 transition-all shadow-md"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
+            transition={{ delay: 0.4, duration: 0.5 }}>
             Edit Profile
           </motion.button>
         </motion.section>
@@ -182,14 +197,12 @@ function Profile() {
           className="mt-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-        >
+          transition={{ delay: 0.6, duration: 0.5 }}>
           <motion.p
             className="text-gray-300 text-lg font-light p-4"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.5 }}
-          >
+            transition={{ delay: 0.7, duration: 0.5 }}>
             No content available.
           </motion.p>
         </motion.section>

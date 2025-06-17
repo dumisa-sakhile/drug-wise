@@ -105,7 +105,6 @@ function VerifyMagicLink() {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
           navigate({ to: "/auth/profile" });
-          toast.info("You are already signed in!");
         }
       });
       return () => unsubscribe();

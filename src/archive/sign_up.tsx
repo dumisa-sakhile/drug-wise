@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { auth, db } from "../../config/firebase";
+import { auth, db } from "../config/firebase";
 import {
   GoogleAuthProvider,
   signInWithPopup,

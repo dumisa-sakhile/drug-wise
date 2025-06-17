@@ -17,7 +17,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as AuthVerifyRouteImport } from './routes/auth/verify'
-import { Route as AuthSign_upRouteImport } from './routes/auth/sign_up'
 import { Route as AuthProfileRouteImport } from './routes/auth/profile'
 import { Route as AuthAdminRouteImport } from './routes/auth/admin'
 
@@ -61,11 +60,6 @@ const AuthVerifyRoute = AuthVerifyRouteImport.update({
   path: '/auth/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthSign_upRoute = AuthSign_upRouteImport.update({
-  id: '/auth/sign_up',
-  path: '/auth/sign_up',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthProfileRoute = AuthProfileRouteImport.update({
   id: '/auth/profile',
   path: '/auth/profile',
@@ -86,7 +80,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
-  '/auth/sign_up': typeof AuthSign_upRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/auth': typeof AuthIndexRoute
 }
@@ -99,7 +92,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
-  '/auth/sign_up': typeof AuthSign_upRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/auth': typeof AuthIndexRoute
 }
@@ -113,7 +105,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/auth/admin': typeof AuthAdminRoute
   '/auth/profile': typeof AuthProfileRoute
-  '/auth/sign_up': typeof AuthSign_upRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/auth/': typeof AuthIndexRoute
 }
@@ -128,7 +119,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/auth/admin'
     | '/auth/profile'
-    | '/auth/sign_up'
     | '/auth/verify'
     | '/auth'
   fileRoutesByTo: FileRoutesByTo
@@ -141,7 +131,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/auth/admin'
     | '/auth/profile'
-    | '/auth/sign_up'
     | '/auth/verify'
     | '/auth'
   id:
@@ -154,7 +143,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/auth/admin'
     | '/auth/profile'
-    | '/auth/sign_up'
     | '/auth/verify'
     | '/auth/'
   fileRoutesById: FileRoutesById
@@ -168,7 +156,6 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   AuthAdminRoute: typeof AuthAdminRoute
   AuthProfileRoute: typeof AuthProfileRoute
-  AuthSign_upRoute: typeof AuthSign_upRoute
   AuthVerifyRoute: typeof AuthVerifyRoute
   AuthIndexRoute: typeof AuthIndexRoute
 }
@@ -231,13 +218,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/sign_up': {
-      id: '/auth/sign_up'
-      path: '/auth/sign_up'
-      fullPath: '/auth/sign_up'
-      preLoaderRoute: typeof AuthSign_upRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth/profile': {
       id: '/auth/profile'
       path: '/auth/profile'
@@ -264,7 +244,6 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   AuthAdminRoute: AuthAdminRoute,
   AuthProfileRoute: AuthProfileRoute,
-  AuthSign_upRoute: AuthSign_upRoute,
   AuthVerifyRoute: AuthVerifyRoute,
   AuthIndexRoute: AuthIndexRoute,
 }
