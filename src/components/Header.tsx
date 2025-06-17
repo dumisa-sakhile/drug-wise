@@ -78,6 +78,11 @@ const Header: React.FC = () => {
             Home
           </Link>
           <Link
+            to="/about"
+            className={`text-gray-200 hover:text-white transition text-sm sm:text-base ${location.pathname === "/about" ? "font-bold" : ""}`}>
+            About
+          </Link>
+          <Link
             to="/pricing"
             className={`text-gray-200 hover:text-white transition text-sm sm:text-base ${location.pathname === "/pricing" ? "font-bold" : ""}`}>
             Pricing
