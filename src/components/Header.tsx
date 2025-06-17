@@ -123,7 +123,7 @@ const Header: React.FC = () => {
       </header>
 
       {/* Bottom Navbar (Mobile Only) */}
-      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-sm mx-auto bg-[rgba(49,49,49,0.95)] backdrop-blur-lg border border-[rgba(255,255,255,0.1)] rounded-full shadow-xl z-50">
+      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-sm mx-auto  backdrop-blur-lg border border-[rgba(255,255,255,0.1)] rounded-full shadow-xl z-50">
         <div className="flex justify-around items-center py-3 px-6">
           {navLinks.map(({ to, label, icon: Icon }) => (
             <Link
