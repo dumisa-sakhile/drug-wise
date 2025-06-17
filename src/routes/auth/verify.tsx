@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { auth, db } from "../../config/firebase";
-import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+import { isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, Timestamp } from "firebase/firestore";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ function VerifyMagicLink() {
   const [error, setError] = useState<string | null>(null);
   const [manualEmail, setManualEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const completeSignIn = async (email: string) => {
@@ -75,6 +76,12 @@ function VerifyMagicLink() {
 
   useEffect(() => {
     const verifyLink = async () => {
+      if (auth.currentUser) {
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      }
+
       if (!isSignInWithEmailLink(auth, window.location.href)) {
         const errMsg = "Invalid or expired magic link.";
         setError(errMsg);
@@ -93,6 +100,16 @@ function VerifyMagicLink() {
     };
     verifyLink();
   }, [navigate]);
+
+  useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+          navigate({ to: "/auth/profile" });
+          toast.info("You are already signed in!");
+        }
+      });
+      return () => unsubscribe();
+    }, [navigate]);
 
   const handleManualSignIn = async () => {
     if (!manualEmail) {
@@ -131,6 +148,18 @@ function VerifyMagicLink() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}>
             Verifying your sign-in link...
+          </motion.div>
+        ) : isAuthenticated ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}>
+            <div className="mb-4">You are already authenticated!</div>
+            <button
+              onClick={() => navigate({ to: "/auth/profile" })}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">
+              Go to Profile
+            </button>
           </motion.div>
         ) : error ? (
           <motion.div

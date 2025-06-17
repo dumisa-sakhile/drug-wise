@@ -28,7 +28,7 @@ function Login() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate({ to: "/" });
+        navigate({ to: "/auth/profile" });
         toast.info("You are already signed in!");
       }
     });
