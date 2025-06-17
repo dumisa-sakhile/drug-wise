@@ -14,7 +14,7 @@ function App() {
     <div className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern">
       {/* Hero Section */}
       <motion.section
-        className="max-w-6xl mx-auto py-16 px-6 text-center relative"
+        className="max-w-6xl mx-auto py-10 px-6 text-center relative"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}>
@@ -62,15 +62,15 @@ function App() {
             transition={{ delay: 0.8, duration: 0.8 }}>
             <Link to="/pricing">
               <motion.button
-                className="bg-white text-black font-semibold px-4 py-2 text-sm md:px-6 md:py-3 md:text-base rounded-lg hover:opacity-90 transition"
+                className="bg-white text-black font-semibold px-5 py-2.5 text-base md:px-6 md:py-3 w-full md:w-auto rounded-lg hover:opacity-90 transition"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}>
                 Get Started
               </motion.button>
             </Link>
-            <Link to="/model">
+            <Link to="/model" className="hidden md:block">
               <motion.button
-                className="bg-transparent border border-white text-white font-semibold px-4 py-2 text-sm md:px-6 md:py-3 md:text-base rounded-lg hover:bg-gray-700 transition"
+                className="bg-transparent border border-white text-white font-semibold px-6 py-3 text-base rounded-lg hover:bg-gray-700 transition"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}>
                 See Model
