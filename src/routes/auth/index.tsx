@@ -207,7 +207,7 @@ function Login() {
                   alt="Google Icon"
                   className="w-5 h-5 mr-2"
                 />
-                Log in or Sign up with Google
+                Log/Sign up with Google
               </motion.button>
 
               <motion.div
