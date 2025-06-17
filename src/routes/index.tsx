@@ -56,13 +56,13 @@ function App() {
             adverse drug interactions with real-time insights.
           </motion.p>
           <motion.div
-            className="flex justify-center gap-4"
+            className="flex flex-row justify-center gap-3 md:gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}>
             <Link to="/pricing">
               <motion.button
-                className="bg-white text-black font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition"
+                className="bg-white text-black font-semibold px-4 py-2 text-sm md:px-6 md:py-3 md:text-base rounded-lg hover:opacity-90 transition"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}>
                 Get Started
@@ -70,7 +70,7 @@ function App() {
             </Link>
             <Link to="/model">
               <motion.button
-                className="bg-transparent border border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-gray-700 transition"
+                className="bg-transparent border border-white text-white font-semibold px-4 py-2 text-sm md:px-6 md:py-3 md:text-base rounded-lg hover:bg-gray-700 transition"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}>
                 See Model
