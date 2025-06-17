@@ -44,6 +44,7 @@ function VerifyMagicLink() {
             surname: surname,
             joinedAt: Timestamp.now(),
             isAdmin: false,
+            lastLogin: Timestamp.now(),
           });
         } else {
           // Update existing document, only setting new fields if they exist, and merge with existing data
