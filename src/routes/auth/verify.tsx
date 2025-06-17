@@ -65,7 +65,7 @@ function VerifyMagicLink() {
       }
 
       toast.success("Successfully signed in!");
-      navigate({ to: "/" });
+      navigate({ to: "/auth/profile" });
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message);
