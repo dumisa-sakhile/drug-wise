@@ -102,9 +102,9 @@ function App() {
               Our Vision
             </h2>
             <p className="text-gray-300">
-              To become Africa’s leading digital health platform,
-              revolutionizing how people take medication by making drug safety
-              intuitive, accessible, and personalized for every patient.
+              To become Africa’s leading platform for personalized medication
+              safety, empowering individuals to take control of their health
+              through real-time, AI-powered drug interaction prevention.
             </p>
           </motion.div>
 
@@ -163,10 +163,11 @@ function App() {
               Our Mission
             </h2>
             <p className="text-gray-300">
-              To empower individuals and healthcare providers with real-time,
-              personalized medication management solutions that reduce harmful
-              drug interactions, improve health outcomes, and lower healthcare
-              costs.
+              Our mission is to revolutionize how medication is managed by
+              delivering smart, user-friendly tools that provide real-time
+              alerts, personalized drug recommendations, and complete medication
+              oversight—reducing preventable adverse reactions and improving
+              health outcomes across the continent.
             </p>
           </motion.div>
 

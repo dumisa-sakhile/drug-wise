@@ -71,9 +71,14 @@ function About() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}>
-            DrugWise leverages AI to enhance medication safety, preventing
-            adverse drug interactions and reducing healthcare costs across
-            Africa.
+            DrugWise is an African-born healthtech company tackling the silent
+            epidemic of harmful drug interactions. Founded by a team of
+            engineers, AI experts, and business leaders, we’ve created a smart
+            platform that detects and prevents dangerous drug-food-drug
+            combinations using real-time alerts and personalized medication
+            recommendations. Our intuitive system helps patients manage chronic
+            illnesses safely while reducing costs for insurers and
+            healthcare providers
           </motion.p>
           <motion.div
             className="max-w-sm mx-auto"
