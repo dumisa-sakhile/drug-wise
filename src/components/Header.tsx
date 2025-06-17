@@ -76,7 +76,7 @@ const Header: React.FC = () => {
       {/* Top Header */}
       <header className="w-full h-16 bg-[#141414] flex items-center px-4 sm:px-6 fixed top-0 left-0 z-50">
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
-          <Link to="/" className="text-lg sm:text-xl font-bold text-white">
+          <Link to="/" className="text-2xl font-bold text-white md:text-lg">
             DrugWise
           </Link>
           <nav className="hidden md:flex items-center justify-center">
@@ -94,7 +94,7 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-2 sm:space-x-4">
             {!loading && !user && (
               <Link to="/auth">
-                <button className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-[#141414] rounded-full hover:bg-gray-200 transition text-sm sm:text-base">
+                <button className="px-4 py-2 bg-white text-[#141414] rounded-full hover:bg-gray-200 transition text-base sm:text-base md:text-sm">
                   Sign In
                 </button>
               </Link>
@@ -110,7 +110,7 @@ const Header: React.FC = () => {
                 </Link>
                 <button
                   onClick={handleSignOutClick}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-[#141414] rounded-full hover:bg-gray-200 transition text-sm sm:text-base">
+                  className="px-4 py-2 bg-white text-[#141414] rounded-full hover:bg-gray-200 transition text-base sm:text-base md:text-sm">
                   Sign Out
                 </button>
               </>
@@ -120,7 +120,7 @@ const Header: React.FC = () => {
       </header>
 
       {/* Bottom Navbar (Mobile Only) */}
-      <nav className="md:hidden fixed bottom-10 left-0 right-0 max-w-xs mx-auto bg-[rgba(49,49,49,0.8)] backdrop-blur-md border border-[rgba(255,255,255,0.1)] rounded-full shadow-lg z-50">
+      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-xs mx-auto bg-[rgba(49,49,49,0.8)] backdrop-blur-md border border-[rgba(255,255,255,0.1)] rounded-full shadow-lg z-50">
         <div className="flex justify-around items-center py-2.5 px-4">
           {navLinks.map(({ to, label, icon: Icon }) => (
             <Link
