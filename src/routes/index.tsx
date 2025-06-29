@@ -56,7 +56,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern">
-     
       {/* Hero Section */}
       <motion.section
         className="max-w-6xl mx-auto py-10 px-6 text-center relative"
@@ -90,7 +89,7 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}>
-            Safer Medications with AI-Powered Pharmacovigilance
+            Enhancing Your Recovery: Safer Medications, Better Health.
           </motion.h1>
           <motion.p
             className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
@@ -104,10 +103,7 @@ function App() {
             className="flex flex-row justify-center gap-3 md:gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.8 }}>
-            
-           
-          </motion.div>
+            transition={{ delay: 0.8, duration: 0.8 }}></motion.div>
         </div>
       </motion.section>
 
