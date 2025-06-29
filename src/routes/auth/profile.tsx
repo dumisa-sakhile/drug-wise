@@ -9,6 +9,7 @@ import EditProfileForm from "@/components/EditProfileForm";
 import defaultAvatar from "/male.jpg?url";
 import { motion } from "framer-motion";
 import { CheckCircle, AlertCircle, Edit, ArrowRight } from "lucide-react"; // Importing Lucide React icons
+import { toast } from "sonner";
 
 interface UserData {
   uid: string;
@@ -29,6 +30,17 @@ export const Route = createFileRoute("/auth/profile")({
 function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const navigate = Route.useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate({ to: "/auth" });
+        toast.error("You must be logged in to view your profile.");
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -53,10 +65,11 @@ function Profile() {
 
   if (!user) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center bg-inherit backdrop-blur-sm">
+      <div className="w-full min-h-screen flex items-center justify-center flex-col gap-6 bg-inherit backdrop-blur-sm">
         <p className="text-white text-xl font-light">
           Please log in to view your profile
         </p>
+        
       </div>
     );
   }
