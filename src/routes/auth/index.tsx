@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { auth, db } from "../../config/firebase";
 import {
@@ -283,6 +283,14 @@ function Login() {
                 <Circle className="w-4 h-4 mr-2 mt-1 text-white/60" />
                 If you don't have an account, one will be created automatically
                 upon signing in.
+              </li>
+              <li className="flex items-start w-full ">
+                <Circle className="w-4 h-4 mr-2 mt-1 text-white/60" />
+                <span>By signing in, you agree to our</span>&nbsp;
+                <Link to="/terms" className="font-semibold">
+                  Terms of Service
+                </Link>
+                .
               </li>
             </ul>
           </motion.div>

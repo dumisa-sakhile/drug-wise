@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import EditProfileForm from "@/components/EditProfileForm";
 import defaultAvatar from "/male.jpg?url";
 import { motion } from "framer-motion";
+import { CheckCircle, AlertCircle, Edit, ArrowRight } from "lucide-react"; // Importing Lucide React icons
 
 interface UserData {
   uid: string;
@@ -46,7 +47,6 @@ function Profile() {
     enabled: !!user,
   });
 
-  // Check if profile is incomplete
   const isProfileIncomplete =
     userData &&
     (!userData.gender || userData.name === "Anonymous" || !userData.surname);
@@ -114,16 +114,7 @@ function Profile() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3, duration: 0.4 }}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    fill="currentColor"
-                    className="bi bi-patch-check-fill"
-                    viewBox="0 0 16 16">
-                    <path d="M10.067.87a2.89 2.89 0 0 0-4.134 0l-.622.638-.89-.011a2.89 2.89 0 0 0-2.924 2.924l.01.89-.636.622a2.89 2.89 0 0 0 0 4.134l.637.622-.011.89a2.89 2.89 0 0 0 2.924 2.924l.89-.01.622.636a2.89 2.89 0 0 0 4.134 0l.622-.637.89.011a2.89 2.89 0 0 0 2.924-2.924l-.01-.89.636-.622a2.89 2.89 0 0 0 0-4.134l-.637-.622.011-.89a2.89 2.89 0 0 0-2.924-2.924l-.89.01zm.287 5.984-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708.708" />
-                  </svg>
-                  Admin
+                  <CheckCircle size={12} /> Admin
                 </motion.span>
               )}
               {isProfileIncomplete && (
@@ -132,7 +123,7 @@ function Profile() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3, duration: 0.4 }}>
-                  Incomplete
+                  <AlertCircle size={12} /> Incomplete
                 </motion.span>
               )}
             </motion.div>
@@ -169,8 +160,8 @@ function Profile() {
                     visible: { opacity: 1, y: 0 },
                   }}>
                   <Link to="/auth/admin">
-                    <button className="px-4 py-2 bg-blue-600 backdrop-blur-md text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-all shadow-md">
-                      Go to Admin Portal {">"}
+                    <button className="px-4 py-2 bg-blue-600 backdrop-blur-md text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-all shadow-md flex items-center gap-2">
+                      Go to Admin Portal <ArrowRight size={16} />
                     </button>
                   </Link>
                 </motion.div>
@@ -179,11 +170,11 @@ function Profile() {
           </motion.aside>
           <motion.button
             onClick={() => setModalOpen(true)}
-            className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-5 py-3 rounded-full hover:scale-105 transition-all shadow-md"
+            className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-5 py-3 rounded-full hover:scale-105 transition-all shadow-md flex items-center gap-2"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}>
-            Edit Profile
+            <Edit size={16} /> Edit Profile
           </motion.button>
         </motion.section>
         <motion.div

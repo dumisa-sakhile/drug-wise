@@ -1,272 +1,615 @@
-"use client";
-
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { TrendingUp } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  LabelList,
-  XAxis,
-  YAxis,
-} from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import type { ChartConfig } from "@/components/ui/chart";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+import { Users, Server, Globe, Layers, Database } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/about")({
   component: About,
 });
 
-const chartData = [
-  { region: "Africa Market", value: 3.8 },
-  { region: "South Africa", value: 3.8 * 0.333 },
-];
-
-const chartConfig = {
-  value: {
-    label: "Market Size (USD Billion)",
-    color: "hsl(221, 83%, 53%)", // Matches #3b82f6
-  },
-  label: {
-    color: "hsl(0, 0%, 100%)", // White for labels
-  },
-} satisfies ChartConfig;
-
 function About() {
   const { scrollY } = useScroll();
   const yOffset = useTransform(scrollY, [0, 600], [0, -50]); // Subtle parallax effect
+  type LearnMoreItem = {
+    title: string;
+    fullDescription: string;
+  };
+
+  const [selectedItem, setSelectedItem] = useState<LearnMoreItem | null>(null);
+
+  const handleLearnMore = (item: LearnMoreItem) => {
+    setSelectedItem(item);
+  };
+
+  const closePopup = () => {
+    setSelectedItem(null);
+  };
+
+  // Utility function to truncate text after a complete sentence
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    const truncated = text.slice(0, maxLength);
+    const lastPunctuationIndex = Math.max(
+      truncated.lastIndexOf("."),
+      truncated.lastIndexOf("!"),
+      truncated.lastIndexOf("?")
+    );
+    return lastPunctuationIndex !== -1
+      ? truncated.slice(0, lastPunctuationIndex + 1) + "..."
+      : truncated + "...";
+  };
+
+  // Variants for staggering animation
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
 
   return (
-    <div className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern">
-      {/* Hero Section with Chart */}
+    <div className="min-h-screen bg-[#141414] text-gray-200 bg-grid-pattern relative">
+      {/* Hero Section */}
       <motion.section
-        className="max-w-6xl mx-auto py-12 px-6 text-center relative"
+        className="max-w-6xl mx-auto py-16 px-6 text-center relative"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}>
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
         <div className="relative z-10">
-          <motion.h1
-            className="text-4xl sm:text-5xl font-bold text-white mb-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}>
-            About DrugWise
-          </motion.h1>
           <motion.p
-            className="text-base sm:text-lg text-gray-300 mb-6 max-w-2xl mx-auto"
+            className="text-base sm:text-lg text-[#d1d5db] mb-6 max-w-3xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}>
-            DrugWise is an African-born healthtech company tackling the silent
-            epidemic of harmful drug interactions. Founded by a team of
-            engineers, AI experts, and business leaders, we’ve created a smart
-            platform that detects and prevents dangerous drug-food-drug
-            combinations using real-time alerts and personalized medication
-            recommendations. Our intuitive system helps patients manage chronic
-            illnesses safely while reducing costs for insurers and
-            healthcare providers
+            We are a health-tech startup whose core business is developing and
+            maintaining state-of-the-art AI-integrated clinical software
+            services and pharmacovigilance tracking and monitoring systems.
           </motion.p>
+        </div>
+      </motion.section>
+
+      {/* AI Hardware Competitor Analysis */}
+      <motion.section
+        className="max-w-6xl mx-auto py-12 px-6"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
+          AI Hardware Competitor Analysis
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <motion.div
-            className="max-w-sm mx-auto"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.8, duration: 0.8 }}>
-            <Card className="bg-[rgba(31,41,55,0.2)] border-[rgba(255,255,255,0.1)] backdrop-blur-md">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base text-white">
-                  Digital Health Market
-                </CardTitle>
-                <CardDescription className="text-xs text-gray-400">
-                  Africa vs. South Africa (2025)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer
-                  config={chartConfig}
-                  className="h-[120px] w-full">
-                  <BarChart
-                    accessibilityLayer
-                    data={chartData}
-                    layout="vertical"
-                    margin={{ right: 16, left: 0, top: 10, bottom: 10 }}>
-                    <CartesianGrid
-                      horizontal={false}
-                      stroke="rgba(255,255,255,0.1)"
-                    />
-                    <YAxis
-                      dataKey="region"
-                      type="category"
-                      tickLine={false}
-                      tickMargin={8}
-                      axisLine={false}
-                      hide
-                    />
-                    <XAxis dataKey="value" type="number" hide />
-                    <ChartTooltip
-                      cursor={false}
-                      content={<ChartTooltipContent indicator="line" />}
-                    />
-                    <Bar
-                      dataKey="value"
-                      layout="vertical"
-                      fill="hsl(221, 83%, 53%)"
-                      radius={4}>
-                      <LabelList
-                        dataKey="region"
-                        position="insideLeft"
-                        offset={8}
-                        className="fill-[--color-label]"
-                        fontSize={10}
-                      />
-                      <LabelList
-                        dataKey="value"
-                        position="right"
-                        offset={8}
-                        className="fill-foreground"
-                        fontSize={10}
-                        formatter={(value: number) => value.toFixed(2)}
-                      />
-                    </Bar>
-                  </BarChart>
-                </ChartContainer>
-              </CardContent>
-              <CardFooter className="flex-col items-start gap-1 text-xs">
-                <div className="flex gap-1 leading-none font-medium text-gray-200">
-                  23.4% CAGR <TrendingUp className="h-3 w-3" />
-                </div>
-                <div className="text-gray-400 leading-none">
-                  Projected for 2025
-                </div>
-              </CardFooter>
-            </Card>
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Compass",
+                fullDescription:
+                  "The Compass wearable sells for $99. With the purchase, users receive 10 hours of free recording each month. For usage exceeding 10 hours per month, an unlimited usage plan is available. This plan costs $14 per month when billed yearly or $19 per month when billed monthly.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <h2 className="text-lg font-bold text-white mb-1">Compass</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The Compass wearable sells for $99. With the purchase, users receive 10 hours of free recording each month. For usage exceeding 10 hours per month, an unlimited usage plan is available. This plan costs $14 per month when billed yearly or $19 per month when billed monthly.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Plaud",
+                fullDescription:
+                  "The Plaud wearable AI is priced slightly higher, selling for $152.10 at a sale price, down from its usual price of $169. It offers a free tier that provides 300 minutes (5 hours) of recording per month. However, this free plan does not allow conversations with your transcripts or using the app to chat with the transcriptions. Additional features require a premium subscription, enhancing functionality with advanced transcription and analysis tools.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <h2 className="text-lg font-bold text-white mb-1">Plaud</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The Plaud wearable AI is priced slightly higher, selling for $152.10 at a sale price, down from its usual price of $169. It offers a free tier that provides 300 minutes (5 hours) of recording per month. However, this free plan does not allow conversations with your transcripts or using the app to chat with the transcriptions. Additional features require a premium subscription, enhancing functionality with advanced transcription and analysis tools.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Bee",
+                fullDescription:
+                  "The Bee device is presented as the least expensive option among the dedicated wearables, costing only about $50. Like other models, the Bee has a subscription plan called Bee Premium. This costs $12 per month, offering unlimited recording and advanced analytics, making it a cost-effective choice for users seeking reliable performance on a budget.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <h2 className="text-lg font-bold text-white mb-1">Bee</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The Bee device is presented as the least expensive option among the dedicated wearables, costing only about $50. Like other models, the Bee has a subscription plan called Bee Premium. This costs $12 per month, offering unlimited recording and advanced analytics, making it a cost-effective choice for users seeking reliable performance on a budget.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Limitless Pendant",
+                fullDescription:
+                  "The Limitless pendant has a higher entry price. It costs $199 for just the pendant. Alternatively, a bundle including the pendant with an unlimited plan is available for $399. If you purchase only the pendant for $199, you receive 20 hours of recording per month for free, with additional hours available through a subscription model tailored to heavy users.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Limitless Pendant
+            </h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The Limitless pendant has a higher entry price. It costs $199 for just the pendant. Alternatively, a bundle including the pendant with an unlimited plan is available for $399. If you purchase only the pendant for $199, you receive 20 hours of recording per month for free, with additional hours available through a subscription model tailored to heavy users.",
+                100
+              )}
+            </p>
           </motion.div>
         </div>
       </motion.section>
 
+      {/* Technology and Capabilities */}
       <motion.section
         className="max-w-6xl mx-auto py-12 px-6"
         style={{ y: yOffset }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.0, duration: 0.8 }}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 *:cursor-crosshair">
-          {/* Problem */}
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
+          Technology and Capabilities
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <motion.div
-            className="bg-blue-900 p-6 rounded-lg hover:bg-blue-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(30, 144, 255, 0.7), 0 0 20px rgba(30, 144, 255, 0.5)",
-            }}>
-            <h2 className="text-lg font-semibold text-white mb-2">
-              The Challenge
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "AI-Integrated Software",
+                fullDescription:
+                  "Our AI-integrated clinical software assists healthcare professionals in tasks such as patient diagnosis, treatment planning, and comprehensive data analysis, significantly improving efficiency and accuracy in medical decision-making processes. It leverages advanced machine learning models to provide real-time insights and predictive analytics, tailored to individual patient needs.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Users className="h-6 w-6 text-blue-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">AI Software</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "Our AI-integrated clinical software assists healthcare professionals in tasks such as patient diagnosis, treatment planning, and comprehensive data analysis, significantly improving efficiency and accuracy in medical decision-making processes. It leverages advanced machine learning models to provide real-time insights and predictive analytics, tailored to individual patient needs.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Data Analysis",
+                fullDescription:
+                  "We analyze extensive datasets of health-related information, including patient health records, clinical studies, and real-time feedback from both patients and healthcare professionals, enabling thorough monitoring and the identification of critical health patterns. Our system employs advanced statistical models and AI algorithms to detect trends and anomalies, supporting proactive healthcare interventions.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Server className="h-6 w-6 text-green-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">Data Analysis</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "We analyze extensive datasets of health-related information, including patient health records, clinical studies, and real-time feedback from both patients and healthcare professionals, enabling thorough monitoring and the identification of critical health patterns. Our system employs advanced statistical models and AI algorithms to detect trends and anomalies, supporting proactive healthcare interventions.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Natural Language Processing",
+                fullDescription:
+                  "Our Natural Language Processing technology enables computers to analyze, understand, and derive meaningful insights from human language, particularly by extracting valuable information from unstructured medical notes and reports to support clinical decision-making. This includes sentiment analysis, entity recognition, and context-aware interpretation to enhance diagnostic accuracy.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Globe className="h-6 w-6 text-purple-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">NLP</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "Our Natural Language Processing technology enables computers to analyze, understand, and derive meaningful insights from human language, particularly by extracting valuable information from unstructured medical notes and reports to support clinical decision-making. This includes sentiment analysis, entity recognition, and context-aware interpretation to enhance diagnostic accuracy.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Adverse Event Tracking",
+                fullDescription:
+                  "Our systems are specifically designed to systematically collect and analyze detailed reports of suspected adverse drug reactions, providing a robust framework for conducting thorough investigations into their potential causes and impacts. This includes real-time alerts and comprehensive reporting to regulatory bodies for improved drug safety.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Layers className="h-6 w-6 text-teal-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Event Tracking
             </h2>
-            <p className="text-gray-300 text-sm">
-              Chronic disease patients face adverse drug interactions, leading
-              to costly hospitalizations (R4000/night in South Africa) and
-              higher mortality risks due to insufficient real-time detection
-              tools.
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "Our systems are specifically designed to systematically collect and analyze detailed reports of suspected adverse drug reactions, providing a robust framework for conducting thorough investigations into their potential causes and impacts. This includes real-time alerts and comprehensive reporting to regulatory bodies for improved drug safety.",
+                100
+              )}
             </p>
           </motion.div>
 
-          {/* Solution */}
           <motion.div
-            className="bg-green-900 p-6 rounded-lg hover:bg-green-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(34, 197, 94, 0.7), 0 0 20px rgba(34, 197, 94, 0.5)",
-            }}>
-            <h2 className="text-lg font-semibold text-white mb-2">
-              Our Approach
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Research Support",
+                fullDescription:
+                  "This data is further utilized to refine our existing systems and to build comprehensive datasets that support ongoing vaccination research, contributing to advancements in drug discovery and the development of safer medical treatments. Our research tools facilitate collaboration with global health organizations to accelerate innovation.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Database className="h-6 w-6 text-red-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Research Support
             </h2>
-            <p className="text-gray-300 text-sm">
-              DrugWise delivers real-time alerts for harmful drug-food and
-              drug-drug interactions, comprehensive medication tracking, and
-              personalized drug recommendations tailored to patient needs.
-            </p>
-          </motion.div>
-
-          {/* Financing */}
-          <motion.div
-            className="bg-orange-900 p-6 rounded-lg hover:bg-orange-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(249, 115, 22, 0.7), 0 0 20px rgba(249, 115, 22, 0.5)",
-            }}>
-            <h2 className="text-lg font-semibold text-white mb-2">Financing</h2>
-            <p className="text-gray-300 text-sm">
-              Raised R25,000 through the Hult Prize, projecting R12M revenue
-              from 10,000 units in year one, and seeking R1M for manufacturing
-              and pilot distribution in South Africa.
-            </p>
-          </motion.div>
-
-          {/* Accomplishments */}
-          <motion.div
-            className="bg-purple-900 p-6 rounded-lg hover:bg-purple-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(147, 51, 234, 0.7), 0 0 20px rgba(147, 51, 234, 0.5)",
-            }}>
-            <h2 className="text-lg font-semibold text-white mb-2">
-              Achievements
-            </h2>
-            <p className="text-gray-300 text-sm">
-              First Runner-Up in the Hult Prize On Campus Competition at the
-              University of Witwatersrand, recognized for innovation,
-              feasibility, and global impact potential.
-            </p>
-          </motion.div>
-
-          {/* Roadmap */}
-          <motion.div
-            className="bg-teal-900 p-6 rounded-lg hover:bg-teal-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(6, 182, 212, 0.7), 0 0 20px rgba(6, 182, 212, 0.5)",
-            }}>
-            <h2 className="text-lg font-semibold text-white mb-2">Roadmap</h2>
-            <p className="text-gray-300 text-sm">
-              In 2025, DrugWise will launch its AI-powered platform in South
-              Africa and partner with insurance companies to integrate into
-              healthcare systems, enhancing patient safety.
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "This data is further utilized to refine our existing systems and to build comprehensive datasets that support ongoing vaccination research, contributing to advancements in drug discovery and the development of safer medical treatments. Our research tools facilitate collaboration with global health organizations to accelerate innovation.",
+                100
+              )}
             </p>
           </motion.div>
         </div>
       </motion.section>
+
+      {/* Data Integration and Impact */}
+      <motion.section
+        className="max-w-6xl mx-auto py-12 px-6"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
+          Data Integration and Impact
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Multi-Source Data",
+                fullDescription:
+                  "DrugWise integrates safety information by utilizing data from multiple sources, including patient-reported symptoms and recovery tracking post-medication intake, detailed clinical notes from healthcare providers, and comprehensive reports from regulatory agencies and drug manufacturers. This holistic approach ensures a complete view of drug safety profiles.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Globe className="h-6 w-6 text-indigo-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Multi-Source Data
+            </h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "DrugWise integrates safety information by utilizing data from multiple sources, including patient-reported symptoms and recovery tracking post-medication intake, detailed clinical notes from healthcare providers, and comprehensive reports from regulatory agencies and drug manufacturers. This holistic approach ensures a complete view of drug safety profiles.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Vaccination Research",
+                fullDescription:
+                  "Our work in vaccination research involves studying vaccines to improve their development, effectiveness, and safety profiles, often leveraging collected data to identify potential side effects and to enhance vaccine design for better public health outcomes. We collaborate with health experts to ensure rapid response to emerging health threats.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Layers className="h-6 w-6 text-yellow-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Vaccination Research
+            </h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "Our work in vaccination research involves studying vaccines to improve their development, effectiveness, and safety profiles, often leveraging collected data to identify potential side effects and to enhance vaccine design for better public health outcomes. We collaborate with health experts to ensure rapid response to emerging health threats.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Public Health",
+                fullDescription:
+                  "This initiative refers to the science and practice of protecting and improving the health of communities through targeted education, the implementation of effective health policies, and ongoing research aimed at preventing disease and promoting safe and healthy practices across populations. Our efforts focus on reducing health disparities and improving access to care.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Users className="h-6 w-6 text-pink-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">Public Health</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "This initiative refers to the science and practice of protecting and improving the health of communities through targeted education, the implementation of effective health policies, and ongoing research aimed at preventing disease and promoting safe and healthy practices across populations. Our efforts focus on reducing health disparities and improving access to care.",
+                100
+              )}
+            </p>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Technical Challenges and Solutions */}
+      <motion.section
+        className="max-w-6xl mx-auto py-12 px-6"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
+          Technical Challenges and Solutions
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Recording Reliability",
+                fullDescription:
+                  "One of the primary challenges is ensuring the reliable capture of audio data and making the processed information readily accessible to users. This issue was notably evident with the Compass device, which failed to function properly, resulting in the app screen becoming stuck in a loading state indefinitely. Our solution includes a robust pipeline for seamless processing and data access.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Server className="h-6 w-6 text-indigo-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Recording Reliability
+            </h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "One of the primary challenges is ensuring the reliable capture of audio data and making the processed information readily accessible to users. This issue was notably evident with the Compass device, which failed to function properly, resulting in the app screen becoming stuck in a loading state indefinitely. Our solution includes a robust pipeline for seamless processing and data access.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Battery Life",
+                fullDescription:
+                  "Another significant challenge is the inconsistent battery performance of wearable devices, often requiring frequent recharging to maintain functionality. For instance, the Limitless Pendant was observed to last approximately one day, necessitating nightly charging to remain operational. Our optimized power management extends battery life significantly.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Globe className="h-6 w-6 text-yellow-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">Battery Life</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "Another significant challenge is the inconsistent battery performance of wearable devices, often requiring frequent recharging to maintain functionality. For instance, the Limitless Pendant was observed to last approximately one day, necessitating nightly charging to remain operational. Our optimized power management extends battery life significantly.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Application Stability",
+                fullDescription:
+                  "Problems with the stability of mobile applications and the backend AI processing systems have been a recurring issue. A notable example is the Compass app, which experienced a critical failure state where it became stuck in a loading loop, rendering it unusable. We enhance stability with rigorous testing and regular updates.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Layers className="h-6 w-6 text-pink-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">App Stability</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "Problems with the stability of mobile applications and the backend AI processing systems have been a recurring issue. A notable example is the Compass app, which experienced a critical failure state where it became stuck in a loading loop, rendering it unusable. We enhance stability with rigorous testing and regular updates.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Audio Capture",
+                fullDescription:
+                  "Capturing clean and clear audio in real-world environments with significant background noise has proven to be challenging, negatively impacting both the playback quality and the accuracy of AI interpretation of the recorded data. We use advanced directional audio capture and noise filtering to improve quality.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Database className="h-6 w-6 text-blue-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">Audio Capture</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "Capturing clean and clear audio in real-world environments with significant background noise has proven to be challenging, negatively impacting both the playback quality and the accuracy of AI interpretation of the recorded data. We use advanced directional audio capture and noise filtering to improve quality.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Design Usability",
+                fullDescription:
+                  "The physical form factor and design choices of wearable devices have created usability barriers, such as accidental recordings and difficulties in determining the device's operational state, which have frustrated users. Our redesign includes an intuitive form factor and clear feedback indicators.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Users className="h-6 w-6 text-green-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Design Usability
+            </h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The physical form factor and design choices of wearable devices have created usability barriers, such as accidental recordings and difficulties in determining the device's operational state, which have frustrated users. Our redesign includes an intuitive form factor and clear feedback indicators.",
+                100
+              )}
+            </p>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Commended Features */}
+      <motion.section
+        className="max-w-6xl mx-auto py-12 px-6"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
+          Commended Features
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Plaud AI",
+                fullDescription:
+                  "The Plaud AI device has been commended for its variety of wearable accessories, which offer users flexibility, and for its ability to record audio effectively during testing, with the companion application successfully pulling in notes for review and analysis. Users appreciate its seamless integration with daily workflows.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Layers className="h-6 w-6 text-purple-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">Plaud AI</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The Plaud AI device has been commended for its variety of wearable accessories, which offer users flexibility, and for its ability to record audio effectively during testing, with the companion application successfully pulling in notes for review and analysis. Users appreciate its seamless integration with daily workflows.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Bee",
+                fullDescription:
+                  "The Bee device stands out as the least expensive option among dedicated wearables, offering the best battery life by recording continuously for two days, and features a nice, clean application interface with a range of useful functionalities that enhance user experience. Its affordability makes it widely accessible.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Server className="h-6 w-6 text-teal-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">Bee</h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The Bee device stands out as the least expensive option among dedicated wearables, offering the best battery life by recording continuously for two days, and features a nice, clean application interface with a range of useful functionalities that enhance user experience. Its affordability makes it widely accessible.",
+                100
+              )}
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500"
+            variants={itemVariants}
+            onClick={() =>
+              handleLearnMore({
+                title: "Limitless Pendant",
+                fullDescription:
+                  "The Limitless Pendant is appreciated for its decent application, which includes practical features such as swiping to view different dates, a calendar view for easy navigation, and a speaker button that allows users to play back recorded audio conveniently. Its user-friendly design appeals to a broad audience.",
+              })
+            }>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
+            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+            <Database className="h-6 w-6 text-red-400 mb-1" />
+            <h2 className="text-lg font-bold text-white mb-1">
+              Limitless Pendant
+            </h2>
+            <p className="text-[#d1d5db] text-sm">
+              {truncateText(
+                "The Limitless Pendant is appreciated for its decent application, which includes practical features such as swiping to view different dates, a calendar view for easy navigation, and a speaker button that allows users to play back recorded audio conveniently. Its user-friendly design appeals to a broad audience.",
+                100
+              )}
+            </p>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Popup */}
+      {selectedItem && (
+        <div className="fixed inset-0 bg-black/10 backdrop-blur flex items-center justify-center z-50">
+          <motion.div
+            className="bg-[#1a1a1a]/90 p-6 rounded-lg max-w-md w-full text-white border border-[#ffffff1a] shadow-lg"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}>
+            <h3 className="text-2xl font-bold mb-4">{selectedItem.title}</h3>
+            <p className="text-[#d1d5db] text-base mb-4">
+              {selectedItem.fullDescription}
+            </p>
+            <button
+              onClick={closePopup}
+              className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+              Close
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import teamData from "@/data/team";
 
@@ -7,11 +6,57 @@ export const Route = createFileRoute("/")({
   component: App,
 });
 
+const gridItems = [
+  {
+    title: "Market Opportunity",
+    description:
+      "Targeting the $3.8B African digital health market with a 23.4% CAGR, focusing on South Africa’s 33.3% share.",
+    gradient: "from-teal-500/30",
+    span: "lg:col-span-1 lg:row-span-1",
+  },
+  {
+    title: "Data Integration",
+    description:
+      "Combines patient feedback, clinical notes, regulatory reports, and medical literature to enhance drug safety analysis and counter adverse reactions.",
+    gradient: "from-purple-500/30",
+    span: "lg:col-span-1 lg:row-span-1",
+  },
+  {
+    title: "Our Vision",
+    description:
+      "To lead Africa in pharmacovigilance, using AI to ensure medication safety and empower patients with real-time adverse event detection.",
+    gradient: "from-green-500/30",
+    span: "lg:col-span-2 lg:row-span-1",
+  },
+  {
+    title: "Competitor Insights",
+    description:
+      "Analysis of AI notetakers (e.g., Compass, Plaud, Bee) shows a hybrid model of hardware purchase and subscriptions, with costs ranging from $50 (Bee) to $399 (Limitless).",
+    gradient: "from-blue-500/30",
+    span: "lg:col-span-1 lg:row-span-1",
+  },
+  {
+    title: "Technical Challenges",
+    description:
+      "Wearable AI devices face issues like unreliable audio capture, inconsistent battery life, and inaccurate speaker attribution, informing our robust system design.",
+    gradient: "from-red-500/30",
+    span: "lg:col-span-1 lg:row-span-1",
+  },
+  {
+    title: "Our Mission",
+    description:
+      "Revolutionize medication safety with AI-powered tools, reducing adverse reactions and improving public health across Africa.",
+    gradient: "from-orange-500/30",
+    span: "lg:col-span-2 lg:row-span-1",
+  },
+];
+
 function App() {
   const teamMembers = teamData();
 
   return (
     <div className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern">
+     
       {/* Hero Section */}
       <motion.section
         className="max-w-6xl mx-auto py-10 px-6 text-center relative"
@@ -45,149 +90,51 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}>
-            Safest Medication Management with DrugWise
+            Safer Medications with AI-Powered Pharmacovigilance
           </motion.h1>
           <motion.p
             className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}>
-            Protect patients from costly hospital stays (R4000/night) caused by
-            adverse drug interactions with real-time insights.
+            Leverage AI and NLP to detect adverse drug reactions in real-time,
+            reducing costly hospitalizations and enhancing patient safety.
           </motion.p>
           <motion.div
             className="flex flex-row justify-center gap-3 md:gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}>
-            <Link to="/pricing">
-              <motion.button
-                className="bg-white text-black font-semibold px-5 py-2.5 text-base md:px-6 md:py-3 w-full md:w-auto rounded-lg hover:opacity-90 transition"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}>
-                Get Started
-              </motion.button>
-            </Link>
-            <Link to="/model" className="hidden md:block">
-              <motion.button
-                className="bg-transparent border border-white text-white font-semibold px-6 py-3 text-base rounded-lg hover:bg-gray-700 transition"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}>
-                See Model
-              </motion.button>
-            </Link>
+            
+           
           </motion.div>
         </div>
       </motion.section>
 
-      {/* Bento Grids */}
       <motion.section
         className="max-w-6xl mx-auto py-12 px-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.0, duration: 0.8 }}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 *:cursor-crosshair">
-          {/* Problem */}
-          <motion.div
-            className="bg-blue-900 p-6 rounded-lg hover:bg-blue-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(30, 144, 255, 0.7), 0 0 20px rgba(30, 144, 255, 0.5)",
-            }}>
-            <h2 className="text-xl font-semibold text-white mb-2">
-              Our Vision
-            </h2>
-            <p className="text-gray-300">
-              To become Africa’s leading platform for personalized medication
-              safety, empowering individuals to take control of their health
-              through real-time, AI-powered drug interaction prevention.
-            </p>
-          </motion.div>
-
-          {/* Solution */}
-          <motion.div
-            className="bg-green-900 p-6 rounded-lg hover:bg-green-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(34, 197, 94, 0.7), 0 0 20px rgba(34, 197, 94, 0.5)",
-            }}>
-            <h2 className="text-xl font-semibold text-white mb-2">
-              Our Solution
-            </h2>
-            <p className="text-gray-300">
-              Real-time alerts for harmful drug/food combinations, comprehensive
-              medication tracking, and personalized drug recommendations.
-            </p>
-          </motion.div>
-
-          {/* Market */}
-          <motion.div
-            className="bg-orange-900 p-6 rounded-lg hover:bg-orange-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(249, 115, 22, 0.7), 0 0 20px rgba(249, 115, 22, 0.5)",
-            }}>
-            <h2 className="text-xl font-semibold text-white mb-2">
-              Market Opportunity
-            </h2>
-            <p className="text-gray-300">
-              $3.8B African digital health market, 33.3% South Africa share,
-              with a 23.4% CAGR.
-            </p>
-          </motion.div>
-
-          {/* Team */}
-          <motion.div
-            className="bg-purple-900 p-6 rounded-lg hover:bg-purple-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(147, 51, 234, 0.7), 0 0 20px rgba(147, 51, 234, 0.5)",
-            }}>
-            <h2 className="text-xl font-semibold text-white mb-2">
-              Our Mission
-            </h2>
-            <p className="text-gray-300">
-              Our mission is to revolutionize how medication is managed by
-              delivering smart, user-friendly tools that provide real-time
-              alerts, personalized drug recommendations, and complete medication
-              oversight—reducing preventable adverse reactions and improving
-              health outcomes across the continent.
-            </p>
-          </motion.div>
-
-          {/* Financing */}
-          <motion.div
-            className="bg-teal-900 p-6 rounded-lg hover:bg-teal-800 transition-all duration-300"
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            viewport={{ once: true }}
-            whileHover={{
-              boxShadow:
-                "0 0 10px rgba(6, 182, 212, 0.7), 0 0 20px rgba(6, 182, 212, 0.5)",
-            }}>
-            <h2 className="text-xl font-semibold text-white mb-2">Financing</h2>
-            <p className="text-gray-300">
-              Raised R25,000, project R12M revenue, seeking R1M for nationwide
-              launch.
-            </p>
-          </motion.div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[minmax(12rem,1fr)]">
+          {gridItems.map((item, index) => (
+            <motion.div
+              key={item.title}
+              className={`relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-crosshair duration-500 ${item.span}`}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.2, duration: 0.5 }}
+              viewport={{ once: true }}>
+              <div
+                className={`absolute inset-0 bg-gradient-to-r ${item.gradient} to-transparent opacity-50 transition-opacity duration-500  group-hover:animate-gradient-move`}
+              />
+              <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
+              <h2 className="text-2xl font-bold text-white mb-3">
+                {item.title}
+              </h2>
+              <p className="text-gray-300 text-sm">{item.description}</p>
+            </motion.div>
+          ))}
         </div>
       </motion.section>
 

@@ -82,12 +82,12 @@ const Header: React.FC = () => {
             DrugWise
           </Link>
           <nav className="hidden md:flex items-center justify-center">
-            <div className="flex space-x-6 bg-[#313131] px-4 py-2 rounded-full">
+            <div className="flex space-x-6 bg-[#1a1a1a]/80 backdrop-blur-md border border-[#ffffff1a] px-4 py-2 rounded-full">
               {navLinks.map(({ to, label }) => (
                 <Link
                   key={to}
                   to={to}
-                  className={`text-gray-200 hover:text-[#3b82f6] transition text-base ${location.pathname === to ? "text-[#3b82f6] font-bold" : ""}`}>
+                  className={`text-gray-200 hover:scale-110 transition text-base ${location.pathname === to ? "text-[#3b82f6] font-bold" : ""}`}>
                   {label}
                 </Link>
               ))}
@@ -96,7 +96,7 @@ const Header: React.FC = () => {
           <div className="flex items-center space-x-4">
             {!loading && !user && (
               <Link to="/auth">
-                <button className="px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition text-sm sm:text-base">
+                <button className="px-4 py-2 bg-lime-500 text-black rounded-lg hover:bg-lime-700 transition text-sm sm:text-base">
                   Sign In
                 </button>
               </Link>
@@ -113,7 +113,7 @@ const Header: React.FC = () => {
                 </Link>
                 <button
                   onClick={handleSignOutClick}
-                  className="px-4 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition text-sm sm:text-base">
+                  className="px-4 py-2 bg-red-500 text-black rounded-lg hover:bg-red-700 transition text-sm sm:text-base">
                   Sign Out
                 </button>
               </>
@@ -164,13 +164,13 @@ const Header: React.FC = () => {
       {/* Logout Confirmation Modal */}
       {showConfirm && (
         <motion.div
-          className="fixed inset-0 bg-[#141414]/80 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-[#141414]/5 backdrop-blur-md flex items-center justify-center z-50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}>
           <motion.div
-            className="bg-[#131311] p-6 rounded-xl shadow-2xl max-w-sm w-full text-center ring-1 ring-white/10"
+            className="bg-[#1a1a1a]/80 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl shadow-2xl max-w-sm w-full text-center"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}

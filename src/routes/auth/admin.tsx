@@ -319,19 +319,19 @@ function Admin() {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}>
                       <div className="relative w-full sm:w-3/4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-100" />
                         <input
                           type="text"
                           placeholder="Search by UID, Name, or Surname..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 bg-[#333333] text-white placeholder-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+                          className="w-full pl-10 pr-4 py-3 bg-[#333333] text-white placeholder-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
                         />
                       </div>
                       <motion.select
                         value={filterGender}
                         onChange={(e) => setFilterGender(e.target.value)}
-                        className="w-full sm:w-1/4 px-4 py-3 bg-[#333333] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
+                        className="w-full sm:w-1/4 px-4 py-3 bg-[#333333] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3, delay: 0.1 }}>
