@@ -64,6 +64,8 @@ function App() {
         transition={{ duration: 0.8 }}>
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
         <div className="relative z-10">
+
+          {/* Animated Power Tag */}
           <motion.div
             className="inline-flex items-center bg-yellow-500 text-black text-sm font-semibold px-3 py-1 rounded-full mb-6"
             initial={{ scale: 1, opacity: 1 }}
@@ -84,6 +86,8 @@ function App() {
             }}>
             * POWERED BY AI *
           </motion.div>
+
+
           <motion.h1
             className=" text-2xl md:text-5xl font-bold text-white mb-4"
             initial={{ opacity: 0 }}
@@ -107,8 +111,10 @@ function App() {
         </div>
       </motion.section>
 
+
+      {/* Grid Section */}
       <motion.section
-        className="max-w-6xl mx-auto py-12 px-6"
+        className="max-w-6xl mx-auto -mt-16 py-12 px-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.0, duration: 0.8 }}>
