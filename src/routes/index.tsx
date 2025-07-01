@@ -89,11 +89,6 @@ function App() {
               className="hidden md:block bg-lime-600 hover:bg-lime-700 text-black font-semibold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
               Learn More
             </Link>
-            <Link
-              to="/auth"
-              className="block md:hidden bg-lime-600 hover:bg-lime-700 text-black font-semibold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
-              Get Started
-            </Link>
           </motion.div>
         </div>
       </motion.section>
