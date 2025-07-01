@@ -79,7 +79,7 @@ const Header: React.FC = () => {
       {/* Header */}
       <header className="w-full h-16 fixed top-0 left-0 z-50">
         {/* Mobile Header */}
-        <div className="md:hidden max-w-md mx-auto bg-gradient-to-r from-[#1a1a1a]/90 to-[#2a2a2a]/90 backdrop-blur-lg mt-4 flex items-center justify-between px-4 py-2">
+        <div className="md:hidden max-w-md mx-auto rounded-full backdrop-blur-lg mt-4 flex items-center justify-between px-4 py-2">
           <Link to="/" className="text-xl font-bold text-white">
             DrugWise
           </Link>
