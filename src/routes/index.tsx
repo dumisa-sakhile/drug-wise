@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 import teamData from "@/data/team";
 
 export const Route = createFileRoute("/")({
@@ -8,13 +9,6 @@ export const Route = createFileRoute("/")({
 
 const gridItems = [
   {
-    title: "Market Opportunity",
-    description:
-      "Targeting the $3.8B African digital health market with a 23.4% CAGR, focusing on South Africa’s 33.3% share.",
-    gradient: "from-teal-500/30",
-    span: "lg:col-span-1 lg:row-span-1",
-  },
-  {
     title: "Data Integration",
     description:
       "Combines patient feedback, clinical notes, regulatory reports, and medical literature to enhance drug safety analysis and counter adverse reactions.",
@@ -22,32 +16,18 @@ const gridItems = [
     span: "lg:col-span-1 lg:row-span-1",
   },
   {
-    title: "Our Vision",
+    title: "AI-Integrated Software",
     description:
-      "To lead Africa in pharmacovigilance, using AI to ensure medication safety and empower patients with real-time adverse event detection.",
-    gradient: "from-green-500/30",
-    span: "lg:col-span-2 lg:row-span-1",
-  },
-  {
-    title: "Competitor Insights",
-    description:
-      "Analysis of AI notetakers (e.g., Compass, Plaud, Bee) shows a hybrid model of hardware purchase and subscriptions, with costs ranging from $50 (Bee) to $399 (Limitless).",
+      "Empowers healthcare professionals with AI-driven tools for accurate diagnosis, treatment planning, and real-time data analysis, improving patient outcomes.",
     gradient: "from-blue-500/30",
     span: "lg:col-span-1 lg:row-span-1",
   },
   {
-    title: "Technical Challenges",
+    title: "Adverse Event Tracking",
     description:
-      "Wearable AI devices face issues like unreliable audio capture, inconsistent battery life, and inaccurate speaker attribution, informing our robust system design.",
-    gradient: "from-red-500/30",
+      "Systematically collects and analyzes reports of adverse drug reactions, enabling rapid response to enhance medication safety and public health.",
+    gradient: "from-teal-500/30",
     span: "lg:col-span-1 lg:row-span-1",
-  },
-  {
-    title: "Our Mission",
-    description:
-      "Revolutionize medication safety with AI-powered tools, reducing adverse reactions and improving public health across Africa.",
-    gradient: "from-orange-500/30",
-    span: "lg:col-span-2 lg:row-span-1",
   },
 ];
 
@@ -64,8 +44,6 @@ function App() {
         transition={{ duration: 0.8 }}>
         <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
         <div className="relative z-10">
-
-          {/* Animated Power Tag */}
           <motion.div
             className="inline-flex items-center bg-yellow-500 text-black text-sm font-semibold px-3 py-1 rounded-full mb-6"
             initial={{ scale: 1, opacity: 1 }}
@@ -86,10 +64,8 @@ function App() {
             }}>
             * POWERED BY AI *
           </motion.div>
-
-
           <motion.h1
-            className=" text-2xl md:text-5xl font-bold text-white mb-4"
+            className="text-2xl md:text-5xl font-bold text-white mb-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}>
@@ -107,28 +83,38 @@ function App() {
             className="flex flex-row justify-center gap-3 md:gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.8 }}></motion.div>
+            transition={{ delay: 0.8, duration: 0.8 }}>
+            <Link
+              to="/about"
+              className="hidden md:block bg-lime-600 hover:bg-lime-700 text-black font-semibold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
+              Learn More
+            </Link>
+            <Link
+              to="/auth"
+              className="block md:hidden bg-lime-600 hover:bg-lime-700 text-black font-semibold py-2 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300">
+              Get Started
+            </Link>
+          </motion.div>
         </div>
       </motion.section>
 
-
       {/* Grid Section */}
       <motion.section
-        className="max-w-6xl mx-auto -mt-16 py-12 px-6"
+        className="max-w-6xl mx-auto -mt-12 py-12 px-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.0, duration: 0.8 }}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[minmax(12rem,1fr)]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-[minmax(12rem,1fr)] justify-items-center max-w-4xl mx-auto">
           {gridItems.map((item, index) => (
             <motion.div
               key={item.title}
-              className={`relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-crosshair duration-500 ${item.span}`}
+              className={`relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-crosshair duration-500 w-full h-58 ${item.span}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.2, duration: 0.5 }}
               viewport={{ once: true }}>
               <div
-                className={`absolute inset-0 bg-gradient-to-r ${item.gradient} to-transparent opacity-50 transition-opacity duration-500  group-hover:animate-gradient-move`}
+                className={`absolute inset-0 bg-gradient-to-r ${item.gradient} to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move`}
               />
               <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
               <h2 className="text-2xl font-bold text-white mb-3">
@@ -163,7 +149,6 @@ function App() {
                 transition={{ duration: 0.3 }}>
                 <img
                   src={member.image}
-                  alt={member.name}
                   className="w-full h-full object-cover"
                 />
               </motion.div>
@@ -195,5 +180,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
