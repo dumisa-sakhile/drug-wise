@@ -1,45 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Users, Server, Globe, Layers, Database } from "lucide-react";
-import { useState } from "react";
+import { motion } from "framer-motion";
+import teamData from "@/data/team";
 
 export const Route = createFileRoute("/about")({
   component: About,
 });
 
 function About() {
-  const { scrollY } = useScroll();
-  const yOffset = useTransform(scrollY, [0, 600], [0, -50]);
-
-  type LearnMoreItem = {
-    title: string;
-    fullDescription: string;
-  };
-
-  const [selectedItem, setSelectedItem] = useState<LearnMoreItem | null>(null);
-
-  const handleLearnMore = (item: LearnMoreItem) => {
-    setSelectedItem(item);
-  };
-
-  const closePopup = () => {
-    setSelectedItem(null);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
+  const teamMembers = teamData();
 
   return (
     <div className="min-h-[450px] bg-[#141414] text-gray-200 bg-grid-pattern relative">
@@ -64,225 +32,72 @@ function About() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}>
             We are a health-tech startup dedicated to revolutionizing medication
-            safety across Africa. Our <strong>vision</strong> is to lead in
-            pharmacovigilance by leveraging AI to ensure safer medications and
-            empower patients with real-time adverse event detection. Our{" "}
-            <strong>mission</strong> is to reduce adverse drug reactions and
-            improve public health through state-of-the-art AI-integrated
-            clinical software and robust pharmacovigilance systems.
+            safety across Africa.{" "}
+            <span className="font-bold font-white">Our vision</span>  is to become
+            Africa’s leading platform for personalized medication safety,
+            empowering individuals to take control of their health through
+            real-time, AI-powered drug interaction prevention.{" "}
+            <span className="font-bold text-white">Our mission </span>
+            is to revolutionize how medication is managed by delivering smart,
+            user-friendly tools that provide real-time alerts, personalized drug
+            recommendations, and complete medication oversight—reducing
+            preventable adverse reactions and improving health outcomes across
+            the continent.
           </motion.p>
         </div>
       </motion.section>
 
-      {/* Technology and Capabilities */}
+      {/* Dedicated Team Section */}
       <motion.section
-        className="max-w-6xl -mt-16 mx-auto py-12 px-6"
-        style={{ y: yOffset }}
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}>
-        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
-          Technology and Capabilities
+        className="max-w-6xl -mt-14 mx-auto py-12 px-6 text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 0.8 }}>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8">
+          Our Team
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "AI-Integrated Software",
-                fullDescription:
-                  "Our AI-integrated clinical software assists healthcare professionals in tasks such as patient diagnosis, treatment planning, and comprehensive data analysis, significantly improving efficiency and accuracy in medical decision-making processes. It leverages advanced machine learning models to provide real-time insights and predictive analytics, tailored to individual patient needs.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Users className="h-6 w-6 text-blue-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">AI Software</h2>
-            <p className="text-[#d1d5db] text-sm">
-              AI-driven clinical software enhances diagnosis, treatment
-              planning, and data analysis for healthcare professionals,
-              improving efficiency and patient outcomes.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "Data Analysis",
-                fullDescription:
-                  "We analyze extensive datasets of health-related information, including patient health records, clinical studies, and real-time feedback from both patients and healthcare professionals, enabling thorough monitoring and the identification of critical health patterns. Our system employs advanced statistical models and AI algorithms to detect trends and anomalies, supporting proactive healthcare interventions.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Server className="h-6 w-6 text-green-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">Data Analysis</h2>
-            <p className="text-[#d1d5db] text-sm">
-              Analyzes health datasets, including patient records and clinical
-              studies, to monitor trends and identify critical patterns for
-              proactive healthcare.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "Natural Language Processing",
-                fullDescription:
-                  "Our Natural Language Processing technology enables computers to analyze, understand, and derive meaningful insights from human language, particularly by extracting valuable information from unstructured medical notes and reports to support clinical decision-making. This includes sentiment analysis, entity recognition, and context-aware interpretation to enhance diagnostic accuracy.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Globe className="h-6 w-6 text-purple-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">NLP</h2>
-            <p className="text-[#d1d5db] text-sm">
-              NLP extracts insights from medical notes to support clinical
-              decisions with sentiment analysis and context-aware
-              interpretation.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "Adverse Event Tracking",
-                fullDescription:
-                  "Our systems are specifically designed to systematically collect and analyze detailed reports of suspected adverse drug reactions, providing a robust framework for conducting thorough investigations into their potential causes and impacts. This includes real-time alerts and comprehensive reporting to regulatory bodies for improved drug safety.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Layers className="h-6 w-6 text-teal-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
-              Event Tracking
-            </h2>
-            <p className="text-[#d1d5db] text-sm">
-              Collects and analyzes adverse drug reaction reports, providing
-              real-time alerts and regulatory reporting for enhanced drug
-              safety.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "Research Support",
-                fullDescription:
-                  "This data is further utilized to refine our existing systems and to build comprehensive datasets that support ongoing vaccination research, contributing to advancements in drug discovery and the development of safer medical treatments. Our research tools facilitate collaboration with global health organizations to accelerate innovation.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Database className="h-6 w-6 text-red-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
-              Research Support
-            </h2>
-            <p className="text-[#d1d5db] text-sm">
-              Supports vaccination research with comprehensive datasets, driving
-              drug discovery and safer treatments through global health
-              collaborations.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "Multi-Source Data",
-                fullDescription:
-                  "DrugWise integrates safety information by utilizing data from multiple sources, including patient-reported symptoms and recovery tracking post-medication intake, detailed clinical notes from healthcare providers, and comprehensive reports from regulatory agencies and drug manufacturers. This holistic approach ensures a complete view of drug safety profiles.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Globe className="h-6 w-6 text-indigo-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
-              Multi-Source Data
-            </h2>
-            <p className="text-[#d1d5db] text-sm">
-              Integrates patient symptoms, clinical notes, and regulatory
-              reports for a comprehensive view of drug safety profiles.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "Vaccination Research",
-                fullDescription:
-                  "Our work in vaccination research involves studying vaccines to improve their development, effectiveness, and safety profiles, often leveraging collected data to identify potential side effects and to enhance vaccine design for better public health outcomes. We collaborate with health experts to ensure rapid response to emerging health threats.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Layers className="h-6 w-6 text-yellow-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
-              Vaccination Research
-            </h2>
-            <p className="text-[#d1d5db] text-sm">
-              Enhances vaccine development and safety through data-driven
-              research and collaboration with health experts.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-4 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
-            variants={itemVariants}
-            onClick={() =>
-              handleLearnMore({
-                title: "Public Health",
-                fullDescription:
-                  "This initiative refers to the science and practice of protecting and improving the health of communities through targeted education, the implementation of effective health policies, and ongoing research aimed at preventing disease and promoting safe and healthy practices across populations. Our efforts focus on reducing health disparities and improving access to care.",
-              })
-            }>
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-transparent opacity-50 transition-opacity duration-500 group-hover:animate-gradient-move" />
-            <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Users className="h-6 w-6 text-pink-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">Public Health</h2>
-            <p className="text-[#d1d5db] text-sm">
-              Promotes community health through education, policies, and
-              research to prevent disease and reduce health disparities.
-            </p>
-          </motion.div>
+        <div className="flex flex-wrap justify-center gap-6">
+          {teamMembers.map((member, index) => (
+            <motion.div
+              key={member.name}
+              className="flex flex-col items-center"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: index * 0.2, duration: 0.5 }}>
+              <motion.div
+                className="w-24 h-24 bg-white rounded-full overflow-hidden flex items-center justify-center"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.3 }}>
+                <img
+                  src={member.image}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              <motion.p
+                className="mt-3 text-lg font-semibold text-white"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: index * 0.2 + 0.3, duration: 0.5 }}>
+                {member.name}
+              </motion.p>
+              <motion.p
+                className="text-sm text-gray-400"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: index * 0.2 + 0.4, duration: 0.5 }}>
+                {member.role}
+              </motion.p>
+              <motion.p
+                className="text-sm text-gray-200"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: index * 0.2 + 0.4, duration: 0.5 }}>
+                {member.expertise}
+              </motion.p>
+            </motion.div>
+          ))}
         </div>
       </motion.section>
-
-      {/* Popup */}
-      {selectedItem && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur flex items-center justify-center z-50">
-          <motion.div
-            className="bg-[#1a1a1a]/90 p-6 rounded-lg max-w-md w-full text-white border border-[#ffffff1a] shadow-lg"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}>
-            <h3 className="text-2xl font-bold mb-4">{selectedItem.title}</h3>
-            <p className="text-[#d1d5db] text-base mb-4">
-              {selectedItem.fullDescription}
-            </p>
-            <button
-              onClick={closePopup}
-              className="mt-4 w-full bg-lime-600 hover:bg-lime-700 text-black font-light py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
-              style={{
-                borderRadius: "8px",
-              }}>
-              Okay
-            </button>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }
