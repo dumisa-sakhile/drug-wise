@@ -4,7 +4,7 @@ import { auth } from "../config/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import male from "/male.jpg?url";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import { Home, Info, DollarSign, Brain, User } from "lucide-react";
 
 const Header: React.FC = () => {
@@ -141,7 +141,7 @@ const Header: React.FC = () => {
               )}
               {!loading && user && (
                 <>
-                  <Link to="/auth/profile">
+                  <Link to="/dashboard">
                     <img
                       src={getFallbackImage()}
                       alt={user.displayName || "Profile"}
@@ -161,7 +161,7 @@ const Header: React.FC = () => {
       </header>
 
       {/* Bottom Navbar (Mobile Only) */}
-      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-md mx-auto bg-gradient-to-r from-[#1a1a1a]/90 to-[#2a2a2a]/90 backdrop-blur-lg border border-[#ffffff1a] rounded-2xl z-50 py-2 px-4">
+      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-[330px] mx-auto bg-gradient-to-r from-[#1a1a1a]/90 to-[#2a2a2a]/90 backdrop-blur-lg border border-[#ffffff1a] rounded-2xl z-50 py-2 px-4">
         <div className="flex justify-between items-center">
           {/* Left Side Links */}
           <div className="flex space-x-4">
@@ -204,7 +204,7 @@ const Header: React.FC = () => {
           {/* Center Profile Button */}
           {!loading && user && (
             <Link
-              to="/auth/profile"
+              to="/dashboard"
               className="flex flex-col items-center relative">
               <motion.div
                 className="bg-[#3b82f6]/20 rounded-full p-2 border-2 border-[#3b82f6]"

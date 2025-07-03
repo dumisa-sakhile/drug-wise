@@ -14,11 +14,15 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ModelRouteImport } from './routes/model'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as DashboardModelRouteImport } from './routes/dashboard/model'
+import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
+import { Route as DashboardMedicationRouteImport } from './routes/dashboard/medication'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
 import { Route as AuthVerifyRouteImport } from './routes/auth/verify'
-import { Route as AuthProfileRouteImport } from './routes/auth/profile'
-import { Route as AuthAdminRouteImport } from './routes/auth/admin'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -45,43 +49,67 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
 } as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/auth/',
   path: '/auth/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardModelRoute = DashboardModelRouteImport.update({
+  id: '/model',
+  path: '/model',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardMedicationRoute = DashboardMedicationRouteImport.update({
+  id: '/medication',
+  path: '/medication',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const AuthVerifyRoute = AuthVerifyRouteImport.update({
   id: '/auth/verify',
   path: '/auth/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthProfileRoute = AuthProfileRouteImport.update({
-  id: '/auth/profile',
-  path: '/auth/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthAdminRoute = AuthAdminRouteImport.update({
-  id: '/auth/admin',
-  path: '/auth/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
-  '/auth/admin': typeof AuthAdminRoute
-  '/auth/profile': typeof AuthProfileRoute
   '/auth/verify': typeof AuthVerifyRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/medication': typeof DashboardMedicationRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/model': typeof DashboardModelRoute
   '/auth': typeof AuthIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -90,37 +118,48 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
-  '/auth/admin': typeof AuthAdminRoute
-  '/auth/profile': typeof AuthProfileRoute
   '/auth/verify': typeof AuthVerifyRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/medication': typeof DashboardMedicationRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/model': typeof DashboardModelRoute
   '/auth': typeof AuthIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/model': typeof ModelRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
-  '/auth/admin': typeof AuthAdminRoute
-  '/auth/profile': typeof AuthProfileRoute
   '/auth/verify': typeof AuthVerifyRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/medication': typeof DashboardMedicationRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/model': typeof DashboardModelRoute
   '/auth/': typeof AuthIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/about'
     | '/model'
     | '/pricing'
     | '/privacy'
     | '/terms'
-    | '/auth/admin'
-    | '/auth/profile'
     | '/auth/verify'
+    | '/dashboard/admin'
+    | '/dashboard/medication'
+    | '/dashboard/messages'
+    | '/dashboard/model'
     | '/auth'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -129,33 +168,39 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/terms'
-    | '/auth/admin'
-    | '/auth/profile'
     | '/auth/verify'
+    | '/dashboard/admin'
+    | '/dashboard/medication'
+    | '/dashboard/messages'
+    | '/dashboard/model'
     | '/auth'
+    | '/dashboard'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/about'
     | '/model'
     | '/pricing'
     | '/privacy'
     | '/terms'
-    | '/auth/admin'
-    | '/auth/profile'
     | '/auth/verify'
+    | '/dashboard/admin'
+    | '/dashboard/medication'
+    | '/dashboard/messages'
+    | '/dashboard/model'
     | '/auth/'
+    | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ModelRoute: typeof ModelRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
-  AuthAdminRoute: typeof AuthAdminRoute
-  AuthProfileRoute: typeof AuthProfileRoute
   AuthVerifyRoute: typeof AuthVerifyRoute
   AuthIndexRoute: typeof AuthIndexRoute
 }
@@ -197,12 +242,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
     }
     '/auth/': {
       id: '/auth/'
@@ -211,6 +270,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/model': {
+      id: '/dashboard/model'
+      path: '/model'
+      fullPath: '/dashboard/model'
+      preLoaderRoute: typeof DashboardModelRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/messages': {
+      id: '/dashboard/messages'
+      path: '/messages'
+      fullPath: '/dashboard/messages'
+      preLoaderRoute: typeof DashboardMessagesRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/medication': {
+      id: '/dashboard/medication'
+      path: '/medication'
+      fullPath: '/dashboard/medication'
+      preLoaderRoute: typeof DashboardMedicationRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/auth/verify': {
       id: '/auth/verify'
       path: '/auth/verify'
@@ -218,32 +305,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/profile': {
-      id: '/auth/profile'
-      path: '/auth/profile'
-      fullPath: '/auth/profile'
-      preLoaderRoute: typeof AuthProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/admin': {
-      id: '/auth/admin'
-      path: '/auth/admin'
-      fullPath: '/auth/admin'
-      preLoaderRoute: typeof AuthAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
+interface DashboardRouteRouteChildren {
+  DashboardAdminRoute: typeof DashboardAdminRoute
+  DashboardMedicationRoute: typeof DashboardMedicationRoute
+  DashboardMessagesRoute: typeof DashboardMessagesRoute
+  DashboardModelRoute: typeof DashboardModelRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardAdminRoute: DashboardAdminRoute,
+  DashboardMedicationRoute: DashboardMedicationRoute,
+  DashboardMessagesRoute: DashboardMessagesRoute,
+  DashboardModelRoute: DashboardModelRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ModelRoute: ModelRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
-  AuthAdminRoute: AuthAdminRoute,
-  AuthProfileRoute: AuthProfileRoute,
   AuthVerifyRoute: AuthVerifyRoute,
   AuthIndexRoute: AuthIndexRoute,
 }

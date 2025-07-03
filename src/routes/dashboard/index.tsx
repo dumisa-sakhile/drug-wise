@@ -9,7 +9,7 @@ import EditProfileForm from "@/components/EditProfileForm";
 import defaultAvatar from "/male.jpg?url";
 import { motion } from "framer-motion";
 import { CheckCircle, AlertCircle, Edit, ArrowRight } from "lucide-react"; // Importing Lucide React icons
-import { toast } from "sonner";
+import { toast } from "react-hot-toast"; // Using react-hot-toast for notifications
 
 interface UserData {
   uid: string;
@@ -23,7 +23,7 @@ interface UserData {
   lastLogin: Timestamp | null;
 }
 
-export const Route = createFileRoute("/auth/profile")({
+export const Route = createFileRoute("/dashboard/")({
   component: Profile,
 });
 
@@ -172,7 +172,7 @@ function Profile() {
                     hidden: { opacity: 0, y: 10 },
                     visible: { opacity: 1, y: 0 },
                   }}>
-                  <Link to="/auth/admin">
+                  <Link to="/dashboard/admin">
                     <button className="px-4 py-2 bg-blue-600 backdrop-blur-md text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-all shadow-md flex items-center gap-2">
                       Go to Admin Portal <ArrowRight size={16} />
                     </button>

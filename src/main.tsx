@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import NotFound from "./components/NotFound.tsx";
 import Loading from "./components/Loading.tsx";
-import { Toaster } from "sonner";
+import { Toaster } from "react-hot-toast";
 import { inject } from "@vercel/analytics";
 
 // Import the generated route tree
@@ -46,9 +46,8 @@ if (rootElement && !rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        
-          <RouterProvider router={router} />
-          <Toaster richColors theme="dark"/>
+        <RouterProvider router={router} />
+        <Toaster position="bottom-right" reverseOrder={false} />
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </StrictMode>

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { auth, db } from "../../config/firebase";
 import { isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc, Timestamp } from "firebase/firestore";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast"; // Using react-hot-toast for notifications
 import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/auth/verify")({
@@ -67,7 +67,7 @@ function VerifyMagicLink() {
       }
 
       toast.success("Successfully signed in!");
-      navigate({ to: "/auth/profile" });
+      navigate({ to: "/dashboard" });
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message);
@@ -105,7 +105,7 @@ function VerifyMagicLink() {
   useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
-          navigate({ to: "/auth/profile" });
+          navigate({ to: "/dashboard" });
         }
       });
       return () => unsubscribe();
@@ -156,7 +156,7 @@ function VerifyMagicLink() {
             transition={{ delay: 0.4, duration: 0.5 }}>
             <div className="mb-4">You are already authenticated!</div>
             <button
-              onClick={() => navigate({ to: "/auth/profile" })}
+              onClick={() => navigate({ to: "/dashboard" })}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">
               Go to Profile
             </button>

@@ -14,7 +14,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast"; // Using react-hot-toast for notifications
 import { motion, AnimatePresence } from "framer-motion";
 import { Search } from "lucide-react";
 
@@ -29,7 +29,7 @@ interface UserData {
   isAdmin: boolean;
 }
 
-export const Route = createFileRoute("/auth/admin")({
+export const Route = createFileRoute("/dashboard/admin")({
   component: Admin,
 });
 
@@ -72,11 +72,11 @@ function Admin() {
   useEffect(() => {
     if (user && userData && !userData.isAdmin) {
       toast.error("You do not have permission to access this page.");
-      navigate({ to: "/auth/profile" });
+      navigate({ to: "/dashboard" });
     }
   }, [user, userData, navigate]);
 
-  const { data: allUsers, isLoading: allUsersLoading } = useQuery<UserData[]>({
+  const { data: allUsers, } = useQuery<UserData[]>({
     queryKey: ["allUsers"],
     queryFn: async () => {
       if (!user || !userData?.isAdmin) return [];
@@ -139,7 +139,7 @@ function Admin() {
 
   const handleSaveUser = (uid: string) => {
     const updatedData = editedUsers[uid];
-    if (!updatedData) return toast.info("No changes to save.");
+    if (!updatedData) return toast.error("No changes to save.");
     const user = filteredUsers?.find((u) => u.uid === uid);
     if (!user) return toast.error("User not found");
     if (updatedData.email && !validateEmail(updatedData.email))
@@ -168,7 +168,7 @@ function Admin() {
       delete newState[uid];
       return newState;
     });
-    toast.info("Changes reset.");
+    toast.success("Changes reset.");
   };
 
   const validateName = (value: string) => value.trim().length >= 2;
@@ -233,7 +233,7 @@ function Admin() {
   if (!user)
     return (
       <motion.div
-        className="w-full min-h-screen flex items-center justify-center bg-[#1a1a1a]"
+        className="w-full min-h-screen flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}>
@@ -266,101 +266,67 @@ function Admin() {
             </p>
           </div>
           <button
-            onClick={() => navigate({ to: "/auth/profile" })}
+            onClick={() => navigate({ to: "/dashboard" })}
             className="bg-blue-600 hover:bg-blue-700 text-white font-sans font-semibold px-6 py-3 rounded-lg transition-all shadow-md">
             &larr; Back to Profile
           </button>
         </motion.header>
 
         {/* Table */}
-        {allUsersLoading ? (
-          <motion.div
-            className="flex justify-center items-center p-8 bg-[#222222] rounded-xl shadow-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}>
-            <svg
-              className="animate-spin h-10 w-10 text-blue-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          </motion.div>
-        ) : !filteredUsers || filteredUsers.length === 0 ? (
-          <motion.p
-            className="text-white text-lg text-center py-8 bg-[#222222] rounded-xl shadow-lg font-sans"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}>
-            No users found.
-          </motion.p>
-        ) : (
-          <div className="overflow-x-auto rounded-xl shadow-lg bg-[#222222] border border-white/10">
-            <table className="min-w-full text-sm font-sans">
-              <thead>
-                <tr className="text-left text-gray-300 bg-[#2a2a2a]">
-                  <th className="px-6 py-4" colSpan={9}>
-                    <motion.div
-                      className="relative w-full flex flex-col sm:flex-row gap-4 items-center"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}>
-                      <div className="relative w-full sm:w-3/4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-100" />
-                        <input
-                          type="text"
-                          placeholder="Search by UID, Name, or Surname..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 bg-[#333333] text-white placeholder-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
-                        />
-                      </div>
-                      <motion.select
-                        value={filterGender}
-                        onChange={(e) => setFilterGender(e.target.value)}
-                        className="w-full sm:w-1/4 px-4 py-3 bg-[#333333] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.1 }}>
-                        <option value="">All Genders</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                      </motion.select>
-                    </motion.div>
-                  </th>
-                </tr>
-                <tr className="text-left text-gray-300 bg-[#2a2a2a] border-b border-white/10">
-                  <th className="px-6 py-4 font-medium">No.</th>
-                  <th className="px-6 py-4 font-medium">UID</th>
-                  <th className="px-6 py-4 font-medium">Name</th>
-                  <th className="px-6 py-4 font-medium">Surname</th>
-                  <th className="px-6 py-4 font-medium">Email</th>
-                  <th className="px-6 py-4 font-medium">Gender</th>
-                  <th className="px-6 py-4 font-medium">Date of Birth</th>
-                  <th className="px-6 py-4 font-medium">Joined At</th>
-                  {Object.keys(editedUsers).some(
-                    (uid) =>
-                      editedUsers[uid] &&
-                      Object.keys(editedUsers[uid]).length > 1
-                  ) && <th className="px-6 py-4 font-medium">Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                <AnimatePresence>
-                  {filteredUsers.map((u, index) => {
+        <div className="overflow-x-auto rounded-xl shadow-lg bg-[#222222] border border-white/10">
+          <table className="min-w-full text-sm font-sans">
+            <thead>
+              <tr className="text-left text-gray-300 bg-[#2a2a2a]">
+                <th className="px-6 py-4" colSpan={9}>
+                  <motion.div
+                    className="relative w-full flex flex-col sm:flex-row gap-4 items-center"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}>
+                    <div className="relative w-full sm:w-3/4">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-100" />
+                      <input
+                        type="text"
+                        placeholder="Search by UID, Name, or Surname..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-[#333333] text-white placeholder-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                      />
+                    </div>
+                    <motion.select
+                      value={filterGender}
+                      onChange={(e) => setFilterGender(e.target.value)}
+                      className="w-full sm:w-1/4 px-4 py-3 bg-[#333333] text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.1 }}>
+                      <option value="">All Genders</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </motion.select>
+                  </motion.div>
+                </th>
+              </tr>
+              <tr className="text-left text-gray-300 bg-[#2a2a2a] border-b border-white/10">
+                <th className="px-6 py-4 font-medium">No.</th>
+                <th className="px-6 py-4 font-medium">UID</th>
+                <th className="px-6 py-4 font-medium">Name</th>
+                <th className="px-6 py-4 font-medium">Surname</th>
+                <th className="px-6 py-4 font-medium">Email</th>
+                <th className="px-6 py-4 font-medium">Gender</th>
+                <th className="px-6 py-4 font-medium">Date of Birth</th>
+                <th className="px-6 py-4 font-medium">Joined At</th>
+                {Object.keys(editedUsers).some(
+                  (uid) =>
+                    editedUsers[uid] &&
+                    Object.keys(editedUsers[uid]).length > 1
+                ) && <th className="px-6 py-4 font-medium">Actions</th>}
+              </tr>
+            </thead>
+            <tbody>
+              <AnimatePresence>
+                {filteredUsers && filteredUsers.length > 0 ? (
+                  filteredUsers.map((u, index) => {
                     const hasChanges =
                       editedUsers[u.uid] &&
                       Object.keys(editedUsers[u.uid]).length > 1;
@@ -466,18 +432,28 @@ function Admin() {
                         )}
                       </motion.tr>
                     );
-                  })}
-                </AnimatePresence>
-              </tbody>
-            </table>
-            <motion.div
-              className="p-6 text-gray-300 text-sm text-center font-sans"
-              variants={itemVariants}>
-              Showing {filteredUsers?.length || 0} of {allUsers?.length || 0}{" "}
-              users
-            </motion.div>
-          </div>
-        )}
+                  })
+                ) : (
+                  <motion.tr
+                    className="hover:bg-[#333333] transition-all border-b border-white/10 last:border-none"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}>
+                    <td colSpan={9} className="px-6 py-4 text-center text-gray-300">
+                      No users found matching the search criteria.
+                    </td>
+                  </motion.tr>
+                )}
+              </AnimatePresence>
+            </tbody>
+          </table>
+          <motion.div
+            className="p-6 text-gray-300 text-sm text-center font-sans"
+            variants={itemVariants}>
+            Showing {filteredUsers?.length || 0} of {allUsers?.length || 0}{" "}
+            users
+          </motion.div>
+        </div>
       </motion.div>
     </>
   );

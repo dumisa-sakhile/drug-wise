@@ -8,7 +8,7 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 import { doc, setDoc, getDoc, Timestamp } from "firebase/firestore";
-import { toast } from "sonner";
+import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { Circle } from "lucide-react";
 
@@ -34,7 +34,7 @@ function Login() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate({ to: "/auth/profile" });
+        navigate({ to: "/dashboard" });
       }
     });
     return () => unsubscribe();
@@ -123,7 +123,7 @@ function Login() {
       }
 
       toast.success("Successfully signed in with Google!");
-      navigate({ to: "/auth/profile" });
+      navigate({ to: "/dashboard" });
     } catch (err: any) {
       setError(err.message);
       toast.error(err.message);
