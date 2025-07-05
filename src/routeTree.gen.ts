@@ -21,8 +21,11 @@ import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as DashboardModelRouteImport } from './routes/dashboard/model'
 import { Route as DashboardMessagesRouteImport } from './routes/dashboard/messages'
 import { Route as DashboardMedicationRouteImport } from './routes/dashboard/medication'
-import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
 import { Route as AuthVerifyRouteImport } from './routes/auth/verify'
+import { Route as DashboardAdminRouteRouteImport } from './routes/dashboard/admin/route'
+import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
+import { Route as DashboardAdminMessagesRouteImport } from './routes/dashboard/admin/messages'
+import { Route as DashboardAdminMedicationRouteImport } from './routes/dashboard/admin/medication'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -84,16 +87,32 @@ const DashboardMedicationRoute = DashboardMedicationRouteImport.update({
   path: '/medication',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
-const DashboardAdminRoute = DashboardAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => DashboardRouteRoute,
-} as any)
 const AuthVerifyRoute = AuthVerifyRouteImport.update({
   id: '/auth/verify',
   path: '/auth/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardAdminRouteRoute = DashboardAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardAdminRouteRoute,
+} as any)
+const DashboardAdminMessagesRoute = DashboardAdminMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => DashboardAdminRouteRoute,
+} as any)
+const DashboardAdminMedicationRoute =
+  DashboardAdminMedicationRouteImport.update({
+    id: '/medication',
+    path: '/medication',
+    getParentRoute: () => DashboardAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,13 +122,16 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/dashboard/admin': typeof DashboardAdminRouteRouteWithChildren
   '/auth/verify': typeof AuthVerifyRoute
-  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/medication': typeof DashboardMedicationRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/model': typeof DashboardModelRoute
   '/auth': typeof AuthIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/medication': typeof DashboardAdminMedicationRoute
+  '/dashboard/admin/messages': typeof DashboardAdminMessagesRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -119,12 +141,14 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/auth/verify': typeof AuthVerifyRoute
-  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/medication': typeof DashboardMedicationRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/model': typeof DashboardModelRoute
   '/auth': typeof AuthIndexRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/admin/medication': typeof DashboardAdminMedicationRoute
+  '/dashboard/admin/messages': typeof DashboardAdminMessagesRoute
+  '/dashboard/admin': typeof DashboardAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -135,13 +159,16 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
+  '/dashboard/admin': typeof DashboardAdminRouteRouteWithChildren
   '/auth/verify': typeof AuthVerifyRoute
-  '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/medication': typeof DashboardMedicationRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/model': typeof DashboardModelRoute
   '/auth/': typeof AuthIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/medication': typeof DashboardAdminMedicationRoute
+  '/dashboard/admin/messages': typeof DashboardAdminMessagesRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -153,13 +180,16 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/terms'
-    | '/auth/verify'
     | '/dashboard/admin'
+    | '/auth/verify'
     | '/dashboard/medication'
     | '/dashboard/messages'
     | '/dashboard/model'
     | '/auth'
     | '/dashboard/'
+    | '/dashboard/admin/medication'
+    | '/dashboard/admin/messages'
+    | '/dashboard/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -169,12 +199,14 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/terms'
     | '/auth/verify'
-    | '/dashboard/admin'
     | '/dashboard/medication'
     | '/dashboard/messages'
     | '/dashboard/model'
     | '/auth'
     | '/dashboard'
+    | '/dashboard/admin/medication'
+    | '/dashboard/admin/messages'
+    | '/dashboard/admin'
   id:
     | '__root__'
     | '/'
@@ -184,13 +216,16 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/terms'
-    | '/auth/verify'
     | '/dashboard/admin'
+    | '/auth/verify'
     | '/dashboard/medication'
     | '/dashboard/messages'
     | '/dashboard/model'
     | '/auth/'
     | '/dashboard/'
+    | '/dashboard/admin/medication'
+    | '/dashboard/admin/messages'
+    | '/dashboard/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -291,13 +326,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardMedicationRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
-    '/dashboard/admin': {
-      id: '/dashboard/admin'
-      path: '/admin'
-      fullPath: '/dashboard/admin'
-      preLoaderRoute: typeof DashboardAdminRouteImport
-      parentRoute: typeof DashboardRouteRoute
-    }
     '/auth/verify': {
       id: '/auth/verify'
       path: '/auth/verify'
@@ -305,11 +333,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/admin/': {
+      id: '/dashboard/admin/'
+      path: '/'
+      fullPath: '/dashboard/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof DashboardAdminRouteRoute
+    }
+    '/dashboard/admin/messages': {
+      id: '/dashboard/admin/messages'
+      path: '/messages'
+      fullPath: '/dashboard/admin/messages'
+      preLoaderRoute: typeof DashboardAdminMessagesRouteImport
+      parentRoute: typeof DashboardAdminRouteRoute
+    }
+    '/dashboard/admin/medication': {
+      id: '/dashboard/admin/medication'
+      path: '/medication'
+      fullPath: '/dashboard/admin/medication'
+      preLoaderRoute: typeof DashboardAdminMedicationRouteImport
+      parentRoute: typeof DashboardAdminRouteRoute
+    }
   }
 }
 
+interface DashboardAdminRouteRouteChildren {
+  DashboardAdminMedicationRoute: typeof DashboardAdminMedicationRoute
+  DashboardAdminMessagesRoute: typeof DashboardAdminMessagesRoute
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+}
+
+const DashboardAdminRouteRouteChildren: DashboardAdminRouteRouteChildren = {
+  DashboardAdminMedicationRoute: DashboardAdminMedicationRoute,
+  DashboardAdminMessagesRoute: DashboardAdminMessagesRoute,
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+}
+
+const DashboardAdminRouteRouteWithChildren =
+  DashboardAdminRouteRoute._addFileChildren(DashboardAdminRouteRouteChildren)
+
 interface DashboardRouteRouteChildren {
-  DashboardAdminRoute: typeof DashboardAdminRoute
+  DashboardAdminRouteRoute: typeof DashboardAdminRouteRouteWithChildren
   DashboardMedicationRoute: typeof DashboardMedicationRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
   DashboardModelRoute: typeof DashboardModelRoute
@@ -317,7 +388,7 @@ interface DashboardRouteRouteChildren {
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
-  DashboardAdminRoute: DashboardAdminRoute,
+  DashboardAdminRouteRoute: DashboardAdminRouteRouteWithChildren,
   DashboardMedicationRoute: DashboardMedicationRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
   DashboardModelRoute: DashboardModelRoute,

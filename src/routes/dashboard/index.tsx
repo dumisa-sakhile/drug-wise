@@ -3,13 +3,29 @@ import { useState, useEffect } from "react";
 import { auth, db } from "@/config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { doc, getDoc, Timestamp } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  Timestamp,
+} from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
 import EditProfileForm from "@/components/EditProfileForm";
-import defaultAvatar from "/male.jpg?url";
-import { motion } from "framer-motion";
-import { CheckCircle, AlertCircle, Edit, ArrowRight } from "lucide-react"; // Importing Lucide React icons
-import { toast } from "react-hot-toast"; // Using react-hot-toast for notifications
+import defaultMaleAvatar from "/male.jpg?url";
+import defaultFemaleAvatar from "/female.jpg?url";
+import {
+  AlertCircle,
+  Edit,
+  ArrowRight,
+  Pill,
+  MessageSquare,
+  PlusCircle,
+  ClipboardList,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface UserData {
   uid: string;
@@ -21,6 +37,7 @@ interface UserData {
   joinedAt: Timestamp;
   isAdmin: boolean;
   lastLogin: Timestamp | null;
+  photoURL?: string;
 }
 
 export const Route = createFileRoute("/dashboard/")({
@@ -33,28 +50,58 @@ function Profile() {
   const navigate = Route.useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) {
         navigate({ to: "/auth" });
         toast.error("You must be logged in to view your profile.");
+      } else {
+        setUser(currentUser);
       }
     });
     return () => unsubscribe();
   }, [navigate]);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const { data: userData } = useQuery<UserData>({
+  const { data: userData, isLoading: isLoadingUserData } = useQuery<UserData>({
     queryKey: ["userData", user?.uid],
     queryFn: async () => {
       if (!user) return {} as UserData;
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      return userDoc.exists() ? (userDoc.data() as UserData) : ({} as UserData);
+      const firestoreData = userDoc.exists()
+        ? (userDoc.data() as UserData)
+        : ({} as UserData);
+      return {
+        ...firestoreData,
+        photoURL: firestoreData.photoURL || undefined,
+      };
+    },
+    enabled: !!user,
+  });
+
+  const { data: medicationCount = 0 } = useQuery<number>({
+    queryKey: ["userMedicationCount", user?.uid],
+    queryFn: async () => {
+      if (!user) return 0;
+      const q = query(
+        collection(db, "medications"),
+        where("userId", "==", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.size;
+    },
+    enabled: !!user,
+  });
+
+  const { data: unreadMessageCount = 0 } = useQuery<number>({
+    queryKey: ["userUnreadMessages", user?.uid],
+    queryFn: async () => {
+      if (!user) return 0;
+      const q = query(
+        collection(db, "messages"),
+        where("recipientId", "==", user.uid),
+        where("isRead", "==", false)
+      );
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.size;
     },
     enabled: !!user,
   });
@@ -63,161 +110,171 @@ function Profile() {
     userData &&
     (!userData.gender || userData.name === "Anonymous" || !userData.surname);
 
-  if (!user) {
+  if (isLoadingUserData) {
     return (
-      <div className="w-full min-h-screen flex items-center justify-center flex-col gap-6 bg-inherit backdrop-blur-sm">
-        <p className="text-white text-xl font-light">
-          Please log in to view your profile
-        </p>
-        
+      <div className="p-4 text-white roboto-condensed-light">
+        Loading profile data...
       </div>
     );
   }
 
+  if (!user) {
+    return (
+      <div className="p-4 text-white roboto-condensed-light">
+        Not authenticated.
+      </div>
+    );
+  }
+
+  // Determine avatar URL based on gender if photoURL missing
+  const avatarUrl =
+    userData?.photoURL ||
+    (userData?.gender === "female" ? defaultFemaleAvatar : defaultMaleAvatar);
+
   return (
-    <>
-      <title>Drug Wise - Profile</title>
+    <div className="p-6 text-white">
+      <h1 className="text-2xl mb-6 font-bold">Dashboard</h1>
 
-      <motion.div
-        className="w-full min-h-screen flex flex-col gap-6 py-4 px-6 mx-auto max-w-6xl text-gray-200"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}>
-        <motion.h1
-          className="text-3xl sm:text-4xl font-bold tracking-tight text-white"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}>
-          Profile
-        </motion.h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        {/* Profile Card */}
+        <div className="bg-[#1E1E1E] rounded-lg p-6 shadow-lg">
+          <div className="flex items-center gap-4 mb-6">
+            <img
+              src={avatarUrl}
+              alt="Profile"
+              className="w-16 h-16 rounded-full object-cover border-2 border-blue-500"
+            />
+            <div>
+              <h3 className="text-lg font-semibold">
+                {userData?.name || "Anonymous"} {userData?.surname || ""}
+              </h3>
+              <p className="text-sm text-gray-400">{userData?.email}</p>
+            </div>
+          </div>
 
-        <motion.section
-          className="flex flex-col md:flex-row items-center justify-between gap-6"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.1,
-              },
-            },
-          }}>
-          <motion.aside
-            className="flex items-center gap-6 flex-col md:flex-row"
-            variants={{
-              hidden: { opacity: 0, y: 20 },
-              visible: { opacity: 1, y: 0 },
-            }}>
-            <motion.div
-              className="relative"
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 },
-              }}>
-              <img
-                src={user?.photoURL || defaultAvatar}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-2 border-[rgba(255,255,255,0.2)] shadow-lg"
-              />
-              {userData?.isAdmin && (
-                <motion.span
-                  className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 px-2 py-1 rounded-full shadow-md border border-white/20"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}>
-                  <CheckCircle size={12} /> Admin
-                </motion.span>
-              )}
-              {isProfileIncomplete && (
-                <motion.span
-                  className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-1 text-xs font-semibold text-white bg-red-600 px-2 py-1 rounded-full shadow-md border border-white/20"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}>
-                  <AlertCircle size={12} /> Incomplete
-                </motion.span>
-              )}
-            </motion.div>
-            <motion.div
-              className="flex flex-col items-center md:items-start gap-2"
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 },
-              }}>
-              <motion.h3
-                className="text-md sm:text-lg font-light text-white"
-                variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>
-                {userData?.name || user?.displayName || "Anonymous"}
-              </motion.h3>
-              <motion.p
-                className="text-sm text-gray-400"
-                variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}>
-                {userData?.email || user?.email || "-"}
-              </motion.p>
-              {isProfileIncomplete && (
-                <motion.p
-                  className="text-sm text-red-500"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: { opacity: 1 },
-                  }}>
-                  Please edit your profile to complete your information.
-                </motion.p>
-              )}
-              {userData?.isAdmin && (
-                <motion.div
-                  variants={{
-                    hidden: { opacity: 0, y: 10 },
-                    visible: { opacity: 1, y: 0 },
-                  }}>
-                  <Link to="/dashboard/admin">
-                    <button className="px-4 py-2 bg-blue-600 backdrop-blur-md text-white text-sm font-semibold rounded-full hover:bg-blue-700 transition-all shadow-md flex items-center gap-2">
-                      Go to Admin Portal <ArrowRight size={16} />
-                    </button>
-                  </Link>
-                </motion.div>
-              )}
-            </motion.div>
-          </motion.aside>
-          <motion.button
+          {isProfileIncomplete && (
+            <div className="bg-yellow-100 p-3 rounded mb-4 flex items-center gap-2 text-yellow-800">
+              <AlertCircle size={16} />
+              <span>Your profile is incomplete</span>
+            </div>
+          )}
+
+          <button
             onClick={() => setModalOpen(true)}
-            className="bg-[#333]/50 backdrop-blur-md text-white font-semibold text-sm px-5 py-3 rounded-full hover:scale-105 transition-all shadow-md flex items-center gap-2"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}>
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center justify-center gap-2 font-semibold transition-colors duration-200">
             <Edit size={16} /> Edit Profile
-          </motion.button>
-        </motion.section>
-        <motion.div
-          className="border-t border-white/10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-        />
+          </button>
 
-        <motion.section
-          className="mt-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.5 }}>
-          <motion.p
-            className="text-gray-300 text-lg font-light p-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.5 }}>
-            No content available.
-          </motion.p>
-        </motion.section>
-      </motion.div>
+          {userData?.isAdmin && (
+            <Link
+              to="/dashboard/admin"
+              className="mt-3 text-blue-400 hover:text-blue-300 text-sm flex items-center justify-center gap-1">
+              Admin Portal <ArrowRight size={14} />
+            </Link>
+          )}
+        </div>
+
+        {/* Medications Count Card */}
+        <div className="bg-[#1E1E1E] rounded-lg p-6 shadow-lg flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Pill size={18} /> Medications
+            </h3>
+            <Link
+              to="/dashboard/medication"
+              className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <span className="text-4xl font-bold mb-2">{medicationCount}</span>
+            <p className="text-gray-400">Total medications</p>
+          </div>
+        </div>
+
+        {/* Messages Count Card */}
+        <div className="bg-[#1E1E1E] rounded-lg p-6 shadow-lg flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <MessageSquare size={18} /> Messages
+              {unreadMessageCount > 0 && (
+                <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                  {unreadMessageCount}
+                </span>
+              )}
+            </h3>
+            <Link
+              to="/dashboard/messages"
+              className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+              View all <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <span className="text-4xl font-bold mb-2">{unreadMessageCount}</span>
+            <p className="text-gray-400">Unread messages</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tasks Section */}
+      <div className="bg-[#1E1E1E] rounded-lg p-6 shadow-lg mb-8">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <ClipboardList size={20} /> Tasks
+        </h3>
+        {medicationCount === 0 && (
+          <div className="flex items-center gap-2 text-red-500">
+            <PlusCircle size={20} />
+            <div>
+              <p className="font-semibold">No medications submitted.</p>
+              <Link
+                to="/dashboard/medication"
+                className="text-lime-600 hover:text-lime-500 text-sm">
+                Submit Medication
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Recent Activity Section */}
+      <div className="bg-[#1E1E1E] rounded-lg p-6 shadow-lg">
+        <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
+        {medicationCount > 0 || unreadMessageCount > 0 ? (
+          <>
+            <div className="mb-4">
+              <p className="text-gray-400">
+                You have {medicationCount} medications recorded.
+              </p>
+              <Link
+                to="/dashboard/medication"
+                className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+                View Medication Summary <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div>
+              <p className="text-gray-400">
+                You have {unreadMessageCount} unread messages.
+              </p>
+              <Link
+                to="/dashboard/messages"
+                className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+                View Message Summary <ArrowRight size={14} />
+              </Link>
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-400">No recent activity to display</p>
+        )}
+      </div>
 
       <EditProfileForm
         isShowing={modalOpen}
         hide={() => setModalOpen(false)}
         user={user}
       />
-    </>
+    </div>
   );
 }
 
