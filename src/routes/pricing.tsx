@@ -9,6 +9,13 @@ function Pricing() {
   return (
     <>
       <title>Drug Wise - Pricing</title>
+      {/* Background Gradients/Effects added here */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 z-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
+        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
+      </div>
+
       <motion.div
         className="w-full h-lvh flex items-center justify-center bg-inherit text-white"
         initial={{ opacity: 0, y: 50 }}

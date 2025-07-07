@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router"; // Import Link
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Users, Server, Globe, Layers, Database } from "lucide-react";
+import { Brain, Cloud, Rocket, Settings, Code, Zap } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
@@ -48,6 +48,7 @@ function App() {
         "Combines patient feedback, clinical notes, regulatory reports, and medical literature to enhance drug safety analysis and counter adverse reactions.",
       gradient: "from-purple-500/30",
       span: "lg:col-span-1 lg:row-span-1",
+      icon: <Code className="h-8 w-8 text-purple-400 mb-2" />,
     },
     {
       title: "AI-Integrated Software",
@@ -55,6 +56,7 @@ function App() {
         "Empowers healthcare professionals with AI-driven tools for accurate diagnosis, treatment planning, and real-time data analysis, improving patient outcomes.",
       gradient: "from-blue-500/30",
       span: "lg:col-span-1 lg:row-span-1",
+      icon: <Brain className="h-8 w-8 text-blue-400 mb-2" />,
     },
     {
       title: "Adverse Event Tracking",
@@ -62,81 +64,114 @@ function App() {
         "Systematically collects and analyzes reports of adverse drug reactions, enabling rapid response to enhance medication safety and public health.",
       gradient: "from-teal-500/30",
       span: "lg:col-span-1 lg:row-span-1",
+      icon: <Zap className="h-8 w-8 text-teal-400 mb-2" />,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern">
+    <div className="min-h-screen  text-gray-200  relative overflow-hidden">
+      {/* Background Gradients/Effects */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
+        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
+      </div>
       {/* Hero Section */}
       <motion.section
-        className="max-w-7xl mx-auto py-10 px-6 text-center relative"
+        className="relative z-10 max-w-7xl mx-auto pt-16 pb-16 px-6 text-center"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}>
-        <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
-        <div className="relative z-10">
-          <motion.div
-            className="inline-flex items-center bg-yellow-500 text-black text-sm font-semibold px-3 py-1 rounded-full mb-6"
-            initial={{ scale: 1, opacity: 1 }}
-            animate={{
-              scale: [1, 1.05, 1],
-              opacity: [1, 0.9, 1],
-              boxShadow:
-                "0 0 10px rgba(245, 158, 11, 0.7), 0 0 20px rgba(245, 158, 11, 0.5)",
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-            whileHover={{
-              backgroundColor: "#facc15",
-              boxShadow: "0 0 15px rgba(250, 204, 21, 0.9)",
-            }}>
-            * POWERED BY AI *
-          </motion.div>
-          <motion.h1
-            className="text-2xl md:text-5xl font-bold text-white mb-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}>
-            Enhancing Your Recovery: Safer Medications, Better Health.
-          </motion.h1>
-          <motion.p
-            className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.8 }}>
-            Leverage AI and NLP to detect adverse drug reactions in real-time,
-            reducing costly hospitalizations and enhancing patient safety.
-          </motion.p>
-        
-        </div>
+        {/* Improved "Powered by AI" badge */}
+        <motion.div
+          className="inline-flex items-center bg-yellow-500 text-black text-sm font-semibold px-3 py-1 rounded-full mb-6"
+          initial={{ scale: 1, opacity: 1 }}
+          animate={{
+            scale: [1, 1.05, 1],
+            opacity: [1, 0.9, 1],
+            boxShadow:
+              "0 0 10px rgba(245, 158, 11, 0.7), 0 0 20px rgba(245, 158, 11, 0.5)",
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
+          whileHover={{
+            backgroundColor: "#facc15",
+            boxShadow: "0 0 15px rgba(250, 204, 21, 0.9)",
+          }}>
+          * POWERED BY AI *
+        </motion.div>
+
+        <motion.h1
+          className="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-tight"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.8 }}>
+          Enhancing Your Recovery: Safer Medications, Better Health.
+        </motion.h1>
+        <motion.p
+          className="text-lg sm:text-xl text-gray-300 mb-10 max-w-3xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.8 }}>
+          Leverage AI and NLP to detect adverse drug reactions in real-time,
+          reducing costly hospitalizations and enhancing patient safety.
+        </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.5 }}>
+          {/* Improved "Get Started" button using Link */}
+          <Link
+            to="/auth" // Use 'to' for internal navigation
+            className="inline-flex items-center justify-center px-8 py-3 font-semibold text-black transition duration-300 bg-white rounded-full shadow-lg hover:bg-slate-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900">
+            Get Started
+          </Link>
+
+          <br /><br />
+          {/* "Learn More" button using Link */}
+          <Link
+            to="/terms" // Use 'to' for internal navigation
+            className="inline-flex items-center justify-center px-8 py-3 ml-4 font-semibold text-gray-300 transition duration-300 border border-gray-600 rounded-full hover:border-blue-500 hover:text-blue-400 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900">
+            Learn More
+          </Link>
+        </motion.div>
       </motion.section>
 
-      {/* Grid Section */}
+      {/* Solutions Grid Section */}
       <motion.section
-        className="max-w-7xl -mt-10 mx-auto py-16 px-6"
+        id="features"
+        className="max-w-7xl -mt-10 mx-auto py-16 px-6 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.0, duration: 0.8 }}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[minmax(12rem,1fr)] justify-items-center max-w-5xl mx-auto">
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12 text-center">
+          Our Core AI-Driven Solutions
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-[minmax(12rem,1fr)] justify-items-center max-w-6xl mx-auto">
           {gridItems.map((item, index) => (
             <motion.div
               key={item.title}
-              className={`relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-8 rounded-xl overflow-hidden hover:scale-95 transition cursor-crosshair duration-500 w-full min-h-64 ${item.span}`}
+              className={`relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-8 rounded-2xl overflow-hidden hover:shadow-2xl transition duration-500 w-full min-h-64 ${item.span}`}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.2, duration: 0.5 }}
+              transition={{ delay: index * 0.2 + 0.5, duration: 0.6 }}
               viewport={{ once: true }}>
               <div
                 className={`absolute inset-0 bg-gradient-to-r ${item.gradient} to-transparent opacity-50 animate-gradient-flow`}
               />
-              <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-              <h2 className="text-2xl font-bold text-white mb-3">
-                {item.title}
-              </h2>
-              <p className="text-gray-300 text-sm">{item.description}</p>
+              <div className="absolute inset-0 border-2 border-transparent rounded-2xl animate-shiny-border" />
+              <div className="relative z-10 flex flex-col h-full">
+                {item.icon}
+                <h2 className="text-2xl font-bold text-white mb-3 mt-2">
+                  {item.title}
+                </h2>
+                <p className="text-gray-300 text-base flex-grow">
+                  {item.description}
+                </p>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -144,17 +179,18 @@ function App() {
 
       {/* Technology and Capabilities */}
       <motion.section
-        className="max-w-7xl mx-auto py-16 px-6"
+        id="capabilities"
+        className="max-w-7xl mx-auto py-16 px-6 relative z-10"
         style={{ y: yOffset }}
         initial="hidden"
         animate="visible"
         variants={containerVariants}>
-        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8 text-center">
-          Technology and Capabilities
+        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-12 text-center">
+          Core AI Capabilities
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -165,9 +201,9 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Users className="h-6 w-6 text-blue-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">AI Software</h2>
-            <p className="text-[#d1d5db] text-sm">
+            <Brain className="h-7 w-7 text-blue-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">AI Software</h2>
+            <p className="text-[#d1d5db] text-sm flex-grow">
               AI-driven clinical software enhances diagnosis, treatment
               planning, and data analysis for healthcare professionals,
               improving efficiency and patient outcomes.
@@ -175,7 +211,7 @@ function App() {
           </motion.div>
 
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -186,9 +222,9 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-green-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Server className="h-6 w-6 text-green-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">Data Analysis</h2>
-            <p className="text-[#d1d5db] text-sm">
+            <Cloud className="h-7 w-7 text-green-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">Data Analysis</h2>
+            <p className="text-[#d1d5db] text-sm flex-grow">
               Analyzes health datasets, including patient records and clinical
               studies, to monitor trends and identify critical patterns for
               proactive healthcare.
@@ -196,7 +232,7 @@ function App() {
           </motion.div>
 
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -207,9 +243,9 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Globe className="h-6 w-6 text-purple-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">NLP</h2>
-            <p className="text-[#d1d5db] text-sm">
+            <Code className="h-7 w-7 text-purple-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">NLP</h2>
+            <p className="text-[#d1d5db] text-sm flex-grow">
               NLP extracts insights from medical notes to support clinical
               decisions with sentiment analysis and context-aware
               interpretation.
@@ -217,7 +253,7 @@ function App() {
           </motion.div>
 
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -228,11 +264,11 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-teal-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Layers className="h-6 w-6 text-teal-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
+            <Zap className="h-7 w-7 text-teal-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">
               Event Tracking
             </h2>
-            <p className="text-[#d1d5db] text-sm">
+            <p className="text-[#d1d5db] text-sm flex-grow">
               Collects and analyzes adverse drug reaction reports, providing
               real-time alerts and regulatory reporting for enhanced drug
               safety.
@@ -240,7 +276,7 @@ function App() {
           </motion.div>
 
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -251,11 +287,11 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Database className="h-6 w-6 text-red-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
+            <Rocket className="h-7 w-7 text-red-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">
               Research Support
             </h2>
-            <p className="text-[#d1d5db] text-sm">
+            <p className="text-[#d1d5db] text-sm flex-grow">
               Supports vaccination research with comprehensive datasets, driving
               drug discovery and safer treatments through global health
               collaborations.
@@ -263,7 +299,7 @@ function App() {
           </motion.div>
 
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -274,18 +310,18 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Globe className="h-6 w-6 text-indigo-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
+            <Settings className="h-7 w-7 text-indigo-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">
               Multi-Source Data
             </h2>
-            <p className="text-[#d1d5db] text-sm">
+            <p className="text-[#d1d5db] text-sm flex-grow">
               Integrates patient symptoms, clinical notes, and regulatory
               reports for a comprehensive view of drug safety profiles.
             </p>
           </motion.div>
 
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -296,18 +332,18 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Layers className="h-6 w-6 text-yellow-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">
+            <Brain className="h-7 w-7 text-yellow-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">
               Vaccination Research
             </h2>
-            <p className="text-[#d1d5db] text-sm">
+            <p className="text-[#d1d5db] text-sm flex-grow">
               Enhances vaccine development and safety through data-driven
               research and collaboration with health experts.
             </p>
           </motion.div>
 
           <motion.div
-            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-lg border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-95 transition cursor-pointer duration-500 h-64"
+            className="relative group bg-gradient-to-br from-[#1a1a1a]/90 to-[#2a2a2a]/70 backdrop-blur-md border border-[#ffffff1a] p-6 rounded-xl overflow-hidden hover:scale-[1.02] transition cursor-pointer duration-500 h-64 flex flex-col justify-between"
             variants={itemVariants}
             onClick={() =>
               handleLearnMore({
@@ -318,9 +354,9 @@ function App() {
             }>
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500/30 to-transparent opacity-50 animate-gradient-flow" />
             <div className="absolute inset-0 border-2 border-transparent rounded-xl animate-shiny-border" />
-            <Users className="h-6 w-6 text-pink-400 mb-1" />
-            <h2 className="text-lg font-bold text-white mb-1">Public Health</h2>
-            <p className="text-[#d1d5db] text-sm">
+            <Zap className="h-7 w-7 text-pink-400 mb-2" />
+            <h2 className="text-xl font-bold text-white mb-1">Public Health</h2>
+            <p className="text-[#d1d5db] text-sm flex-grow">
               Promotes community health through education, policies, and
               research to prevent disease and reduce health disparities.
             </p>
@@ -330,23 +366,28 @@ function App() {
 
       {/* Popup */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <motion.div
-            className="bg-[#1a1a1a]/90 p-6 rounded-lg max-w-md w-full text-white border border-[#ffffff1a] shadow-lg"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}>
-            <h3 className="text-2xl font-bold mb-4">{selectedItem.title}</h3>
-            <p className="text-[#d1d5db] text-base mb-4">
+            className="bg-gray-800/95 p-8 rounded-2xl max-w-lg w-full text-white border border-gray-700 shadow-2xl relative"
+            initial={{ opacity: 0, scale: 0.8, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{
+              duration: 0.3,
+              type: "spring",
+              damping: 15,
+              stiffness: 300,
+            }}>
+            <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-4">
+              {selectedItem.title}
+            </h3>
+            <p className="text-gray-300 text-base mb-6 leading-relaxed">
               {selectedItem.fullDescription}
             </p>
             <button
               onClick={closePopup}
-              className="mt-4 w-full bg-lime-600 hover:bg-lime-700 text-black font-light py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
-              style={{
-                borderRadius: "8px",
-              }}>
-              Okay
+              className="mt-4 w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 px-6 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition duration-300 transform hover:scale-105">
+              Got it!
             </button>
           </motion.div>
         </div>
