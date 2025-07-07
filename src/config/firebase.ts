@@ -44,7 +44,10 @@ const sendWelcomeMessage = async (user: User) => {
     if (messageDocs.empty) {
       // No welcome message exists, send one
       await addDoc(collection(db, "messages"), {
-        content: `Welcome to the DrugWise platform, ${user.displayName || "User"}! We're excited to have you here.`,
+        content: 
+`Welcome to the DrugWise platform, ${user.displayName || "User"}! We're excited to have you here. 
+        
+We are a health-tech startup focused on transforming medication safety in Africa by providing an AI-powered platform that offers real-time drug interaction alerts, personalized recommendations, and comprehensive medication management, aiming to reduce preventable adverse reactions and enhance health outcomes across the continent.`,
         isRead: false,
         recipientId: user.uid,
         senderId: "system",
@@ -53,9 +56,9 @@ const sendWelcomeMessage = async (user: User) => {
         subject: "Welcome to DrugWise!",
         isWelcomeMessage: true,
       });
-      console.log(`Welcome message sent to user: ${user.uid}`);
+      console.log(`Welcome message sent.`);
     } else {
-      console.log(`User ${user.uid} already has a welcome message.`);
+      console.log(`User already has a welcome message.`);
     }
   } catch (error) {
     console.error("Error sending welcome message:", error);
