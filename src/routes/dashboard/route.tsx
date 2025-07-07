@@ -30,7 +30,7 @@ interface UserData {
   isAdmin: boolean;
   name?: string;
   photoURL?: string;
-  gender?: string; // Assuming gender is stored as 'male' or 'female'
+  gender?: string; // 'male' or 'female'
 }
 
 const fetchUserData = async (uid: string): Promise<UserData> => {
@@ -119,7 +119,12 @@ function DashboardLayout() {
     return location.pathname === to;
   };
 
+  // Avatar selection logic:
+  // Priority: Firebase Auth user photoURL > Firestore photoURL > default gender avatar
   const getProfileImage = () => {
+    if (firebaseUser?.photoURL) {
+      return firebaseUser.photoURL;
+    }
     if (userData?.photoURL) {
       return userData.photoURL;
     }
@@ -131,7 +136,7 @@ function DashboardLayout() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed top-4 left-4 w-[260px] h-[calc(100%-32px)] z-50 flex-col rounded-3xl backdrop-blur-md bg-[#1A1A1A]/70 shadow-2xl border border-white/10">
         <div className="px-6 pt-6 pb-4 flex items-center gap-4 border-b border-white/10">
-          <div className="w-10 h-10 rounded-full bg-gray-300 overflow-hidden">
+          <div className="w-10 h-10 rounded-full bg-[#181C24] overflow-hidden object-cover border border-blue-500">
             <img
               src={getProfileImage()}
               alt="User"
@@ -246,8 +251,8 @@ function DashboardLayout() {
                   <LogOut size={18} />
                   Sign Out
                 </button>
-                <br />{" "}
-                <p className="roboto-condensed-light text-xs text-center  mb-2">
+                <br />
+                <p className="roboto-condensed-light text-xs text-center mb-2">
                   © {new Date().getFullYear()} DrugWise. All rights reserved.
                 </p>
               </div>
@@ -269,3 +274,5 @@ function DashboardLayout() {
     </main>
   );
 }
+
+export default DashboardLayout;

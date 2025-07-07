@@ -21,6 +21,18 @@ function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Initial check
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -70,7 +82,7 @@ function AdminLayout() {
 
   if (isLoading || !userData) {
     return (
-      <div className="flex items-center justify-center min-h-screen  text-white">
+      <div className="flex items-center justify-center min-h-screen text-white">
         <div className="text-lg font-medium">Loading admin panel...</div>
       </div>
     );
@@ -83,6 +95,13 @@ function AdminLayout() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-3xl font-bold tracking-tight roboto-condensed-bold">Admin Dashboard</h1>
         </div>
+
+        {/* Warning for small screens */}
+        {isSmallScreen && (
+          <div className="bg-yellow-500 text-black p-4 rounded-lg text-center roboto-condensed-regular">
+            For the best experience, please use a larger screen to access the admin page.
+          </div>
+        )}
 
         {/* Tabs */}
         <nav className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl p-2 flex gap-2 w-full sm:max-w-md">
@@ -103,7 +122,7 @@ function AdminLayout() {
         </nav>
 
         {/* Content */}
-        <main className="rounded-xl  p-4 shadow-inner min-h-[400px]">
+        <main className="rounded-xl p-4 shadow-inner min-h-[400px]">
           <Outlet />
         </main>
       </div>

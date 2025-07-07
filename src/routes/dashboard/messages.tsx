@@ -103,13 +103,18 @@ function MessagesComponent() {
 
   if (!userId) {
     return (
-      <div className="p-4 text-white">Please sign in to view messages</div>
+      <div className="p-4 text-white text-center roboto-condensed-light">
+        Please sign in to view messages
+      </div>
     );
   }
 
   return (
-    <div className="p-4 text-white max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Your Messages</h1>
+    <div className="p-4 text-white max-w-4xl mx-auto w-full min-h-screen">
+      <title>DrugWise - Messages</title>
+      <h1 className="text-2xl roboto-condensed-bold mb-6 text-center sm:text-left">
+        Your Messages
+      </h1>
 
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
@@ -118,95 +123,157 @@ function MessagesComponent() {
       ) : messages.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-4xl mb-4">📭</div>
-          <h2 className="text-xl font-bold mb-2">No Messages</h2>
-          <p className="text-gray-400">
+          <h2 className="text-xl roboto-condensed-bold mb-2">No Messages</h2>
+          <p className="text-gray-400 roboto-condensed-light">
             When you receive messages, they'll appear here.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[#242424] bg-[#131313]">
-          <table className="min-w-full">
-            <thead>
-              <tr className="text-left border-b border-[#242424]">
-                <th className="p-4">From</th>
-                <th className="p-4">Subject</th>
-                <th className="p-4">Date</th>
-                <th className="p-4">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
-                {messages.map((message) => (
-                  <motion.tr
-                    key={message.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className={`border-b border-[#242424] hover:bg-[#242424] cursor-pointer ${
-                      !message.isRead ? "bg-[#242424]" : ""
-                    }`}
-                    onClick={() => {
-                      setSelectedMessage(message);
-                      if (!message.isRead) markAsRead(message.id);
-                    }}>
-                    <td className="p-4">{message.senderName}</td>
-                    <td className="p-4 font-medium">{message.subject}</td>
-                    <td className="p-4">
-                      {message.sentAt?.toDate().toLocaleString()}
-                    </td>
-                    <td className="p-4">
-                      {message.isRead ? (
-                        <span className="px-2 py-1 rounded-full text-xs bg-green-900 text-green-300">
-                          Read
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 rounded-full text-xs bg-yellow-900 text-yellow-300">
-                          Unread
-                        </span>
-                      )}
-                    </td>
-                  </motion.tr>
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Table for larger screens */}
+          <div className="hidden sm:block overflow-x-auto rounded-lg border border-[#242424] bg-[#131313]">
+            <table className="min-w-full">
+              <thead>
+                <tr className="text-left border-b border-[#242424]">
+                  <th className="p-4 roboto-condensed-bold">From</th>
+                  <th className="p-4 roboto-condensed-bold">Subject</th>
+                  <th className="p-4 roboto-condensed-bold">Date</th>
+                  <th className="p-4 roboto-condensed-bold">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence>
+                  {messages.map((message) => (
+                    <motion.tr
+                      key={message.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className={`border-b border-[#242424] hover:bg-[#242424] cursor-pointer ${
+                        !message.isRead ? "bg-[#242424]" : ""
+                      }`}
+                      onClick={() => {
+                        setSelectedMessage(message);
+                        if (!message.isRead) markAsRead(message.id);
+                      }}>
+                      <td className="p-4 roboto-condensed-light">
+                        {message.senderName}
+                      </td>
+                      <td className="p-4 roboto-condensed-medium">
+                        {message.subject}
+                      </td>
+                      <td className="p-4 roboto-condensed-light">
+                        {message.sentAt?.toDate().toLocaleString()}
+                      </td>
+                      <td className="p-4">
+                        {message.isRead ? (
+                          <span className="px-2 py-1 rounded-full text-xs bg-green-900 text-green-300 roboto-condensed-medium">
+                            Read
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded-full text-xs bg-yellow-900 text-yellow-300 roboto-condensed-medium">
+                            Unread
+                          </span>
+                        )}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Card list for smaller screens */}
+          <div className="sm:hidden space-y-4">
+            <AnimatePresence>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className={`bg-[#131313] p-4 rounded-lg border border-[#242424] cursor-pointer ${
+                    !message.isRead ? "bg-[#242424]" : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedMessage(message);
+                    if (!message.isRead) markAsRead(message.id);
+                  }}>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg roboto-condensed-medium pr-4">
+                      {message.subject}
+                    </h3>
+                    {message.isRead ? (
+                      <span className="px-2 py-1 rounded-full text-xs bg-green-900 text-green-300 roboto-condensed-medium">
+                        Read
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 rounded-full text-xs bg-yellow-900 text-yellow-300 roboto-condensed-medium">
+                        Unread
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-400 roboto-condensed-light text-sm mb-2">
+                    <span className="roboto-condensed-medium">From:</span>{" "}
+                    {message.senderName}
+                  </p>
+                  <p className="text-gray-500 roboto-condensed-light text-xs">
+                    <span className="roboto-condensed-medium">Date:</span>{" "}
+                    {message.sentAt?.toDate().toLocaleDateString()}
+                  </p>
+                  <p className="text-blue-400 text-sm mt-2 text-right roboto-condensed-bold">
+                    View Message
+                  </p>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </>
       )}
 
       {/* Message Detail Modal */}
       {selectedMessage && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedMessage(null)}>
-          <div
-            className="bg-[#131313] rounded-lg shadow-xl p-6 max-w-lg w-full border border-[#242424] relative"
-            onClick={(e) => e.stopPropagation()}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 50, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 100, damping: 15 }}
+            className="bg-[#131313] rounded-lg shadow-xl p-6 max-w-full sm:max-w-lg w-full border border-[#242424] relative max-h-[90vh] overflow-y-auto">
             <button
-              className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl"
-              onClick={() => setSelectedMessage(null)}>
+              className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl p-1 px-4 rounded-full bg-[#2a2a2a] hover:bg-[#3a3a3a] transition-colors duration-200"
+              onClick={() => setSelectedMessage(null)}
+              aria-label="Close message">
               &times;
             </button>
-            <h2 className="text-xl font-bold mb-2">
+            <h2 className="text-xl roboto-condensed-bold mb-2 text-center sm:text-left">
               {selectedMessage.subject}
             </h2>
-            <div className="mb-4 whitespace-pre-wrap">
+            <div className="mb-4 whitespace-pre-wrap roboto-condensed-light">
               {selectedMessage.content}
             </div>
-            <div className="text-sm text-gray-400 space-y-1">
+            <div className="text-sm text-gray-400 space-y-1 roboto-condensed-light">
               <p>
-                <strong>From:</strong> {selectedMessage.senderName}
+                <strong className="roboto-condensed-medium">From:</strong>{" "}
+                {selectedMessage.senderName}
               </p>
               <p>
-                <strong>Date:</strong>{" "}
+                <strong className="roboto-condensed-medium">Date:</strong>{" "}
                 {selectedMessage.sentAt?.toDate().toLocaleString()}
               </p>
               <p>
-                <strong>Status:</strong>{" "}
+                <strong className="roboto-condensed-medium">Status:</strong>{" "}
                 {selectedMessage.isRead ? "Read" : "Unread"}
               </p>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Compose Message (for admins only) */}
@@ -227,12 +294,13 @@ function ComposeMessage({ onSent, currentUserData }: ComposeMessageProps) {
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [users, setUsers] = useState<UserData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isSending, setIsSending] = useState(false);
 
   // Fetch all users
   useEffect(() => {
     const fetchUsers = async () => {
-      setIsLoading(true);
+      setIsLoadingUsers(true);
       try {
         const q = query(collection(db, "users"));
         const snapshot = await getDocs(q);
@@ -240,7 +308,7 @@ function ComposeMessage({ onSent, currentUserData }: ComposeMessageProps) {
       } catch (error) {
         toast.error("Failed to load recipients");
       } finally {
-        setIsLoading(false);
+        setIsLoadingUsers(false);
       }
     };
     fetchUsers();
@@ -253,6 +321,7 @@ function ComposeMessage({ onSent, currentUserData }: ComposeMessageProps) {
       return;
     }
 
+    setIsSending(true);
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("Not authenticated");
@@ -274,22 +343,31 @@ function ComposeMessage({ onSent, currentUserData }: ComposeMessageProps) {
       onSent();
     } catch (error) {
       toast.error("Failed to send message");
+    } finally {
+      setIsSending(false);
     }
   };
 
   return (
     <div className="roboto-condensed-light mt-8 p-4 border border-[#242424] rounded-lg bg-[#131313]">
-      <h2 className="text-lg font-bold mb-4">Compose Message</h2>
+      <h2 className="text-xl roboto-condensed-bold mb-4">Compose Message</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1">Recipient</label>
+          <label
+            htmlFor="recipient"
+            className="block mb-1 roboto-condensed-light">
+            Recipient
+          </label>
           <select
+            id="recipient"
             value={recipientId}
             onChange={(e) => setRecipientId(e.target.value)}
-            className="w-full p-2 bg-[#242424] border border-[#242424] rounded"
-            disabled={isLoading}
+            className="w-full p-2 bg-[#242424] border border-[#242424] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 roboto-condensed-light"
+            disabled={isLoadingUsers || isSending}
             required>
-            <option value="">Select recipient</option>
+            <option value="">
+              {isLoadingUsers ? "Loading recipients..." : "Select recipient"}
+            </option>
             {users.map((user) => (
               <option key={user.uid} value={user.uid}>
                 {user.name} {user.surname} ({user.email})
@@ -298,32 +376,46 @@ function ComposeMessage({ onSent, currentUserData }: ComposeMessageProps) {
           </select>
         </div>
         <div>
-          <label className="block mb-1">Subject</label>
+          <label
+            htmlFor="subject"
+            className="block mb-1 roboto-condensed-light">
+            Subject
+          </label>
           <input
+            id="subject"
             type="text"
             value={subject}
-            placeholder="Subject"
+            placeholder="Subject of the message"
             onChange={(e) => setSubject(e.target.value)}
-            className="w-full p-2 bg-[#242424] border border-[#242424] rounded capitalize"
+            className="w-full p-2 bg-[#242424] border border-[#242424] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 roboto-condensed-light capitalize"
             required
+            disabled={isSending}
           />
         </div>
         <div>
-          <label className="block mb-1">Message</label>
+          <label
+            htmlFor="messageContent"
+            className="block mb-1 roboto-condensed-light">
+            Message
+          </label>
           <textarea
+            id="messageContent"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full p-2 bg-[#242424] border border-[#242424] rounded min-h-[150px]"
+            className="w-full p-2 bg-[#242424] border border-[#242424] rounded min-h-[150px] resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 roboto-condensed-light"
             placeholder="Type your message here..."
             required
+            disabled={isSending}
           />
         </div>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-lime-600 hover:bg-lime-700 rounded font-medium"
-          disabled={isLoading}>
-          {isLoading ? "Sending..." : "Send Message"}
-        </button>
+        <div className="flex justify-center items-center">
+          <button
+            type="submit"
+            className="w-full max-w-[200px] px-4 py-2 bg-lime-600 hover:bg-lime-700 rounded roboto-condensed-medium text-lg transition-colors duration-200"
+            disabled={isSending}>
+            {isSending ? "Sending..." : "Send"}
+          </button>
+        </div>
       </form>
     </div>
   );

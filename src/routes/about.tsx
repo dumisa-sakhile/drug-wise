@@ -33,7 +33,7 @@ function About() {
             transition={{ delay: 0.4, duration: 0.8 }}>
             We are a health-tech startup dedicated to revolutionizing medication
             safety across Africa.{" "}
-            <span className="font-bold font-white">Our vision</span>  is to become
+            <span className="font-bold text-white">Our vision</span>  is to become
             Africa’s leading platform for personalized medication safety,
             empowering individuals to take control of their health through
             real-time, AI-powered drug interaction prevention.{" "}

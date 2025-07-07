@@ -162,7 +162,7 @@ function AdminMedication() {
       queryClient.invalidateQueries({ queryKey: ["allMedications"] });
     },
     onError: (err) => {
-      console.error("Update error:", err);
+     
       toast.error(err.message || "Failed to update status");
     },
   });

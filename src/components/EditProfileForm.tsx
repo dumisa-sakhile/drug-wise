@@ -296,6 +296,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
               placeholder="Your email"
               className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
               required
+              readOnly
             />
           </motion.div>
 

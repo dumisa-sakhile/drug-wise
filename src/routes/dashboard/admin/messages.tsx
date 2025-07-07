@@ -155,14 +155,13 @@ function AdminMessages() {
         isRead: false,
       };
 
-      console.log("Sending message:", messageData);
 
       try {
         const docRef = await addDoc(collection(db, "messages"), messageData);
-        console.log("Message sent with ID:", docRef.id);
+        
         return { id: docRef.id, ...messageData };
       } catch (error) {
-        console.error("Error sending message:", error);
+       
         throw error;
       }
     },
@@ -173,7 +172,7 @@ function AdminMessages() {
       setSelectedUser(null);
     },
     onError: (err: Error) => {
-      console.error("Send error:", err);
+     
       toast.error(err.message || "Failed to send message");
     },
   });
@@ -193,7 +192,7 @@ function AdminMessages() {
       setIsPopupOpen(false);
     },
     onError: (err: Error) => {
-      console.error("Update error:", err);
+      
       toast.error(err.message || "Failed to update message");
     },
   });
