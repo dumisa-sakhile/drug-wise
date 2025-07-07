@@ -26,6 +26,7 @@ import {
   Pill,
   PlusCircle,
   User as UserIcon,
+  Edit,
 } from "lucide-react";
 import EditProfileForm from "@/components/EditProfileForm";
 import defaultMaleAvatar from "/male.jpg?url";
@@ -116,11 +117,11 @@ const useDashboardData = (user: User | null) => {
       items.push({
         type: "activity",
         id: "last-login",
-        date: userData.lastLogin.toDate(),
+        date: userData.lastLogin?.toDate(),
         content: {
           icon: <UserIcon size={16} className="text-neutral-500" />,
           title: "Logged In",
-          detail: `Last login at ${userData.lastLogin.toDate().toLocaleString()}`,
+          detail: `Last login at ${userData.lastLogin?.toDate().toLocaleString()}`,
         },
       });
     }
@@ -128,11 +129,11 @@ const useDashboardData = (user: User | null) => {
       items.push({
         type: "activity",
         id: med.id,
-        date: med.submittedAt.toDate(),
+        date: med.submittedAt?.toDate(),
         content: {
           icon: <Pill size={16} className="text-red-400" />,
           title: `Medication Added: ${med.medicationName}`,
-          detail: `Status: ${med.status}`,
+          detail: `Status: ${med.status.charAt(0).toUpperCase() + med.status.slice(1)}`,
           link: "/dashboard/medication",
         },
       })
@@ -141,7 +142,7 @@ const useDashboardData = (user: User | null) => {
       items.push({
         type: "activity",
         id: msg.id,
-        date: msg.sentAt.toDate(),
+        date: msg.sentAt?.toDate(),
         content: {
           icon: <MessageSquare size={16} className="text-blue-400" />,
           title: `New Message: ${msg.subject}`,
@@ -151,7 +152,7 @@ const useDashboardData = (user: User | null) => {
         },
       })
     );
-    return items.sort((a, b) => b.date.getTime() - a.date.getTime());
+    return items.sort((a, b) => b.date?.getTime() - a.date?.getTime());
   }, [userData, medications, messages]);
 
   const unreadMessageCount = useMemo(
@@ -234,14 +235,14 @@ function DashboardPage() {
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="min-h-screen w-full max-w-5xl mx-auto py-8 px-2 sm:px-4 md:px-6 lg:px-8">
+        className="roboto-condensed-light min-h-screen w-full max-w-5xl mx-auto py-8 md:px-4 sm:px-6">
         <DashboardHeader
           user={userData}
           profileImage={profileImage}
           onEditProfile={() => setModalOpen(true)}
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-6">
+        <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-6">
           <StatCard
             title="Medications"
             value={medicationCount}
@@ -309,10 +310,18 @@ const DashboardHeader = ({ user, profileImage, onEditProfile }: any) => (
         </p>
       </div>
     </div>
+    {/* Edit Profile Button - Mobile vs Desktop */}
     <button
       onClick={onEditProfile}
-      className="flex items-center gap-2 text-xs sm:text-sm text-neutral-300 bg-neutral-800/80 hover:bg-neutral-800 border border-neutral-700 px-3 py-2 rounded-lg transition-colors min-w-[140px] w-full sm:w-auto">
+      className="hidden sm:flex items-center gap-2 text-xs sm:text-sm text-neutral-300 bg-neutral-800/80 hover:bg-neutral-800 border border-neutral-700 px-3 py-2 rounded-lg transition-colors min-w-[140px] w-full sm:w-auto">
       Edit Profile <ArrowRight size={16} />
+    </button>
+    {/* Mobile-only Edit Icon Button */}
+    <button
+      onClick={onEditProfile}
+      className="sm:hidden p-2 rounded-full text-neutral-300 bg-neutral-800/80 hover:bg-neutral-800 border border-neutral-700 transition-colors self-end"
+      aria-label="Edit Profile">
+      <Edit size={20} />
     </button>
   </header>
 );
@@ -320,21 +329,22 @@ const DashboardHeader = ({ user, profileImage, onEditProfile }: any) => (
 const StatCard = ({ title, value, subValue, icon, link, onClick }: any) => (
   <motion.div
     whileHover={{ y: -2 }}
-    className="bg-neutral-900/80 border border-neutral-800 p-4 rounded-xl transition-all w-full min-w-0">
+    className="bg-neutral-900/80 border border-neutral-800 p-4 rounded-xl transition-all w-full min-w-0 flex flex-col justify-between">
     <div className="flex items-center justify-between text-neutral-400 mb-1">
       <span className="text-xs sm:text-sm font-medium">{title}</span>
       {icon}
     </div>
-    <p className="text-2xl sm:text-3xl font-bold text-white">{value}</p>
+    {/* Hide value and subValue on mobile */}
+    <p className="hidden sm:block text-2xl sm:text-3xl font-bold text-white mb-1">{value}</p>
     {subValue && (
-      <p className="text-xs sm:text-sm text-neutral-500 mt-1">{subValue}</p>
+      <p className="hidden sm:block text-xs sm:text-sm text-neutral-500 mt-1">{subValue}</p>
     )}
     {(link || onClick) && (
       <Link
         to={link}
         onClick={onClick}
-        className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 mt-3 inline-block cursor-pointer">
-        {link ? "View All" : "Update"} &rarr;
+        className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 mt-3  cursor-pointer flex items-center gap-1">
+        {link ? "View All" : "Update"} <ArrowRight size={14} />
       </Link>
     )}
   </motion.div>
@@ -454,7 +464,7 @@ const TimelineItem = ({
         <Link
           to={actionLink}
           onClick={onAction}
-          className="flex-shrink-0 text-xs sm:text-sm font-semibold text-neutral-100 bg-neutral-700/50 hover:bg-neutral-700 border border-neutral-600 px-2 py-1.5 rounded-md cursor-pointer transition-colors">
+          className="flex-shrink-0 text-xs sm:text-sm font-semibold text-neutral-100 bg-neutral-700/50 hover:bg-neutral-700 border border-neutral-600 px-2 py-1.5 rounded-md cursor-pointer transition-colors whitespace-nowrap">
           {actionLabel}
         </Link>
       ) : (
@@ -462,7 +472,7 @@ const TimelineItem = ({
           <Link
             to={link}
             className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 flex-shrink-0">
-            &rarr;
+            <ArrowRight size={16} />
           </Link>
         )
       )}
@@ -471,7 +481,7 @@ const TimelineItem = ({
 };
 
 const LoadingState = ({ message }: { message: string }) => (
-  <div className="min-h-screen flex flex-col items-center justify-center text-neutral-400 px-4">
+  <div className="min-h-screen flex flex-col items-center justify-center text-neutral-400 md:px-4">
     <motion.div
       animate={{ rotate: 360 }}
       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}

@@ -136,6 +136,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
       setGender("");
       setDob("");
       hide();
+      window.location.reload(); // Refresh the page after successful update
     },
     onError: (error: any) => {
       setError(error.message || "Failed to update profile");
