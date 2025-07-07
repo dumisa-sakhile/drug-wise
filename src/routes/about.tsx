@@ -10,7 +10,7 @@ function About() {
   const teamMembers = teamData(); // Assuming teamData is a function that returns the array
 
   return (
-    <div className="min-h-screen  text-gray-200 relative overflow-hidden">
+    <div className="min-h-10  text-gray-200 relative overflow-hidden">
       {/* Background Gradients/Effects (consistent with landing page) */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
@@ -20,12 +20,12 @@ function About() {
 
       {/* Hero Section */}
       <motion.section
-        className="relative z-10 max-w-7xl mx-auto pt-24 pb-16 px-6 text-center"
+        className="relative z-10 max-w-7xl mx-auto pt-16 pb-16 px-6 text-center"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}>
         <motion.h1
-          className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600"
+          className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}>

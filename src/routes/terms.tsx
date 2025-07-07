@@ -62,7 +62,7 @@ function Terms() {
     <>
       <title>DrugWise - Terms</title>
       <motion.div
-        className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern py-12 px-6"
+        className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern py-12 px-4 sm:px-6 overflow-hidden max-w-full"
         initial={{ opacity: 0, y: 50 }}
         animate={{
           opacity: 1,
@@ -71,15 +71,11 @@ function Terms() {
         }}
         transition={{ duration: 0.8 }}>
         {/* Background Gradients/Effects added here */}
-        <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 z-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" />
-          <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000" />
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000" />
-        </div>
+        
 
         <div className="max-w-4xl mx-auto">
           <motion.h1
-            className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-red-400 to-orange-600 bg-clip-text text-transparent text-center mb-8"
+            className="text-4xl sm:text-5xl font-bold text-white text-center mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.5 }}>
