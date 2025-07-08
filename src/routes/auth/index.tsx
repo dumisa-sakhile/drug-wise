@@ -143,12 +143,12 @@ function Login() {
       </div>
 
       <motion.section
-        className="relative z-10 w-full min-h-[700px] flex items-center justify-center text-white px-4 overflow-hidden"
+        className="relative z-10 w-full min-h-[700px] flex items-center justify-center text-white  overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}>
         <motion.div
-          className="bg-[#222222] backdrop-blur-sm ring-1 ring-[rgba(255,255,255,0.1)] p-8 rounded-lg shadow-lg w-full max-w-md" // Restored w-full, removed mx-auto
+          className="bg-[#222222] backdrop-blur-sm ring-1 ring-[rgba(255,255,255,0.1)] p-8 rounded-lg shadow-lg w-full max-w-md"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}>

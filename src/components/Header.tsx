@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { auth } from "../config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { motion } from "framer-motion";
-// Removed unused lucide-react icons: Home, Info, DollarSign, FileText
+import { Home, Info, DollarSign, FileText } from "lucide-react"; // Importing icons
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -31,10 +31,10 @@ const Header: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/about", label: "About" },
-    { to: "/pricing", label: "Pricing" },
-    { to: "/terms", label: "Terms" },
+    { to: "/", label: "Home", Icon: Home },
+    { to: "/about", label: "About", Icon: Info },
+    { to: "/pricing", label: "Pricing", Icon: DollarSign },
+    { to: "/terms", label: "Terms", Icon: FileText },
   ];
 
   // Hide header/nav if user is signed in or still loading
@@ -97,16 +97,17 @@ const Header: React.FC = () => {
         </div>
       </header>
 
-      {/* Bottom Navbar (Mobile Only) - REDESIGNED TO LOOK LIKE DESKTOP LINKS */}
-      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-md mx-auto bg-[#1a1a1a]/90 backdrop-blur-sm border border-white/5 rounded-full z-50 py-3 px-4 shadow-xl"> {/* Changed py-2.5 to py-3 for increased height */}
+      {/* Bottom Navbar (Mobile Only) - REDESIGNED TO INCLUDE ICONS */}
+      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-md mx-auto bg-[#1a1a1a]/90 backdrop-blur-sm border border-white/5 rounded-full z-50 py-3 px-4 shadow-xl">
         <div className="flex justify-around items-center h-full space-x-4">
-          {navLinks.map(({ to, label }) => (
+          {navLinks.map(({ to, label, Icon }) => (
             <Link
               key={to}
               to={to}
-              className={`flex items-center justify-center text-base font-medium transition-colors duration-200 relative group
-                ${location.pathname === to ? "text-[#3b82f6] font-bold" : "text-gray-200 hover:text-white"}`} 
+              className={`flex flex-col items-center justify-center text-base font-medium transition-colors duration-200 relative group
+                ${location.pathname === to ? "text-[#3b82f6] font-bold" : "text-gray-200 hover:text-white"}`}
             >
+              <Icon size={20} className="mb-1" />
               {label}
             </Link>
           ))}

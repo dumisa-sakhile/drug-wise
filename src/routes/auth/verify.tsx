@@ -141,7 +141,7 @@ function VerifyMagicLink() {
       </div>
 
       <motion.section
-        className="relative z-10 w-full min-h-screen flex items-center justify-center text-white px-4 overflow-hidden" // Changed min-h-[40rem] to min-h-screen, added px-4 and overflow-hidden
+        className="relative z-10 w-full min-h-screen flex items-center justify-center text-white  overflow-hidden" // Changed min-h-[40rem] to min-h-screen, added px-4 and overflow-hidden
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}>

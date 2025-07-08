@@ -27,7 +27,7 @@ import EditProfileForm from "@/components/EditProfileForm";
 import defaultMaleAvatar from "/male.jpg?url";
 import defaultFemaleAvatar from "/female.jpg?url";
 
-// --- Type Definitions (Identical to original) ---
+// --- Type Definitions ---
 interface UserData {
   uid: string;
   email: string;
@@ -53,7 +53,7 @@ interface Message {
   isRead: boolean;
 }
 
-// --- Custom Hook for Data Fetching (Identical to original) ---
+// --- Custom Hook for Data Fetching ---
 const useDashboardData = (user: User | null) => {
   const uid = user?.uid;
 
@@ -152,12 +152,12 @@ const useDashboardData = (user: User | null) => {
   };
 };
 
-// --- Route Definition (Identical to original) ---
+// --- Route Definition ---
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardPage,
 });
 
-// --- Main Dashboard Component (Redesigned) ---
+// --- Main Dashboard Component ---
 function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
@@ -206,7 +206,7 @@ function DashboardPage() {
   return (
     <>
       <title>DrugWise - My Hub</title>
-      <main className="bricolage-grotesque-light min-h-screen text-neutral-100 font-sans p-4 sm:p-6 lg:p-8">
+      <main className="bricolage-grotesque-light min-h-screen text-neutral-100 font-sans p-0 sm:p-6 lg:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -244,7 +244,7 @@ function DashboardPage() {
   );
 }
 
-// --- Child Components (Redesigned & New) ---
+// --- Child Components ---
 
 const DashboardHeader = ({
   user,
@@ -285,7 +285,6 @@ const DashboardHeader = ({
         className="flex items-center justify-center w-full sm:w-auto gap-2 text-sm text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 px-4 py-2 rounded-lg transition-colors">
         <Edit size={16} />
         Edit Profile
-
       </button>
     </div>
   </header>
