@@ -305,7 +305,7 @@ function Model() {
             </button>
           </form>
         </div>
-        <div className="hidden md:block text-center backdrop-blur-md  text-white text-xs mt-2">
+        <div className="text-center backdrop-blur-md bg-black/30 text-white text-xs mt-2">
           {" "}
           {/* Adjusted contrast */}
           WiseBot may generate inaccurate information like any other AI, and is
