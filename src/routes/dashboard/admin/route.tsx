@@ -93,12 +93,12 @@ function AdminLayout() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-3xl font-bold tracking-tight roboto-condensed-bold">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight ">Admin Dashboard</h1>
         </div>
 
         {/* Warning for small screens */}
         {isSmallScreen && (
-          <div className="bg-yellow-500 text-black p-4 rounded-lg text-center roboto-condensed-regular">
+          <div className="bg-yellow-500 text-black p-4 rounded-lg text-center font-regular">
             For the best experience, please use a larger screen to access the admin page.
           </div>
         )}
@@ -109,7 +109,7 @@ function AdminLayout() {
             <Link
               key={to}
               to={to}
-              className={`roboto-condensed-light flex-1 text-center text-sm font-medium px-4 py-2 rounded-lg transition-all
+              className={`t flex-1 text-center text-sm font-medium px-4 py-2 rounded-lg transition-all
                 ${
                   isActive(to)
                     ? "bg-white/10 text-white shadow-inner backdrop-blur-md border border-white/20"

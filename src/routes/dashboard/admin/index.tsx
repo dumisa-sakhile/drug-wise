@@ -211,8 +211,8 @@ function Admin() {
 
   return (
     <div className="p-4 text-white ">
-      <h1 className="text-xl mb-4 roboto-condensed-bold">Users Management</h1>
-      <p className="text-[#999] mb-6 roboto-condensed-light">
+      <h1 className="text-xl mb-4 font-bold">Users Management</h1>
+      <p className="text-[#999] mb-6 font-light">
         Manage users, edit their details, and view their information.
       </p>
 
@@ -225,13 +225,13 @@ function Admin() {
               placeholder="Search by UID, Name, or Surname..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none roboto-condensed-light"
+              className="w-full pl-10 pr-4 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none font-light"
             />
           </div>
           <select
             value={filterGender}
             onChange={(e) => setFilterGender(e.target.value)}
-            className="w-full sm:w-1/4 px-4 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none roboto-condensed-light">
+            className="w-full sm:w-1/4 px-4 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none font-light">
             <option value="">All Genders</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -240,7 +240,7 @@ function Admin() {
 
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="text-left text-[#999] bg-[#131313] border-b border-[#333333] roboto-condensed-bold">
+            <tr className="text-left text-[#999] bg-[#131313] border-b border-[#333333] font-bold">
               <th className="px-6 py-4">No.</th>
               <th className="px-6 py-4">UID</th>
               <th className="px-6 py-4">Name</th>
@@ -280,7 +280,7 @@ function Admin() {
                           onChange={(e) =>
                             handleInputChange(u, "name", e.target.value)
                           }
-                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none roboto-condensed-light"
+                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none font-light"
                         />
                       </td>
                       <td className="px-6 py-4">
@@ -290,7 +290,7 @@ function Admin() {
                           onChange={(e) =>
                             handleInputChange(u, "surname", e.target.value)
                           }
-                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none roboto-condensed-light"
+                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none font-light"
                         />
                       </td>
                       <td className="px-6 py-4 text-[#666]">
@@ -298,7 +298,7 @@ function Admin() {
                           type="email"
                           value={editedUsers[u.uid]?.email ?? u.email}
                           readOnly
-                          className="w-full px-3 py-2 bg-[#1A1A1A] text-[#666] rounded focus:outline-none cursor-not-allowed roboto-condensed-light"
+                          className="w-full px-3 py-2 bg-[#1A1A1A] text-[#666] rounded focus:outline-none cursor-not-allowed font-light"
                         />
                       </td>
                       <td className="px-6 py-4">
@@ -307,7 +307,7 @@ function Admin() {
                           onChange={(e) =>
                             handleInputChange(u, "gender", e.target.value)
                           }
-                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none roboto-condensed-light">
+                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none font-light">
                           <option value="">Select</option>
                           <option value="male">M</option>
                           <option value="female">F</option>
@@ -322,22 +322,22 @@ function Admin() {
                           onChange={(e) =>
                             handleInputChange(u, "dob", e.target.value)
                           }
-                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none roboto-condensed-light"
+                          className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none font-light"
                         />
                       </td>
-                      <td className="px-6 py-4 text-[#999] roboto-condensed-light">
+                      <td className="px-6 py-4 text-[#999] font-light">
                         {formatDate(u.joinedAt)}
                       </td>
                       {hasChanges && (
                         <td className="px-6 py-4 flex gap-3">
                           <button
                             onClick={() => handleSaveUser(u.uid)}
-                            className="px-4 py-2 rounded bg-lime-600 text-white hover:bg-lime-500 roboto-condensed-bold">
+                            className="px-4 py-2 rounded bg-lime-600 text-white hover:bg-lime-500 font-bold">
                             Save
                           </button>
                           <button
                             onClick={() => handleResetUser(u.uid)}
-                            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 roboto-condensed-bold">
+                            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 font-bold">
                             Cancel
                           </button>
                         </td>
@@ -353,7 +353,7 @@ function Admin() {
                   className="border-b border-[#333333]">
                   <td
                     colSpan={9}
-                    className="px-6 py-8 text-center text-[#999] roboto-condensed-light">
+                    className="px-6 py-8 text-center text-[#999] font-light">
                     No users found matching the search criteria.
                   </td>
                 </motion.tr>

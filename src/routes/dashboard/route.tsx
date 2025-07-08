@@ -79,7 +79,6 @@ function DashboardLayout() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         navigate({ to: "/auth" });
-        toast.error("You must be logged in to view the dashboard.");
       } else {
         setFirebaseUser(user);
       }
@@ -144,10 +143,10 @@ function DashboardLayout() {
             />
           </div>
           <div className="flex flex-col">
-            <p className="text-white roboto-condensed-bold text-sm truncate">
+            <p className="text-white font-bold text-sm truncate">
               {userData?.name || "User"}
             </p>
-            <span className="text-xs text-gray-400 roboto-condensed-light truncate">
+            <span className="text-xs text-gray-400 font-light truncate">
               {userData?.email}
             </span>
           </div>
@@ -158,10 +157,10 @@ function DashboardLayout() {
             <Link
               key={link.to}
               to={link.to}
-              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 roboto-condensed-regular
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 font-regular
                 ${
                   isActiveLink(link.to)
-                    ? "bg-white/10 text-white roboto-condensed-bold"
+                    ? "bg-white/10 text-white font-bold"
                     : "text-gray-300 hover:bg-white/5 hover:text-white"
                 }`}>
               <link.icon size={18} className="text-gray-400" />
@@ -170,13 +169,13 @@ function DashboardLayout() {
           ))}
         </nav>
 
-        <div className="roboto-condensed-light p-4 border-t border-white/10">
+        <div className="font-light p-4 border-t border-white/10">
           <button
             onClick={() => {
               auth.signOut();
               toast.success("Logged out successfully!");
             }}
-            className="roboto-condensed-bold w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-all duration-200">
+            className=" w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-all duration-200">
             <LogOut size={18} />
             Sign Out
           </button>
@@ -189,7 +188,7 @@ function DashboardLayout() {
 
       {/* Mobile Header */}
       <header className="md:hidden fixed top-0 z-40 w-full bg-[#151312] border-b border-[#2A2A2A] p-4 flex items-center justify-between shadow-sm">
-        <h1 className="text-xl roboto-condensed-bold">DrugWise Dashboard</h1>
+        <h1 className="text-xl font-bold">DrugWise Dashboard</h1>
         <button
           onClick={() => setIsMobileSidebarOpen(true)}
           className="p-2 rounded-xl bg-[#252525] text-gray-200 hover:text-white">
@@ -214,10 +213,10 @@ function DashboardLayout() {
               transition={{ type: "tween", duration: 0.3 }}
               onClick={(e) => e.stopPropagation()}>
               <div className="px-6 py-4 border-b border-white/10">
-                <h2 className="text-xl roboto-condensed-bold">
+                <h2 className="text-xl font-bold">
                   Hello, {userData?.name || "User"}
                 </h2>
-                <p className="text-xs text-gray-400 roboto-condensed-light truncate">
+                <p className="text-xs text-gray-400 font-light truncate">
                   {userData?.email}
                 </p>
               </div>
@@ -228,10 +227,10 @@ function DashboardLayout() {
                     key={link.to}
                     to={link.to}
                     onClick={() => setIsMobileSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 roboto-condensed-regular
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 font-regular
                       ${
                         isActiveLink(link.to)
-                          ? "bg-white/10 text-white roboto-condensed-bold"
+                          ? "bg-white/10 text-white font-bold"
                           : "text-gray-300 hover:bg-white/5 hover:text-white"
                       }`}>
                     <link.icon size={18} className="text-gray-400" />
@@ -247,12 +246,12 @@ function DashboardLayout() {
                     toast.success("Logged out successfully!");
                     setIsMobileSidebarOpen(false);
                   }}
-                  className="roboto-condensed-bold w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-all duration-200">
+                  className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-all duration-200">
                   <LogOut size={18} />
                   Sign Out
                 </button>
                 <br />
-                <p className="roboto-condensed-light text-xs text-center mb-2">
+                <p className="font-light text-xs text-center mb-2">
                   © {new Date().getFullYear()} DrugWise. All rights reserved.
                 </p>
               </div>

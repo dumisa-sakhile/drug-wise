@@ -352,7 +352,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             <motion.button
               type="submit"
               disabled={profileMutation.isPending}
-              className="bg-white text-black font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-all"
+              className="bg-lime-500/10 text-lime-400 border-lime-500/20 font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-all"
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 },
@@ -362,7 +362,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
             <motion.button
               type="button"
               onClick={hide}
-              className="text-sm text-gray-400 hover:text-white px-4 py-2 rounded-full transition"
+              className="text-sm bg-rose-500/10 text-rose-400 border-rose-500/20 px-4 py-3 rounded-full transition"
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 },

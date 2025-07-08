@@ -91,7 +91,7 @@ function MessagesComponent() {
 
   if (!userId) {
     return (
-      <div className="p-6 text-white text-center roboto-condensed-light min-h-screen flex items-center justify-center">
+      <div className="p-6 text-white text-center font-light min-h-screen flex items-center justify-center">
         Please sign in to view messages
       </div>
     );
@@ -99,7 +99,7 @@ function MessagesComponent() {
 
   function StatusBadge({ isRead }: { isRead: boolean }) {
     const base =
-      "px-2 py-1 rounded-full text-xs font-semibold roboto-condensed-regular";
+      "px-2 py-1 rounded-full text-xs font-semibold font-regular";
     return isRead ? (
       <span className={`${base} bg-lime-700 text-green-300`}>Read</span>
     ) : (
@@ -108,7 +108,7 @@ function MessagesComponent() {
   }
 
   return (
-    <div className="roboto-condensed-light max-w-5xl mx-auto md:px-4 py-8 min-h-screen text-white  rounded-xl">
+    <div className="font-light max-w-5xl mx-auto md:px-4 py-8 min-h-screen text-white  rounded-xl">
       <title>DrugWise - Messages</title>
       <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">
         Your Messages
@@ -121,8 +121,8 @@ function MessagesComponent() {
       ) : messages.length === 0 ? (
         <div className="text-center py-12 flex flex-col items-center justify-center text-neutral-500">
           <div className="text-6xl mb-4 select-none">📭</div>
-          <h2 className="text-xl roboto-condensed-bold mb-2">No Messages</h2>
-          <p className="roboto-condensed-light max-w-md">
+          <h2 className="text-xl font-bold mb-2">No Messages</h2>
+          <p className="font-light max-w-md">
             When you receive messages, they will appear here.
           </p>
         </div>
@@ -133,16 +133,19 @@ function MessagesComponent() {
             <table className="min-w-full text-left text-neutral-300 text-sm">
               <thead className="bg-neutral-700/50">
                 <tr>
-                  <th className="px-6 py-4 font-semibold roboto-condensed-bold">
+                  <th className="px-6 py-4 font-semibold 
+                  ">
                     From
                   </th>
-                  <th className="px-6 py-4 font-semibold roboto-condensed-bold">
+                  <th className="px-6 py-4 font-semibold 
+                  ">
                     Subject
                   </th>
-                  <th className="px-6 py-4 font-semibold roboto-condensed-bold">
+                  <th className="px-6 py-4 font-semibold 
+                  ">
                     Date
                   </th>
-                  <th className="px-6 py-4 font-semibold roboto-condensed-bold">
+                  <th className="px-6 py-4 font-semibold ">
                     Status
                   </th>
                 </tr>
@@ -163,13 +166,13 @@ function MessagesComponent() {
                         setSelectedMessage(message);
                         if (!message.isRead) markAsRead(message.id);
                       }}>
-                      <td className="px-6 py-4 roboto-condensed-light">
+                      <td className="px-6 py-4 font-light">
                         {message.senderName}
                       </td>
-                      <td className="px-6 py-4 roboto-condensed-medium truncate max-w-xl">
+                      <td className="px-6 py-4 font-medium truncate max-w-xl">
                         {message.subject}
                       </td>
-                      <td className="px-6 py-4 roboto-condensed-light whitespace-nowrap">
+                      <td className="px-6 py-4 font-light whitespace-nowrap">
                         {message.sentAt?.toDate().toLocaleString()}
                       </td>
                       <td className="px-6 py-4">
@@ -200,20 +203,20 @@ function MessagesComponent() {
                     if (!message.isRead) markAsRead(message.id);
                   }}>
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg roboto-condensed-medium truncate max-w-[75%]">
+                    <h3 className="text-lg font-medium truncate max-w-[75%]">
                       {message.subject}
                     </h3>
                     <StatusBadge isRead={message.isRead} />
                   </div>
-                  <p className="text-neutral-400 roboto-condensed-light text-sm mb-2 truncate">
-                    <span className="roboto-condensed-medium">From:</span>{" "}
+                  <p className="text-neutral-400 font-light text-sm mb-2 truncate">
+                    <span className="font-medium">From:</span>{" "}
                     {message.senderName}
                   </p>
-                  <p className="text-neutral-500 roboto-condensed-light text-xs">
-                    <span className="roboto-condensed-medium">Date:</span>{" "}
+                  <p className="text-neutral-500 font-light text-xs">
+                    <span className="font-medium">Date:</span>{" "}
                     {message.sentAt?.toDate().toLocaleDateString()}
                   </p>
-                  <p className="text-blue-400 text-sm mt-2 text-right roboto-condensed-bold underline">
+                  <p className="text-blue-400 text-sm mt-2 text-right font-bold underline">
                     View Message
                   </p>
                 </motion.div>
@@ -229,7 +232,7 @@ function MessagesComponent() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6 roboto-condensed-light"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6 font-light"
           onClick={() => setSelectedMessage(null)}>
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -244,23 +247,23 @@ function MessagesComponent() {
               aria-label="Close message">
               &times;
             </button>
-            <h2 className="text-xl roboto-condensed-bold mb-4 text-center sm:text-left text-blue-300">
+            <h2 className="text-xl font-bold mb-4 text-center sm:text-left text-blue-300">
               {selectedMessage.subject}
             </h2>
-            <div className="mb-6 whitespace-pre-wrap roboto-condensed-light text-neutral-200">
+            <div className="mb-6 whitespace-pre-wrap font-light text-neutral-200">
               {selectedMessage.content}
             </div>
-            <div className="text-sm text-neutral-400 space-y-1 roboto-condensed-light">
+            <div className="text-sm text-neutral-400 space-y-1 font-light">
               <p>
-                <strong className="roboto-condensed-medium">From:</strong>{" "}
+                <strong className="font-medium">From:</strong>{" "}
                 {selectedMessage.senderName}
               </p>
               <p>
-                <strong className="roboto-condensed-medium">Date:</strong>{" "}
+                <strong className="font-medium">Date:</strong>{" "}
                 {selectedMessage.sentAt?.toDate().toLocaleString()}
               </p>
               <p>
-                <strong className="roboto-condensed-medium">Status:</strong>{" "}
+                <strong className="font-medium">Status:</strong>{" "}
                 {selectedMessage.isRead ? "Read" : "Unread"}
               </p>
             </div>

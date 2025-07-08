@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { auth } from "../config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { motion } from "framer-motion";
-import { Home, Info, DollarSign, FileText } from "lucide-react";
+// Removed unused lucide-react icons: Home, Info, DollarSign, FileText
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -31,10 +31,10 @@ const Header: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { to: "/", label: "Home", icon: Home },
-    { to: "/about", label: "About", icon: Info },
-    { to: "/pricing", label: "Pricing", icon: DollarSign },
-    { to: "/terms", label: "Terms", icon: FileText },
+    { to: "/", label: "Home" },
+    { to: "/about", label: "About" },
+    { to: "/pricing", label: "Pricing" },
+    { to: "/terms", label: "Terms" },
   ];
 
   // Hide header/nav if user is signed in or still loading
@@ -58,7 +58,8 @@ const Header: React.FC = () => {
                   boxShadow: "0 0 10px rgba(132, 204, 22, 0.4)",
                 }}
                 whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.2 }}>
+                transition={{ duration: 0.2 }}
+              >
                 Sign In
               </motion.button>
             </Link>
@@ -78,7 +79,8 @@ const Header: React.FC = () => {
                     to={to}
                     className={`text-gray-200 hover:scale-110 transition text-base ${
                       location.pathname === to ? "text-[#3b82f6] font-bold" : ""
-                    }`}>
+                    }`}
+                  >
                     {label}
                   </Link>
                 ))}
@@ -95,44 +97,17 @@ const Header: React.FC = () => {
         </div>
       </header>
 
-      {/* Bottom Navbar (Mobile Only) - REDESIGNED FOR CLEAN & SMALL */}
-      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-[340px] mx-auto bg-[#1a1a1a]/90 backdrop-blur-sm border border-white/5 rounded-2xl z-50 py-2.5 px-4 shadow-xl">
-        <div className="flex justify-around items-center h-full">
-          {navLinks.map(({ to, label, icon: Icon }) => (
+      {/* Bottom Navbar (Mobile Only) - REDESIGNED TO LOOK LIKE DESKTOP LINKS */}
+      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-md mx-auto bg-[#1a1a1a]/90 backdrop-blur-sm border border-white/5 rounded-full z-50 py-3 px-4 shadow-xl"> {/* Changed py-2.5 to py-3 for increased height */}
+        <div className="flex justify-around items-center h-full space-x-4">
+          {navLinks.map(({ to, label }) => (
             <Link
               key={to}
               to={to}
-              className={`flex flex-col items-center justify-center text-gray-400 hover:text-white transition-colors duration-200 relative group
-                ${location.pathname === to ? "text-[#3b82f6]" : ""}`}>
-              <motion.div
-                className="relative p-2 rounded-full group-hover:bg-[#3b82f6]/20 transition-all duration-200"
-                whileHover={{
-                  scale: 1.15,
-                  boxShadow: "0 0 10px rgba(59, 130, 246, 0.4)",
-                }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}>
-                <Icon
-                  className={`w-6 h-6 z-10 ${
-                    location.pathname === to ? "text-[#3b82f6]" : ""
-                  }`}
-                  strokeWidth={2}
-                />
-                {location.pathname === to && (
-                  <motion.div
-                    layoutId="activeTabIndicator" // Unique ID for layout animations
-                    className="absolute inset-0 rounded-full bg-[#3b82f6]/20 z-0"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </motion.div>
-              <span
-                className={`mt-1 text-xs font-medium transition-colors duration-200
-                  ${location.pathname === to ? "text-[#3b82f6] font-bold" : "text-gray-400 group-hover:text-white"}`}>
-                {label}
-              </span>
+              className={`flex items-center justify-center text-base font-medium transition-colors duration-200 relative group
+                ${location.pathname === to ? "text-[#3b82f6] font-bold" : "text-gray-200 hover:text-white"}`} 
+            >
+              {label}
             </Link>
           ))}
         </div>

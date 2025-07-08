@@ -159,7 +159,7 @@ function Model() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-white">
+    <div className="min-h-screen flex flex-col text-white font-light">
       
 
       {messages.length === 0 ? (
@@ -289,7 +289,7 @@ function Model() {
             <input
               ref={inputRef}
               type="text"
-              className="w-full bg-[#303030] border border-[#444] rounded-full pl-12 pr-12 py-5 text-base text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-[#303030] border border-[#444] rounded-full pl-12 pr-12 py-5 text-base text-white placeholder-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder={
                 isLoading ? "WiseBot is thinking..." : "Message WiseBot..."
               }
@@ -305,12 +305,12 @@ function Model() {
             </button>
           </form>
         </div>
-        <div className="text-center backdrop-blur-md bg-black/30 text-white text-xs mt-2">
+        <div className="hidden md:block text-center backdrop-blur-md  text-white text-xs mt-2">
           {" "}
           {/* Adjusted contrast */}
           WiseBot may generate inaccurate information like any other AI, and is
           not intended to diagnose, treat, cure, or prevent any disease. Model:
-          WiseBot AI v1.0
+          WiseBot AI - Beta Version
         </div>
       </div>
     </div>

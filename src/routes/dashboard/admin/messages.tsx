@@ -216,14 +216,14 @@ function AdminMessages() {
 
   return (
     <div className="p-4 text-white">
-      <h1 className="text-xl mb-4 roboto-condensed-bold">Message Center</h1>
-      <p className="text-[#999] mb-6 roboto-condensed-light">
+      <h1 className="text-xl mb-4 font-bold">Message Center</h1>
+      <p className="text-[#999] mb-6 font-light">
         Send messages to users and view your sent messages.
       </p>
 
       <div className="flex gap-4 mb-6">
         <button
-          className={`px-4 py-2 rounded roboto-condensed-bold ${
+          className={`px-4 py-2 rounded font-bold ${
             view === "compose"
               ? "bg-lime-600 text-white"
               : "text-[#999] hover:text-white"
@@ -232,7 +232,7 @@ function AdminMessages() {
           Compose
         </button>
         <button
-          className={`px-4 py-2 rounded roboto-condensed-bold ${
+          className={`px-4 py-2 rounded font-bold ${
             view === "sent"
               ? "bg-lime-600 text-white"
               : "text-[#999] hover:text-white"
@@ -252,17 +252,17 @@ function AdminMessages() {
                 placeholder="Search users..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none roboto-condensed-light"
+                className="w-full pl-10 pr-4 py-2 bg-[#1A1A1A] text-white rounded focus:outline-none font-light"
               />
             </div>
 
             <div className="min-h-60 overflow-y-auto">
               {loadingUsers ? (
-                <div className="text-[#999] p-4 text-center roboto-condensed-light">
+                <div className="text-[#999] p-4 text-center font-light">
                   Loading users...
                 </div>
               ) : usersError ? (
-                <div className="text-red-500 p-4 text-center roboto-condensed-light">
+                <div className="text-red-500 p-4 text-center font-light">
                   Error loading users.
                 </div>
               ) : filteredUsers.length > 0 ? (
@@ -282,17 +282,17 @@ function AdminMessages() {
                       {u.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <div className="roboto-condensed-bold">
+                      <div className="font-bold">
                         {u.name} {u.surname}
                       </div>
-                      <div className="text-xs text-[#666] roboto-condensed-light">
+                      <div className="text-xs text-[#666] font-light">
                         {u.email}
                       </div>
                     </div>
                   </motion.div>
                 ))
               ) : (
-                <div className="text-[#999] p-4 text-center roboto-condensed-light">
+                <div className="text-[#999] p-4 text-center font-light">
                   No users found
                 </div>
               )}
@@ -301,13 +301,13 @@ function AdminMessages() {
 
           <div className="flex-1 bg-[#141414] rounded-lg p-6 border border-[#333333] flex flex-col">
             <div className="mb-4">
-              <label className="block text-[#999] mb-1 text-xs roboto-condensed-light">
+              <label className="block text-[#999] mb-1 text-xs font-light">
                 To
               </label>
-              <div className="p-3 bg-[#1A1A1A] rounded roboto-condensed-light">
+              <div className="p-3 bg-[#1A1A1A] rounded font-light">
                 {selectedUser ? (
                   <div>
-                    <div className="roboto-condensed-bold">
+                    <div className="font-bold">
                       {selectedUser.name} {selectedUser.surname}
                     </div>
                     <div className="text-sm text-[#666]">
@@ -320,30 +320,30 @@ function AdminMessages() {
               </div>
             </div>
             <div className="mb-4">
-              <label className="block text-[#999] mb-1 text-xs roboto-condensed-light">
+              <label className="block text-[#999] mb-1 text-xs font-light">
                 Subject
               </label>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded roboto-condensed-light capitalize"
+                className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded font-light capitalize"
                 placeholder="Enter subject"
               />
             </div>
             <div className="mb-4 flex-1 flex flex-col">
-              <label className="block text-[#999] mb-1 text-xs roboto-condensed-light">
+              <label className="block text-[#999] mb-1 text-xs font-light">
                 Message
               </label>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full h-40 px-3 py-2 bg-[#1A1A1A] text-white rounded resize-none roboto-condensed-light"
+                className="w-full h-40 px-3 py-2 bg-[#1A1A1A] text-white rounded resize-none font-light"
                 placeholder="Type your message..."
               />
             </div>
             <button
-              className="mt-2 bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 rounded roboto-condensed-regular flex items-center gap-2 self-end"
+              className="mt-2 bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 rounded font-regular flex items-center gap-2 self-end"
               onClick={() => sendMutation.mutate()}
               disabled={sendMutation.isPending || !selectedUser}>
               <Send size={16} />
@@ -355,7 +355,7 @@ function AdminMessages() {
         <div className="overflow-x-auto rounded-lg border border-[#333333] bg-[#141414]">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="text-left text-[#999] bg-[#1A1A1A] border-b border-[#333333] roboto-condensed-bold">
+              <tr className="text-left text-[#999] bg-[#1A1A1A] border-b border-[#333333] font-bold">
                 <th className="px-6 py-4">To</th>
                 <th className="px-6 py-4">Subject</th>
                 <th className="px-6 py-4">Sent at</th>
@@ -368,7 +368,7 @@ function AdminMessages() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="px-6 py-8 text-center text-[#999] roboto-condensed-light">
+                      className="px-6 py-8 text-center text-[#999] font-light">
                       Loading messages...
                     </td>
                   </tr>
@@ -376,7 +376,7 @@ function AdminMessages() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="px-6 py-8 text-center text-red-500 roboto-condensed-light">
+                      className="px-6 py-8 text-center text-red-500 font-light">
                       Error:{" "}
                       {messagesError instanceof Error
                         ? messagesError.message
@@ -396,15 +396,15 @@ function AdminMessages() {
                         transition={{ duration: 0.3 }}
                         className="border-b border-[#333333] hover:bg-[#1A1A1A] cursor-pointer"
                         onClick={() => handleEditMessage(msg)}>
-                        <td className="px-6 py-4 roboto-condensed-light">
+                        <td className="px-6 py-4 font-light">
                           {recipient
                             ? `${recipient.name} ${recipient.surname}`
                             : msg.recipientId}
                         </td>
-                        <td className="px-6 py-4 roboto-condensed-bold">
+                        <td className="px-6 py-4 font-bold">
                           {msg.subject}
                         </td>
-                        <td className="px-6 py-4 roboto-condensed-light">
+                        <td className="px-6 py-4 font-light">
                           {msg.sentAt?.toDate()?.toLocaleString() || "-"}
                         </td>
                         <td className="px-6 py-4">
@@ -425,7 +425,7 @@ function AdminMessages() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="px-6 py-8 text-center text-[#999] roboto-condensed-light">
+                      className="px-6 py-8 text-center text-[#999] font-light">
                       No sent messages found
                     </td>
                   </tr>
@@ -439,9 +439,9 @@ function AdminMessages() {
       {isPopupOpen && selectedMessage && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-[#141414] rounded-lg p-6 border border-[#333333] w-full max-w-md">
-            <h2 className="text-lg roboto-condensed-bold mb-4">Edit Message</h2>
+            <h2 className="text-lg font-bold mb-4">Edit Message</h2>
             <div className="mb-4">
-              <label className="block text-[#999] mb-1 text-xs roboto-condensed-light">
+              <label className="block text-[#999] mb-1 text-xs font-light">
                 Subject
               </label>
               <input
@@ -453,11 +453,11 @@ function AdminMessages() {
                     subject: e.target.value,
                   })
                 }
-                className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded roboto-condensed-light"
+                className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded font-light"
               />
             </div>
             <div className="mb-4">
-              <label className="block text-[#999] mb-1 text-xs roboto-condensed-light">
+              <label className="block text-[#999] mb-1 text-xs font-light">
                 Message
               </label>
               <textarea
@@ -468,17 +468,17 @@ function AdminMessages() {
                     content: e.target.value,
                   })
                 }
-                className="w-full h-40 px-3 py-2 bg-[#1A1A1A] text-white rounded resize-none roboto-condensed-light"
+                className="w-full h-40 px-3 py-2 bg-[#1A1A1A] text-white rounded resize-none font-light"
               />
             </div>
             <div className="flex justify-end gap-2">
               <button
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded roboto-condensed-bold"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold"
                 onClick={() => setIsPopupOpen(false)}>
                 Cancel
               </button>
               <button
-                className="bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 rounded roboto-condensed-regular"
+                className="bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 rounded font-regular"
                 onClick={() => {
                   if (selectedMessage) {
                     updateMessageMutation.mutate(selectedMessage);
