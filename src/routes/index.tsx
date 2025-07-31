@@ -133,7 +133,7 @@ function App() {
           <br /><br />
           {/* "Learn More" button using Link */}
           <Link
-            to="/terms" // Use 'to' for internal navigation
+            to="/about" // Use 'to' for internal navigation
             className="inline-flex items-center justify-center px-8 py-3 ml-4 font-semibold text-gray-300 transition duration-300 border border-gray-600 rounded-full hover:border-blue-500 hover:text-blue-400 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900">
             Learn More
           </Link>

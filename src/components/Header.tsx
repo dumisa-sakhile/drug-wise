@@ -98,7 +98,7 @@ const Header: React.FC = () => {
       </header>
 
       {/* Bottom Navbar (Mobile Only) - REDESIGNED TO INCLUDE ICONS */}
-      <nav className="md:hidden fixed bottom-4 left-0 right-0 max-w-md mx-auto bg-[#1a1a1a]/90 backdrop-blur-sm border border-white/5 rounded-full z-50 py-3 px-4 shadow-xl">
+      <nav className="hidden fixed bottom-4 left-0 right-0 max-w-md mx-auto bg-[#1a1a1a]/90 backdrop-blur-sm border border-white/5 rounded-full z-50 py-3 px-4 shadow-xl">
         <div className="flex justify-around items-center h-full space-x-4">
           {navLinks.map(({ to, label, Icon }) => (
             <Link
