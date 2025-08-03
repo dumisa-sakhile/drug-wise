@@ -14,9 +14,10 @@ import {
   where,
   Timestamp,
   deleteField,
-  FieldValue,
+  deleteDoc,
 } from "firebase/firestore";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { del } from "@vercel/blob";
+import { Search, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { onAuthStateChanged } from "firebase/auth";
@@ -36,6 +37,13 @@ interface Medication {
   rejectionReason?: string;
   reviewedAt?: any;
   reviewedBy?: string;
+  file: {
+    url: string;
+    name: string;
+    type: string;
+    uploadedAt: string;
+    size: number;
+  };
 }
 
 interface User {
@@ -55,14 +63,16 @@ async function sendMedicationNotification({
   rejectionReason,
   senderId,
   senderName,
+  action,
 }: {
   medicationId: string;
   userId: string;
   medicationName: string;
-  status: "approved" | "rejected" | "pending";
+  status?: "approved" | "rejected" | "pending";
   rejectionReason?: string;
   senderId: string;
   senderName: string;
+  action?: "delete";
 }) {
   try {
     // Validate inputs
@@ -83,18 +93,22 @@ async function sendMedicationNotification({
       throw new Error(`Recipient user ${userId} not found`);
     }
 
-    // Verify medication exists
-    const medRef = doc(db, "medications", medicationId);
-    const medSnap = await getDoc(medRef);
-    if (!medSnap.exists()) {
-      throw new Error(`Medication ${medicationId} not found`);
+    // Verify medication exists (unless deleted)
+    if (action !== "delete") {
+      const medRef = doc(db, "medications", medicationId);
+      const medSnap = await getDoc(medRef);
+      if (!medSnap.exists()) {
+        throw new Error(`Medication ${medicationId} not found`);
+      }
     }
 
     // Check for existing notification to prevent duplicates
     const subject =
-      status === "pending"
-        ? `Medication Reverted to Pending: ${medicationName}`
-        : `Medication ${status === "approved" ? "Approved" : "Rejected"}: ${medicationName}`;
+      action === "delete"
+        ? `Medication Deleted: ${medicationName}`
+        : status === "pending"
+          ? `Medication Reverted to Pending: ${medicationName}`
+          : `Medication ${status === "approved" ? "Approved" : "Rejected"}: ${medicationName}`;
     const messagesQuery = query(
       collection(db, "messages"),
       where("recipientId", "==", userId),
@@ -104,14 +118,16 @@ async function sendMedicationNotification({
     const messageDocs = await getDocs(messagesQuery);
     if (!messageDocs.empty) {
       console.log(
-        `Notification already sent for medication ${medicationId} with status ${status}`
+        `Notification already sent for medication ${medicationId} with ${action || `status ${status}`}`
       );
       return;
     }
 
     // Construct message
     let content = "";
-    if (status === "pending") {
+    if (action === "delete") {
+      content = `Your medication submission "${medicationName}" was deleted by an admin. Please contact support if you have questions.`;
+    } else if (status === "pending") {
       content = `Your medication submission "${medicationName}" has been reverted to pending status for further review.`;
     } else {
       content = `Your medication submission "${medicationName}" has been ${status}.`;
@@ -131,11 +147,11 @@ async function sendMedicationNotification({
       senderName,
       sentAt: Timestamp.now(),
       subject,
-      medicationId, // For duplicate checks
+      medicationId,
     });
 
     console.log(
-      `Sent notification for medication ${medicationId} (${status}) to user ${userId} by ${senderName}`
+      `Sent notification for medication ${medicationId} (${action || status}) to user ${userId} by ${senderName}`
     );
   } catch (error: any) {
     const errorMessage =
@@ -159,6 +175,7 @@ function AdminMedication() {
     "approved" | "rejected" | "pending"
   >("pending");
   const [rejectionReason, setRejectionReason] = useState<string>("");
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const queryClient = useQueryClient();
 
@@ -215,6 +232,13 @@ function AdminMedication() {
         rejectionReason: doc.data().rejectionReason,
         reviewedAt: doc.data().reviewedAt,
         reviewedBy: doc.data().reviewedBy,
+        file: doc.data().file ?? {
+          url: "",
+          name: "",
+          type: "",
+          uploadedAt: "",
+          size: 0,
+        },
       })) as Medication[];
     },
     enabled: !!currentUser?.uid && currentUserData?.isAdmin,
@@ -270,7 +294,7 @@ function AdminMedication() {
   );
 
   // Mutation for updating medication status
-  const mutation = useMutation<
+  const updateMutation = useMutation<
     void,
     Error,
     {
@@ -291,7 +315,7 @@ function AdminMedication() {
         throw new Error(`Medication ${id} not found`);
       }
 
-      const updateData: Record<string, string | FieldValue | undefined> = {
+      const updateData: Record<string, any> = {
         status,
         reviewedAt: Timestamp.now(),
         reviewedBy: currentUser.uid,
@@ -358,6 +382,60 @@ function AdminMedication() {
     },
   });
 
+  // Mutation for deleting medication
+  const deleteMutation = useMutation<
+    void,
+    Error,
+    { id: string; userId: string; medicationName: string; fileUrl: string }
+  >({
+    mutationFn: async ({ id, userId, medicationName, fileUrl }) => {
+      if (!currentUser?.uid || !currentUserData?.isAdmin) {
+        throw new Error("Not authenticated or not an admin");
+      }
+      const medRef = doc(db, "medications", id);
+      const medSnap = await getDoc(medRef);
+      if (!medSnap.exists()) {
+        throw new Error("Medication not found");
+      }
+      // Perform Firestore deletion first
+      await deleteDoc(medRef);
+      // Non-blocking Blob deletion
+      if (fileUrl) {
+        del(fileUrl, {
+          token: import.meta.env.VITE_BLOB_READ_WRITE_TOKEN,
+        }).catch((error: any) => {
+          console.error(
+            `Failed to delete Blob file: ${error.message || "Unknown error"}`
+          );
+        });
+      }
+      // Send deletion notification
+      if (currentUser?.uid && currentUserData) {
+        await sendMedicationNotification({
+          medicationId: id,
+          userId,
+          medicationName,
+          senderId: currentUser.uid,
+          senderName:
+            `${currentUserData.name ?? "Admin"} ${currentUserData.surname ?? ""}`.trim(),
+          action: "delete",
+        });
+      }
+    },
+    onSuccess: () => {
+      toast.success("Medication deleted and user notified!");
+      setModal(null);
+      setIsDeleting(false);
+      setRejectionReason("");
+      setReviewStatus("pending");
+      queryClient.invalidateQueries({ queryKey: ["allMedications"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete medication");
+      setIsDeleting(false);
+    },
+  });
+
   function getStatusBadge(status: "approved" | "rejected" | "pending") {
     switch (status) {
       case "approved":
@@ -385,6 +463,7 @@ function AdminMedication() {
     setModal({ med });
     setReviewStatus(med.status);
     setRejectionReason(med.rejectionReason ?? "");
+    setIsDeleting(false);
   }
 
   function handleReview() {
@@ -398,11 +477,25 @@ function AdminMedication() {
       return;
     }
 
-    mutation.mutate({
+    updateMutation.mutate({
       id: modal.med.id,
       status: reviewStatus,
       rejectionReason,
       prevStatus: modal.med.status,
+    });
+  }
+
+  function handleDelete() {
+    if (!modal?.med?.id || !currentUser?.uid || !currentUserData?.isAdmin) {
+      toast.error("Invalid session or permissions");
+      return;
+    }
+    setIsDeleting(true);
+    deleteMutation.mutate({
+      id: modal.med.id,
+      userId: modal.med.userId,
+      medicationName: modal.med.medicationName,
+      fileUrl: modal.med.file.url,
     });
   }
 
@@ -419,14 +512,16 @@ function AdminMedication() {
   }
 
   return (
-    <div className="p-4 text-white">
-      <h1 className="text-xl mb-4 font-bold">Medication Management</h1>
-      <p className="text-[#999] mb-6 font-light">
+    <div className="p-4 text-white font-light max-w-5xl mx-auto">
+      <h1 className="text-2xl mb-4 font-bold bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+        Medication Management
+      </h1>
+      <p className="text-[#999] mb-6">
         Review and manage user-submitted medications.{" "}
         <span className="text-[#666]">{totalRows} total</span>
       </p>
 
-      <div className="overflow-x-auto rounded-lg border border-[#222]">
+      <div className="overflow-x-auto rounded-lg border border-[#222] bg-[#1A1A1A] shadow-inner">
         <div className="flex flex-col sm:flex-row gap-4 items-center p-4 bg-[#222] border-b border-[#111]">
           <div className="relative w-full sm:w-3/4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#999]" />
@@ -438,7 +533,7 @@ function AdminMedication() {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 bg-[#222] text-white rounded-md focus:outline-none font-light ring-1 ring-[#333] focus:ring-blue-500 transition duration-200"
+              className="w-full pl-10 pr-4 py-2 bg-[#222] text-white rounded-md focus:outline-none ring-1 ring-[#333] focus:ring-blue-500 transition duration-200"
             />
           </div>
           <select
@@ -449,7 +544,7 @@ function AdminMedication() {
               );
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/4 px-4 py-2 bg-[#222] text-white rounded-md focus:outline-none  ring-1 ring-[#333] focus:ring-blue-500 transition duration-200 font-light">
+            className="w-full sm:w-1/4 px-4 py-2 bg-[#222] text-white rounded-md focus:outline-none ring-1 ring-[#333] focus:ring-blue-500 transition duration-200">
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
@@ -459,7 +554,7 @@ function AdminMedication() {
 
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="text-left text-[#999] border-b border-[#111]  bg-[#222] font-bold">
+            <tr className="text-left text-[#999] border-b border-[#111] bg-[#222] font-semibold">
               <th className="px-6 py-4">Name</th>
               <th className="px-6 py-4">Description</th>
               <th className="px-6 py-4">User</th>
@@ -472,17 +567,13 @@ function AdminMedication() {
             <AnimatePresence>
               {isLoading ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-[#999] font-light">
+                  <td colSpan={6} className="px-6 py-8 text-center text-[#999]">
                     Loading medications...
                   </td>
                 </tr>
               ) : paged.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-8 text-center text-[#999] font-light">
+                  <td colSpan={6} className="px-6 py-8 text-center text-[#999]">
                     No medications found
                   </td>
                 </tr>
@@ -490,32 +581,37 @@ function AdminMedication() {
                 paged.map((m) => (
                   <motion.tr
                     key={m.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="border-b border-[#111] hover:bg-[#333] bg-[#222]">
-                    <td className="px-6 py-4 font-bold">
+                    className="border-b border-[#111] hover:bg-[#333] bg-[#222] cursor-pointer"
+                    onClick={() => openModal(m)}>
+                    <td className="px-6 py-4 font-semibold">
                       {m.medicationName ?? "N/A"}
                     </td>
-                    <td className="px-6 py-4 max-w-xs truncate font-light">
+                    <td className="px-6 py-4 max-w-xs truncate">
                       {m.description ?? "N/A"}
                     </td>
-                    <td className="px-6 py-4 font-light">
+                    <td className="px-6 py-4">
                       {users?.[m.userId]?.name ?? "Unknown"}{" "}
                       {users?.[m.userId]?.surname ?? ""}
                       <div className="text-xs text-[#666]">
                         {users?.[m.userId]?.email ?? "N/A"}
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-light">
+                    <td className="px-6 py-4">
                       {m.submittedAt?.toDate?.()?.toLocaleString("en-ZA") ??
                         "-"}
                     </td>
                     <td className="px-6 py-4">{getStatusBadge(m.status)}</td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => openModal(m)}
-                        className="text-blue-400 hover:text-blue-300 underline font-bold">
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModal(m);
+                        }}
+                        className="text-blue-400 hover:text-blue-300 underline font-semibold">
                         Review
                       </button>
                     </td>
@@ -527,7 +623,7 @@ function AdminMedication() {
         </table>
       </div>
 
-      <div className="flex items-center justify-between mt-4 text-[#999] font-light">
+      <div className="flex items-center justify-between mt-4 text-[#999]">
         <div className="text-sm">
           Rows per page
           <select
@@ -564,67 +660,94 @@ function AdminMedication() {
       </div>
 
       {modal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-[#333] rounded-lg shadow-lg p-6 w-full max-w-md border border-[#333333]">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6"
+          onClick={() => {
+            setModal(null);
+            setReviewStatus("pending");
+            setRejectionReason("");
+            setIsDeleting(false);
+          }}>
+          <motion.div
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 50, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 100, damping: 15 }}
+            className="bg-[#333] rounded-lg shadow-lg p-6 w-full max-w-md border border-[#333333]"
+            onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg text-white font-bold">
                 Review Medication
               </h3>
               <button
-                className="text-[#999] hover:text-white"
+                className="text-[#999] hover:text-white text-2xl"
                 onClick={() => {
                   setModal(null);
                   setReviewStatus("pending");
                   setRejectionReason("");
-                }}>
+                  setIsDeleting(false);
+                }}
+                aria-label="Close modal">
                 ×
               </button>
             </div>
-            <div className="mb-4 space-y-3">
+            <div className="mb-4 space-y-3 text-sm">
               <div>
-                <span className="text-[#999] text-xs font-light">Name</span>
-                <div className="text-white font-bold">
+                <span className="text-[#999] text-xs">Name</span>
+                <div className="text-white font-semibold">
                   {modal?.med?.medicationName ?? "N/A"}
                 </div>
               </div>
               <div>
-                <span className="text-[#999] text-xs font-light">
-                  Description
-                </span>
-                <div className="text-white font-light">
+                <span className="text-[#999] text-xs">Description</span>
+                <div className="text-white whitespace-pre-line">
                   {modal?.med?.description ?? "N/A"}
                 </div>
               </div>
               <div>
-                <span className="text-[#999] text-xs font-light">User</span>
-                <div className="text-white font-bold">
+                <span className="text-[#999] text-xs">File</span>
+                <div className="text-white">
+                  {modal?.med?.file?.url ? (
+                    <a
+                      href={modal.med.file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-400 hover:underline">
+                      {modal.med.file.name} ({modal.med.file.type.split("/")[1]}
+                      )
+                    </a>
+                  ) : (
+                    "No file uploaded"
+                  )}
+                </div>
+              </div>
+              <div>
+                <span className="text-[#999] text-xs">User</span>
+                <div className="text-white font-semibold">
                   {users?.[modal?.med?.userId]?.name ?? "Unknown"}{" "}
                   {users?.[modal?.med?.userId]?.surname ?? ""}
                 </div>
-                <div className="text-xs text-[#666] font-light">
+                <div className="text-xs text-[#666]">
                   {users?.[modal?.med?.userId]?.email ?? "N/A"}
                 </div>
               </div>
               <div>
-                <span className="text-[#999] text-xs font-light">
-                  Submitted
-                </span>
-                <div className="text-white font-light">
+                <span className="text-[#999] text-xs">Submitted</span>
+                <div className="text-white">
                   {modal?.med?.submittedAt
                     ?.toDate?.()
                     ?.toLocaleString("en-ZA") ?? "-"}
                 </div>
               </div>
               <div>
-                <span className="text-[#999] text-xs font-light">
-                  Current Status
-                </span>
+                <span className="text-[#999] text-xs">Current Status</span>
                 <div>{getStatusBadge(modal?.med?.status ?? "pending")}</div>
               </div>
               <div>
-                <span className="text-[#999] text-xs font-light">
-                  Change Status To
-                </span>
+                <span className="text-[#999] text-xs">Change Status To</span>
                 <select
                   value={reviewStatus}
                   onChange={(e) =>
@@ -632,7 +755,7 @@ function AdminMedication() {
                       e.target.value as "approved" | "rejected" | "pending"
                     )
                   }
-                  className="w-full mt-1 bg-[#222] text-white rounded px-3 py-2 border border-[#333333] focus:outline-none font-light">
+                  className="w-full mt-1 bg-[#222] text-white rounded px-3 py-2 border border-[#333333] focus:outline-none">
                   <option value="pending">Pending</option>
                   <option value="approved">Approved</option>
                   <option value="rejected">Rejected</option>
@@ -640,13 +763,13 @@ function AdminMedication() {
               </div>
               {reviewStatus === "rejected" && (
                 <div>
-                  <label className="block text-[#999] mb-1 text-xs font-light">
+                  <label className="block text-[#999] mb-1 text-xs">
                     Rejection Reason (required)
                   </label>
                   <textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded resize-none border border-[#333333] focus:outline-none font-light"
+                    className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded resize-none border border-[#333333] focus:outline-none"
                     rows={3}
                     placeholder="Enter reason for rejection..."
                     required
@@ -661,31 +784,94 @@ function AdminMedication() {
             </div>
             <div className="flex gap-2 justify-end">
               <button
-                className="px-4 py-2 rounded text-[#999] hover:text-white font-bold"
+                className="px-4 py-2 rounded text-[#999] hover:text-white bg-[#222] hover:bg-[#333] transition-colors duration-200"
                 onClick={() => {
                   setModal(null);
                   setReviewStatus("pending");
                   setRejectionReason("");
-                }}>
+                  setIsDeleting(false);
+                }}
+                disabled={updateMutation.isPending || isDeleting}>
                 Cancel
               </button>
               <button
-                className={`px-4 py-2 rounded bg-lime-600 text-black hover:bg-lime-500 font-regular ${
-                  mutation.isPending ||
-                  (reviewStatus === "rejected" && !rejectionReason.trim())
-                    ? "opacity-50 cursor-not-allowed"
+                className={`px-4 py-2 rounded bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 transition-colors duration-200 flex items-center gap-2 ${
+                  isDeleting || updateMutation.isPending
+                    ? "opacity-60 cursor-not-allowed"
+                    : ""
+                }`}
+                onClick={handleDelete}
+                disabled={isDeleting || updateMutation.isPending}>
+                {isDeleting ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5 text-rose-200"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={18} />
+                    Delete
+                  </>
+                )}
+              </button>
+              <button
+                className={`px-4 py-2 rounded bg-gradient-to-r from-green-500 to-lime-500 text-white hover:from-green-600 hover:to-lime-600 transition-all duration-200 ${
+                  updateMutation.isPending ||
+                  (reviewStatus === "rejected" && !rejectionReason.trim()) ||
+                  isDeleting
+                    ? "opacity-60 cursor-not-allowed"
                     : ""
                 }`}
                 onClick={handleReview}
                 disabled={
-                  mutation.isPending ||
-                  (reviewStatus === "rejected" && !rejectionReason.trim())
+                  updateMutation.isPending ||
+                  (reviewStatus === "rejected" && !rejectionReason.trim()) ||
+                  isDeleting
                 }>
-                {mutation.isPending ? "Saving..." : "Save"}
+                {updateMutation.isPending ? (
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </div>
+                ) : (
+                  "Save"
+                )}
               </button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   );

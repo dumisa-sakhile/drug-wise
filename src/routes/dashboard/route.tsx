@@ -94,8 +94,54 @@ function DashboardLayout() {
 
   if (!firebaseUser || isLoadingUserData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#151312] text-white w-full">
-        Loading dashboard...
+      <div className="min-h-screen w-full flex text-white">
+        {/* Desktop Sidebar Skeleton */}
+        <aside className="hidden md:flex fixed top-4 left-4 w-[260px] h-[calc(100%-32px)] z-50 flex-col rounded-3xl bg-[#1A1A1A]/70 animate-pulse border border-white/10">
+          <div className="px-6 pt-6 pb-4 flex items-center gap-4 border-b border-white/10">
+            <div className="w-10 h-10 rounded-full bg-gray-600 animate-pulse" />
+            <div className="flex flex-col gap-2">
+              <div className="h-4 w-24 rounded bg-gray-500 animate-pulse" />
+              <div className="h-3 w-32 rounded bg-gray-600 animate-pulse" />
+            </div>
+          </div>
+          <div className="flex-1 px-4 py-4 space-y-2">
+            <div className="h-9 w-full rounded-xl bg-gray-600 animate-pulse" />
+            <div className="h-9 w-full rounded-xl bg-gray-600 animate-pulse" />
+            <div className="h-9 w-full rounded-xl bg-gray-600 animate-pulse" />
+            <div className="h-9 w-full rounded-xl bg-gray-600 animate-pulse" />
+            <div className="h-9 w-full rounded-xl bg-gray-600 animate-pulse" />
+          </div>
+          <div className="p-4 border-t border-white/10 flex flex-col gap-2">
+            <div className="h-10 w-full rounded-xl bg-gray-600 animate-pulse" />
+            <div className="h-3 w-3/4 mx-auto rounded bg-gray-600 animate-pulse" />
+          </div>
+        </aside>
+
+        {/* Main Content Skeleton */}
+        <section className="md:fixed md:top-0 md:left-[296px] w-full md:w-[calc(100%-296px)] h-screen overflow-y-auto px-4 md:px-6 py-8 bg-[#151312]">
+          {/* Mobile Header Skeleton */}
+          <div className="md:hidden w-full flex items-center justify-between p-4 mb-8 bg-[#1A1A1A] rounded-xl animate-pulse">
+            <div className="h-6 w-40 rounded bg-gray-600" />
+            <div className="h-8 w-8 rounded-xl bg-gray-600" />
+          </div>
+
+          {/* Page Content Skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-12 w-3/4 rounded-xl bg-[#1A1A1A] animate-pulse" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="h-40 rounded-xl bg-[#1A1A1A] animate-pulse" />
+                <div className="h-40 rounded-xl bg-[#1A1A1A] animate-pulse" />
+                <div className="h-40 rounded-xl bg-[#1A1A1A] animate-pulse" />
+              </div>
+              <div className="h-80 rounded-xl bg-[#1A1A1A] animate-pulse" />
+            </div>
+            <div className="space-y-6">
+              <div className="h-40 rounded-xl bg-[#1A1A1A] animate-pulse" />
+              <div className="h-60 rounded-xl bg-[#1A1A1A] animate-pulse" />
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
