@@ -45,6 +45,7 @@ interface MedicationType {
   rejectionReason?: string;
   reviewedAt?: any;
   reviewedBy?: string;
+  reviewerName?: string;
   file: {
     url: string;
     name: string;
@@ -270,7 +271,8 @@ function Medication() {
       await updateDoc(medRef, {
         ...data,
         reviewedAt: serverTimestamp(),
-        reviewedBy: auth.currentUser?.displayName ?? "Admin",
+        reviewedBy: auth.currentUser?.uid ?? "",
+        reviewerName: auth.currentUser?.displayName ?? "Admin",
       });
     },
     onSuccess: () => {
@@ -761,7 +763,9 @@ function Medication() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100, damping: 15 }}
-            className={`bg-neutral-800 rounded-2xl shadow-lg p-6 max-w-${modalState.type === "adminAction" ? "md" : "full sm:max-w-3xl"} w-full border border-neutral-700 relative overflow-auto max-h-[90vh]`}
+            className={`bg-neutral-800 rounded-2xl shadow-lg p-6 max-w-${
+              modalState.type === "adminAction" ? "md" : "full sm:max-w-3xl"
+            } w-full border border-neutral-700 relative overflow-auto max-h-[90vh]`}
             onClick={(e) => e.stopPropagation()}>
             <button
               className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
@@ -1083,12 +1087,12 @@ function Medication() {
                           </p>
                         </div>
                       )}
-                      {modalState.medication.reviewedBy && (
+                      {modalState.medication.reviewerName && (
                         <div>
                           <p className="font-semibold text-neutral-300">
                             Reviewed By:
                           </p>
-                          <p>{modalState.medication.reviewedBy}</p>
+                          <p>{modalState.medication.reviewerName ?? "-"}</p>
                         </div>
                       )}
                     </div>
@@ -1304,3 +1308,5 @@ function Medication() {
     </div>
   );
 }
+
+export default Medication;

@@ -93,13 +93,16 @@ function AdminLayout() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-3xl font-bold tracking-tight ">Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+            Admin Dashboard
+          </h1>
         </div>
 
         {/* Warning for small screens */}
         {isSmallScreen && (
           <div className="bg-yellow-500 text-black p-4 rounded-lg text-center font-regular">
-            For the best experience, please use a larger screen to access the admin page.
+            For the best experience, please use a larger screen to access the
+            admin page.
           </div>
         )}
 

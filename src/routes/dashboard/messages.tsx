@@ -110,7 +110,7 @@ function MessagesComponent() {
   return (
     <div className="font-light max-w-5xl mx-auto md:px-4 py-8 min-h-screen text-white  rounded-xl">
       <title>DrugWise - Messages</title>
-      <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">
+      <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
         Your Messages
       </h1>
 
@@ -133,21 +133,22 @@ function MessagesComponent() {
             <table className="min-w-full text-left text-neutral-300 text-sm">
               <thead className="bg-neutral-700/50">
                 <tr>
-                  <th className="px-6 py-4 font-semibold 
+                  <th
+                    className="px-6 py-4 font-semibold 
                   ">
                     From
                   </th>
-                  <th className="px-6 py-4 font-semibold 
+                  <th
+                    className="px-6 py-4 font-semibold 
                   ">
                     Subject
                   </th>
-                  <th className="px-6 py-4 font-semibold 
+                  <th
+                    className="px-6 py-4 font-semibold 
                   ">
                     Date
                   </th>
-                  <th className="px-6 py-4 font-semibold ">
-                    Status
-                  </th>
+                  <th className="px-6 py-4 font-semibold ">Status</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,42 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { db, auth } from "@/config/firebase";
+import { auth, db } from "@/config/firebase";
 import {
   collection,
   query,
   getDocs,
   doc,
-  updateDoc,
-  orderBy,
-  addDoc,
   getDoc,
-  where,
-  Timestamp,
-  deleteField,
+  updateDoc,
   deleteDoc,
+  serverTimestamp,
+  addDoc,
+  deleteField,
 } from "firebase/firestore";
 import { del } from "@vercel/blob";
-import { Search, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { onAuthStateChanged } from "firebase/auth";
-import type { User as FirebaseUser } from "firebase/auth";
+import { Check, AlertCircle, X, RotateCcw, Trash2, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/admin/medication")({
   component: AdminMedication,
 });
 
-interface Medication {
+interface MedicationType {
   id: string;
   medicationName: string;
   description: string;
+  comment?: string;
   userId: string;
+  status: "pending" | "approved" | "rejected";
   submittedAt: any;
-  status: "approved" | "rejected" | "pending";
   rejectionReason?: string;
   reviewedAt?: any;
   reviewedBy?: string;
+  reviewerName?: string;
   file: {
     url: string;
     name: string;
@@ -55,197 +53,27 @@ interface User {
   isAdmin: boolean;
 }
 
-async function sendMedicationNotification({
-  medicationId,
-  userId,
-  medicationName,
-  status,
-  rejectionReason,
-  senderId,
-  senderName,
-  action,
-}: {
-  medicationId: string;
-  userId: string;
-  medicationName: string;
-  status?: "approved" | "rejected" | "pending";
+interface ModalState {
+  type: "details" | "adminAction" | null;
+  medication?: MedicationType | null;
+  adminStatus?: "approved" | "rejected";
   rejectionReason?: string;
-  senderId: string;
-  senderName: string;
-  action?: "delete";
-}) {
-  try {
-    // Validate inputs
-    if (
-      !medicationId ||
-      !userId ||
-      !medicationName ||
-      !senderId ||
-      !senderName
-    ) {
-      throw new Error("Missing required fields for notification");
-    }
-
-    // Verify recipient user exists
-    const userRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-      throw new Error(`Recipient user ${userId} not found`);
-    }
-
-    // Verify medication exists (unless deleted)
-    if (action !== "delete") {
-      const medRef = doc(db, "medications", medicationId);
-      const medSnap = await getDoc(medRef);
-      if (!medSnap.exists()) {
-        throw new Error(`Medication ${medicationId} not found`);
-      }
-    }
-
-    // Check for existing notification to prevent duplicates
-    const subject =
-      action === "delete"
-        ? `Medication Deleted: ${medicationName}`
-        : status === "pending"
-          ? `Medication Reverted to Pending: ${medicationName}`
-          : `Medication ${status === "approved" ? "Approved" : "Rejected"}: ${medicationName}`;
-    const messagesQuery = query(
-      collection(db, "messages"),
-      where("recipientId", "==", userId),
-      where("medicationId", "==", medicationId),
-      where("subject", "==", subject)
-    );
-    const messageDocs = await getDocs(messagesQuery);
-    if (!messageDocs.empty) {
-      console.log(
-        `Notification already sent for medication ${medicationId} with ${action || `status ${status}`}`
-      );
-      return;
-    }
-
-    // Construct message
-    let content = "";
-    if (action === "delete") {
-      content = `Your medication submission "${medicationName}" was deleted by an admin. Please contact support if you have questions.`;
-    } else if (status === "pending") {
-      content = `Your medication submission "${medicationName}" has been reverted to pending status for further review.`;
-    } else {
-      content = `Your medication submission "${medicationName}" has been ${status}.`;
-      if (status === "rejected" && rejectionReason) {
-        content += `\n\nReason: ${rejectionReason}\n\nYou may edit and resubmit your medication for review.`;
-      } else if (status === "approved") {
-        content += "\n\nThis medication is now available in your records.";
-      }
-    }
-
-    // Send notification
-    await addDoc(collection(db, "messages"), {
-      content,
-      isRead: false,
-      recipientId: userId,
-      senderId,
-      senderName,
-      sentAt: Timestamp.now(),
-      subject,
-      medicationId,
-    });
-
-    console.log(
-      `Sent notification for medication ${medicationId} (${action || status}) to user ${userId} by ${senderName}`
-    );
-  } catch (error: any) {
-    const errorMessage =
-      error.code === "permission-denied"
-        ? "Permission denied: Check Firestore rules or admin status"
-        : (error.message ?? "Unknown error");
-    console.error("Error sending medication notification:", error);
-    throw new Error(`Failed to send notification: ${errorMessage}`);
-  }
 }
 
 function AdminMedication() {
-  const [search, setSearch] = useState<string>("");
-  const [status, setStatus] = useState<
-    "all" | "approved" | "rejected" | "pending"
-  >("all");
-  const [rowsPerPage, setRowsPerPage] = useState<number>(15);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [modal, setModal] = useState<null | { med: Medication }>(null);
-  const [reviewStatus, setReviewStatus] = useState<
-    "approved" | "rejected" | "pending"
-  >("pending");
-  const [rejectionReason, setRejectionReason] = useState<string>("");
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [modalState, setModalState] = useState<ModalState>({ type: null });
+
   const queryClient = useQueryClient();
 
-  // Track current user
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user?.uid ?? null);
     });
     return () => unsubscribe();
   }, []);
 
-  // Fetch current user data
-  const { data: currentUserData, isLoading: isCurrentUserLoading } =
-    useQuery<User | null>({
-      queryKey: ["currentUserData", currentUser?.uid],
-      queryFn: async () => {
-        if (!currentUser?.uid) return null;
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) {
-          throw new Error(`Admin user ${currentUser.uid} not found`);
-        }
-        const data = docSnap.data();
-        return {
-          id: docSnap.id,
-          uid: data.uid ?? docSnap.id,
-          name: data.name ?? "Admin",
-          surname: data.surname ?? "",
-          email: data.email ?? "",
-          isAdmin: data.isAdmin ?? false,
-        } as User;
-      },
-      enabled: !!currentUser?.uid,
-    });
-
-  // Fetch all medications
-  const { data: medications, isLoading: isMedicationsLoading } = useQuery<
-    Medication[]
-  >({
-    queryKey: ["allMedications"],
-    queryFn: async () => {
-      const q = query(
-        collection(db, "medications"),
-        orderBy("submittedAt", "desc")
-      );
-      const snap = await getDocs(q);
-      return snap.docs.map((doc) => ({
-        id: doc.id,
-        medicationName: doc.data().medicationName ?? "Unknown",
-        description: doc.data().description ?? "",
-        userId: doc.data().userId ?? "",
-        submittedAt: doc.data().submittedAt,
-        status: doc.data().status ?? "pending",
-        rejectionReason: doc.data().rejectionReason,
-        reviewedAt: doc.data().reviewedAt,
-        reviewedBy: doc.data().reviewedBy,
-        file: doc.data().file ?? {
-          url: "",
-          name: "",
-          type: "",
-          uploadedAt: "",
-          size: 0,
-        },
-      })) as Medication[];
-    },
-    enabled: !!currentUser?.uid && currentUserData?.isAdmin,
-  });
-
-  // Fetch all users
-  const { data: users, isLoading: isUsersLoading } = useQuery<
+  const { data: users = {}, isLoading: isUsersLoading } = useQuery<
     Record<string, User>
   >({
     queryKey: ["allUsers"],
@@ -266,139 +94,177 @@ function AdminMedication() {
       });
       return map;
     },
-    enabled: !!currentUser?.uid && currentUserData?.isAdmin,
+    enabled: !!currentUser,
   });
 
-  const isLoading =
-    isMedicationsLoading || isUsersLoading || isCurrentUserLoading;
-
-  // Filter medications
-  const filtered = (medications || []).filter((m) => {
-    const matchesStatus = status === "all" || m.status === status;
-    const user = users?.[m.userId];
-    const matchesSearch =
-      (m.medicationName?.toLowerCase?.()?.includes(search.toLowerCase()) ||
-        m.description?.toLowerCase?.()?.includes(search.toLowerCase()) ||
-        user?.name?.toLowerCase?.()?.includes(search.toLowerCase()) ||
-        user?.surname?.toLowerCase?.()?.includes(search.toLowerCase()) ||
-        user?.email?.toLowerCase?.()?.includes(search.toLowerCase())) ??
-      false;
-    return matchesStatus && matchesSearch;
-  });
-
-  const totalRows = filtered.length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-  const paged = filtered.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-  // Mutation for updating medication status
-  const updateMutation = useMutation<
-    void,
-    Error,
-    {
-      id: string;
-      status: "approved" | "rejected" | "pending";
-      rejectionReason: string;
-      prevStatus: "approved" | "rejected" | "pending";
-    }
+  const { data: medications = [], isLoading: isMedsLoading } = useQuery<
+    MedicationType[]
   >({
-    mutationFn: async ({ id, status, rejectionReason }) => {
-      if (!currentUser?.uid || !currentUserData?.isAdmin) {
-        throw new Error("Not authenticated or not an admin");
-      }
-
-      const ref = doc(db, "medications", id);
-      const snap = await getDoc(ref);
-      if (!snap.exists()) {
-        throw new Error(`Medication ${id} not found`);
-      }
-
-      const updateData: Record<string, any> = {
-        status,
-        reviewedAt: Timestamp.now(),
-        reviewedBy: currentUser.uid,
-      };
-
-      if (status === "rejected") {
-        updateData.rejectionReason = rejectionReason;
-      } else {
-        updateData.rejectionReason = deleteField();
-      }
-
-      await updateDoc(ref, updateData);
+    queryKey: ["allMedications"],
+    queryFn: async () => {
+      if (!currentUser) return [];
+      const medsRef = collection(db, "medications");
+      const q = query(medsRef);
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Omit<MedicationType, "id">),
+      }));
     },
-    onSuccess: async (_, { id, status, rejectionReason, prevStatus }) => {
-      if (status !== prevStatus && currentUser?.uid && currentUserData) {
-        try {
-          const ref = doc(db, "medications", id);
-          const snap = await getDoc(ref);
-          if (snap.exists()) {
-            const medData = snap.data();
-            if (
-              status === "approved" ||
-              status === "rejected" ||
-              status === "pending"
-            ) {
-              await sendMedicationNotification({
-                medicationId: id,
-                userId: medData?.userId ?? "",
-                medicationName: medData?.medicationName ?? "Unknown",
-                status,
-                rejectionReason,
-                senderId: currentUser.uid,
-                senderName:
-                  `${currentUserData.name ?? "Admin"} ${currentUserData.surname ?? ""}`.trim(),
-              });
-              toast.success("Status updated and notification sent!");
-            } else {
-              toast.success("Status updated successfully!");
-            }
-          } else {
-            toast.error(
-              "Status updated but medication not found for notification"
-            );
-          }
-        } catch (error: any) {
-          toast.error(
-            `Status updated but notification failed: ${error.message}`
-          );
-        }
-      } else {
-        toast.success("Status updated successfully!");
-      }
-      setModal(null);
-      setRejectionReason("");
-      setReviewStatus("pending");
-      queryClient.invalidateQueries({ queryKey: ["allMedications"] });
-    },
-    onError: (err) => {
-      const errorMessage =
-        err.message === "permission-denied"
-          ? "Permission denied: Check Firestore rules or admin status"
-          : (err.message ?? "Failed to update status");
-      toast.error(errorMessage);
-    },
+    enabled: !!currentUser,
   });
 
-  // Mutation for deleting medication
-  const deleteMutation = useMutation<
-    void,
-    Error,
-    { id: string; userId: string; medicationName: string; fileUrl: string }
-  >({
-    mutationFn: async ({ id, userId, medicationName, fileUrl }) => {
-      if (!currentUser?.uid || !currentUserData?.isAdmin) {
-        throw new Error("Not authenticated or not an admin");
-      }
-      const medRef = doc(db, "medications", id);
+  const { mutate: updateMedication, isPending: isUpdating } = useMutation({
+    mutationFn: async ({
+      medId,
+      data,
+    }: {
+      medId: string;
+      data: Partial<MedicationType>;
+    }) => {
+      if (!currentUser) throw new Error("Not authenticated");
+      const medRef = doc(db, "medications", medId);
       const medSnap = await getDoc(medRef);
       if (!medSnap.exists()) {
         throw new Error("Medication not found");
       }
-      // Perform Firestore deletion first
+      const trimmedRejectionReason = data.rejectionReason?.trim();
+      const updateData: any = {
+        status: data.status,
+        reviewedAt: serverTimestamp(),
+        reviewedBy: auth.currentUser?.uid ?? "",
+        reviewerName: auth.currentUser?.displayName ?? "Admin",
+      };
+      if (data.status === "rejected") {
+        if (!trimmedRejectionReason) {
+          throw new Error("Rejection reason is required and cannot be empty");
+        }
+        updateData.rejectionReason = trimmedRejectionReason;
+      } else {
+        updateData.rejectionReason = deleteField();
+      }
+      await updateDoc(medRef, updateData);
+
+      // Send notification
+      const userId = medSnap.data().userId;
+      const userSnap = await getDoc(doc(db, "users", userId));
+      if (!userSnap.exists()) {
+        throw new Error("User not found");
+      }
+      const userEmail = userSnap.data().email;
+      const content =
+        data.status === "approved"
+          ? `Your medication "${medSnap.data().medicationName}" has been approved.`
+          : `Your medication "${medSnap.data().medicationName}" has been rejected. Reason: ${trimmedRejectionReason}`;
+
+      await addDoc(collection(db, "messages"), {
+        senderId: currentUser,
+        senderName: "DrugWise Team",
+        recipientId: userId,
+        content: content,
+        sentAt: serverTimestamp(),
+        isRead: false,
+        subject: `Medication ${data.status === "approved" ? "Approved" : "Rejected"}`,
+        isWelcomeMessage: false,
+      });
+
+      return { userEmail, content };
+    },
+    onSuccess: ({ userEmail, content }) => {
+      toast.success(
+        `Medication ${modalState.adminStatus} and notification sent to ${userEmail}: ${content}`
+      );
+      setModalState({ type: null });
+      queryClient.invalidateQueries({ queryKey: ["allMedications"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update medication");
+    },
+  });
+
+  const { mutate: revertMedication, isPending: isReverting } = useMutation({
+    mutationFn: async (medId: string) => {
+      if (!currentUser) throw new Error("Not authenticated");
+      const medRef = doc(db, "medications", medId);
+      const medSnap = await getDoc(medRef);
+      if (!medSnap.exists()) {
+        throw new Error("Medication not found");
+      }
+      await updateDoc(medRef, {
+        status: "pending",
+        reviewedAt: deleteField(),
+        reviewedBy: deleteField(),
+        reviewerName: deleteField(),
+        rejectionReason: deleteField(),
+      });
+
+      // Send notification
+      const userId = medSnap.data().userId;
+      const userSnap = await getDoc(doc(db, "users", userId));
+      if (!userSnap.exists()) {
+        throw new Error("User not found");
+      }
+      const userEmail = userSnap.data().email;
+      const content = `Your medication "${medSnap.data().medicationName}" has been reverted to pending for further review.`;
+
+      await addDoc(collection(db, "messages"), {
+        senderId: currentUser,
+        senderName: "DrugWise Team",
+        recipientId: userId,
+        content,
+        sentAt: serverTimestamp(),
+        isRead: false,
+        subject: "Medication Reverted to Pending",
+        isWelcomeMessage: false,
+      });
+
+      return { userEmail, content };
+    },
+    onSuccess: ({ userEmail, content }) => {
+      toast.success(
+        `Medication reverted to pending and notification sent to ${userEmail}: ${content}`
+      );
+      setModalState({ type: null });
+      queryClient.invalidateQueries({ queryKey: ["allMedications"] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to revert medication");
+    },
+  });
+
+  const { mutate: deleteMedication, isPending: isDeleting } = useMutation({
+    mutationFn: async (medId: string) => {
+      if (!currentUser) throw new Error("Not authenticated");
+      const medRef = doc(db, "medications", medId);
+      const medSnap = await getDoc(medRef);
+      if (!medSnap.exists()) {
+        throw new Error("Medication not found");
+      }
+      const fileUrl = medSnap.data()?.file?.url;
+
+      // Send notification
+      const userId = medSnap.data().userId;
+      const userSnap = await getDoc(doc(db, "users", userId));
+      if (!userSnap.exists()) {
+        throw new Error("User not found");
+      }
+      const userEmail = userSnap.data().email;
+      const content = `Your medication "${medSnap.data().medicationName}" has been deleted by an admin.`;
+
+      await addDoc(collection(db, "messages"), {
+        senderId: currentUser,
+        senderName: "DrugWise Team",
+        recipientId: userId,
+        content,
+        sentAt: serverTimestamp(),
+        isRead: false,
+        subject: "Medication Deleted",
+        isWelcomeMessage: false,
+      });
+
+      // Perform Firestore deletion
       await deleteDoc(medRef);
+
       // Non-blocking Blob deletion
       if (fileUrl) {
         del(fileUrl, {
@@ -409,467 +275,514 @@ function AdminMedication() {
           );
         });
       }
-      // Send deletion notification
-      if (currentUser?.uid && currentUserData) {
-        await sendMedicationNotification({
-          medicationId: id,
-          userId,
-          medicationName,
-          senderId: currentUser.uid,
-          senderName:
-            `${currentUserData.name ?? "Admin"} ${currentUserData.surname ?? ""}`.trim(),
-          action: "delete",
-        });
-      }
+
+      return { userEmail, content };
     },
-    onSuccess: () => {
-      toast.success("Medication deleted and user notified!");
-      setModal(null);
-      setIsDeleting(false);
-      setRejectionReason("");
-      setReviewStatus("pending");
+    onSuccess: ({ userEmail, content }) => {
+      toast.success(
+        `Medication deleted and notification sent to ${userEmail}: ${content}`
+      );
+      setModalState({ type: null });
       queryClient.invalidateQueries({ queryKey: ["allMedications"] });
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to delete medication");
-      setIsDeleting(false);
     },
   });
 
-  function getStatusBadge(status: "approved" | "rejected" | "pending") {
+  const handleAdminAction = () => {
+    if (!modalState.medication?.id || !modalState.adminStatus) return;
+    if (
+      modalState.adminStatus === "rejected" &&
+      !modalState.rejectionReason?.trim()
+    ) {
+      toast.error(
+        "Please provide a valid rejection reason (cannot be empty or just spaces)"
+      );
+      return;
+    }
+    updateMedication({
+      medId: modalState.medication.id,
+      data: {
+        status: modalState.adminStatus,
+        rejectionReason: modalState.rejectionReason,
+      },
+    });
+  };
+
+  function StatusBadge({ status }: { status: MedicationType["status"] }) {
+    const baseClasses = "px-2 py-1 rounded-full text-xs font-semibold";
     switch (status) {
       case "approved":
         return (
-          <span className="px-2 py-1 rounded-full text-xs bg-[#1A1A1A] text-green-400">
-            Approved
+          <span
+            className={`${baseClasses} bg-green-900/30 text-green-400 flex items-center gap-1`}>
+            <Check size={14} /> Approved
           </span>
         );
       case "rejected":
         return (
-          <span className="px-2 py-1 rounded-full text-xs bg-[#1A1A1A] text-red-400">
-            Rejected
+          <span
+            className={`${baseClasses} bg-red-900/30 text-red-400 flex items-center gap-1`}>
+            <AlertCircle size={14} /> Rejected
           </span>
         );
+      case "pending":
       default:
         return (
-          <span className="px-2 py-1 rounded-full text-xs bg-[#1A1A1A] text-yellow-400">
-            Pending
+          <span className={`${baseClasses} bg-yellow-900/30 text-yellow-400`}>
+            Pending Review
           </span>
         );
     }
-  }
-
-  function openModal(med: Medication) {
-    setModal({ med });
-    setReviewStatus(med.status);
-    setRejectionReason(med.rejectionReason ?? "");
-    setIsDeleting(false);
-  }
-
-  function handleReview() {
-    if (!modal?.med?.id || !currentUser?.uid || !currentUserData?.isAdmin) {
-      toast.error("Invalid session or permissions");
-      return;
-    }
-
-    if (reviewStatus === "rejected" && !rejectionReason.trim()) {
-      toast.error("Please provide a rejection reason");
-      return;
-    }
-
-    updateMutation.mutate({
-      id: modal.med.id,
-      status: reviewStatus,
-      rejectionReason,
-      prevStatus: modal.med.status,
-    });
-  }
-
-  function handleDelete() {
-    if (!modal?.med?.id || !currentUser?.uid || !currentUserData?.isAdmin) {
-      toast.error("Invalid session or permissions");
-      return;
-    }
-    setIsDeleting(true);
-    deleteMutation.mutate({
-      id: modal.med.id,
-      userId: modal.med.userId,
-      medicationName: modal.med.medicationName,
-      fileUrl: modal.med.file.url,
-    });
-  }
-
-  if (isCurrentUserLoading) {
-    return <div className="p-4 text-white">Loading user data...</div>;
-  }
-
-  if (!currentUserData?.isAdmin) {
-    return (
-      <div className="p-4 text-white">
-        <p>You do not have permission to access this page.</p>
-      </div>
-    );
   }
 
   return (
-    <div className="p-4 text-white font-light max-w-5xl mx-auto">
-      <h1 className="text-2xl mb-4 font-bold bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
-        Medication Management
+    <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white">
+      <title>DrugWise - Admin Medication Reviews</title>
+      <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+        Medication Reviews
       </h1>
-      <p className="text-[#999] mb-6">
-        Review and manage user-submitted medications.{" "}
-        <span className="text-[#666]">{totalRows} total</span>
-      </p>
 
-      <div className="overflow-x-auto rounded-lg border border-[#222] bg-[#1A1A1A] shadow-inner">
-        <div className="flex flex-col sm:flex-row gap-4 items-center p-4 bg-[#222] border-b border-[#111]">
-          <div className="relative w-full sm:w-3/4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#999]" />
-            <input
-              type="text"
-              placeholder="Search by medication, description or user..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full pl-10 pr-4 py-2 bg-[#222] text-white rounded-md focus:outline-none ring-1 ring-[#333] focus:ring-blue-500 transition duration-200"
-            />
+      <section className="max-w-full mx-auto">
+        {isMedsLoading || isUsersLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="h-24 bg-neutral-800 rounded-xl animate-pulse"></div>
+            ))}
           </div>
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(
-                e.target.value as "all" | "approved" | "rejected" | "pending"
-              );
-              setCurrentPage(1);
-            }}
-            className="w-full sm:w-1/4 px-4 py-2 bg-[#222] text-white rounded-md focus:outline-none ring-1 ring-[#333] focus:ring-blue-500 transition duration-200">
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
-        </div>
+        ) : medications.length === 0 ? (
+          <div className="text-neutral-500 text-center py-10 flex flex-col items-center justify-center">
+            <AlertCircle className="text-6xl mb-4 text-neutral-600" />
+            <p className="text-lg">No medication submissions to review.</p>
+          </div>
+        ) : (
+          <>
+            <div className="hidden sm:block overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
+              <table className="min-w-full text-left text-neutral-300 text-sm">
+                <thead className="bg-neutral-700/50">
+                  <tr>
+                    <th className="px-6 py-4 font-semibold">Medication</th>
+                    <th className="px-6 py-4 font-semibold">Description</th>
+                    <th className="px-6 py-4 font-semibold">Submitted By</th>
+                    <th className="px-6 py-4 font-semibold">Reviewed By</th>
+                    <th className="px-6 py-4 font-semibold">Status</th>
+                    <th className="px-6 py-4 font-semibold">Submitted At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <AnimatePresence>
+                    {medications.map((m) => (
+                      <motion.tr
+                        key={m.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25 }}
+                        className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer transition-colors duration-200"
+                        onClick={() =>
+                          setModalState({ type: "details", medication: m })
+                        }>
+                        <td className="px-6 py-4 font-semibold">
+                          {m.medicationName}
+                        </td>
+                        <td className="px-6 py-4 max-w-xs truncate">
+                          {m.description}
+                        </td>
+                        <td className="px-6 py-4">
+                          {users[m.userId]?.name +
+                            " " +
+                            (users[m.userId]?.surname || "") || m.userId}
+                        </td>
+                        <td className="px-6 py-4">{m.reviewerName ?? "-"}</td>
+                        <td className="px-6 py-4">
+                          <StatusBadge status={m.status} />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {m.submittedAt?.toDate?.().toLocaleString() ?? "-"}
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
 
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="text-left text-[#999] border-b border-[#111] bg-[#222] font-semibold">
-              <th className="px-6 py-4">Name</th>
-              <th className="px-6 py-4">Description</th>
-              <th className="px-6 py-4">User</th>
-              <th className="px-6 py-4">Submitted</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <AnimatePresence>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[#999]">
-                    Loading medications...
-                  </td>
-                </tr>
-              ) : paged.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[#999]">
-                    No medications found
-                  </td>
-                </tr>
-              ) : (
-                paged.map((m) => (
-                  <motion.tr
+            <div className="sm:hidden space-y-6">
+              <AnimatePresence>
+                {medications.map((m) => (
+                  <motion.div
                     key={m.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                    className="border-b border-[#111] hover:bg-[#333] bg-[#222] cursor-pointer"
-                    onClick={() => openModal(m)}>
-                    <td className="px-6 py-4 font-semibold">
-                      {m.medicationName ?? "N/A"}
-                    </td>
-                    <td className="px-6 py-4 max-w-xs truncate">
-                      {m.description ?? "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      {users?.[m.userId]?.name ?? "Unknown"}{" "}
-                      {users?.[m.userId]?.surname ?? ""}
-                      <div className="text-xs text-[#666]">
-                        {users?.[m.userId]?.email ?? "N/A"}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {m.submittedAt?.toDate?.()?.toLocaleString("en-ZA") ??
-                        "-"}
-                    </td>
-                    <td className="px-6 py-4">{getStatusBadge(m.status)}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openModal(m);
-                        }}
-                        className="text-blue-400 hover:text-blue-300 underline font-semibold">
-                        Review
-                      </button>
-                    </td>
-                  </motion.tr>
-                ))
-              )}
-            </AnimatePresence>
-          </tbody>
-        </table>
-      </div>
+                    transition={{ duration: 0.25 }}
+                    className="bg-neutral-800 p-5 rounded-xl border border-neutral-700 cursor-pointer shadow-md hover:scale-[1.02] transition-transform duration-200"
+                    onClick={() =>
+                      setModalState({ type: "details", medication: m })
+                    }>
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-lg font-semibold truncate max-w-[70%]">
+                        {m.medicationName}
+                      </h3>
+                      <StatusBadge status={m.status} />
+                    </div>
+                    <p className="text-neutral-400 mt-2 line-clamp-2">
+                      {m.description}
+                    </p>
+                    <div className="flex justify-between items-center mt-4">
+                      <time className="text-neutral-500 text-xs">
+                        {m.submittedAt?.toDate?.().toLocaleDateString() ?? "-"}
+                      </time>
+                      <span className="text-blue-400 text-sm flex items-center gap-1">
+                        Details <ArrowRight size={14} />
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </>
+        )}
+      </section>
 
-      <div className="flex items-center justify-between mt-4 text-[#999]">
-        <div className="text-sm">
-          Rows per page
-          <select
-            value={rowsPerPage}
-            onChange={(e) => {
-              setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1);
-            }}
-            className="ml-2 px-2 py-1 bg-[#1A1A1A] text-white rounded focus:outline-none">
-            {[5, 10, 15, 25, 50].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
-            <ChevronLeft size={16} />
-          </button>
-          <span className="text-sm">
-            {currentPage} / {totalPages || 1}
-          </span>
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
-
-      {modal && (
+      {modalState.type && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6"
-          onClick={() => {
-            setModal(null);
-            setReviewStatus("pending");
-            setRejectionReason("");
-            setIsDeleting(false);
-          }}>
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6 font-light"
+          onClick={() => setModalState({ type: null })}>
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100, damping: 15 }}
-            className="bg-[#333] rounded-lg shadow-lg p-6 w-full max-w-md border border-[#333333]"
+            className={`bg-neutral-800 rounded-2xl shadow-lg p-6 max-w-${
+              modalState.type === "adminAction" ? "md" : "full sm:max-w-3xl"
+            } w-full border border-neutral-700 relative overflow-auto max-h-[90vh]`}
             onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg text-white font-bold">
-                Review Medication
-              </h3>
-              <button
-                className="text-[#999] hover:text-white text-2xl"
-                onClick={() => {
-                  setModal(null);
-                  setReviewStatus("pending");
-                  setRejectionReason("");
-                  setIsDeleting(false);
-                }}
-                aria-label="Close modal">
-                ×
-              </button>
-            </div>
-            <div className="mb-4 space-y-3 text-sm">
-              <div>
-                <span className="text-[#999] text-xs">Name</span>
-                <div className="text-white font-semibold">
-                  {modal?.med?.medicationName ?? "N/A"}
-                </div>
-              </div>
-              <div>
-                <span className="text-[#999] text-xs">Description</span>
-                <div className="text-white whitespace-pre-line">
-                  {modal?.med?.description ?? "N/A"}
-                </div>
-              </div>
-              <div>
-                <span className="text-[#999] text-xs">File</span>
-                <div className="text-white">
-                  {modal?.med?.file?.url ? (
-                    <a
-                      href={modal.med.file.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-400 hover:underline">
-                      {modal.med.file.name} ({modal.med.file.type.split("/")[1]}
-                      )
-                    </a>
-                  ) : (
-                    "No file uploaded"
-                  )}
-                </div>
-              </div>
-              <div>
-                <span className="text-[#999] text-xs">User</span>
-                <div className="text-white font-semibold">
-                  {users?.[modal?.med?.userId]?.name ?? "Unknown"}{" "}
-                  {users?.[modal?.med?.userId]?.surname ?? ""}
-                </div>
-                <div className="text-xs text-[#666]">
-                  {users?.[modal?.med?.userId]?.email ?? "N/A"}
-                </div>
-              </div>
-              <div>
-                <span className="text-[#999] text-xs">Submitted</span>
-                <div className="text-white">
-                  {modal?.med?.submittedAt
-                    ?.toDate?.()
-                    ?.toLocaleString("en-ZA") ?? "-"}
-                </div>
-              </div>
-              <div>
-                <span className="text-[#999] text-xs">Current Status</span>
-                <div>{getStatusBadge(modal?.med?.status ?? "pending")}</div>
-              </div>
-              <div>
-                <span className="text-[#999] text-xs">Change Status To</span>
-                <select
-                  value={reviewStatus}
-                  onChange={(e) =>
-                    setReviewStatus(
-                      e.target.value as "approved" | "rejected" | "pending"
-                    )
-                  }
-                  className="w-full mt-1 bg-[#222] text-white rounded px-3 py-2 border border-[#333333] focus:outline-none">
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-              {reviewStatus === "rejected" && (
-                <div>
-                  <label className="block text-[#999] mb-1 text-xs">
-                    Rejection Reason (required)
-                  </label>
-                  <textarea
-                    value={rejectionReason}
-                    onChange={(e) => setRejectionReason(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#1A1A1A] text-white rounded resize-none border border-[#333333] focus:outline-none"
-                    rows={3}
-                    placeholder="Enter reason for rejection..."
-                    required
-                  />
-                  {!rejectionReason.trim() && (
-                    <p className="text-red-400 text-xs mt-1">
-                      Rejection reason is required
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2 justify-end">
-              <button
-                className="px-4 py-2 rounded text-[#999] hover:text-white bg-[#222] hover:bg-[#333] transition-colors duration-200"
-                onClick={() => {
-                  setModal(null);
-                  setReviewStatus("pending");
-                  setRejectionReason("");
-                  setIsDeleting(false);
-                }}
-                disabled={updateMutation.isPending || isDeleting}>
-                Cancel
-              </button>
-              <button
-                className={`px-4 py-2 rounded bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 transition-colors duration-200 flex items-center gap-2 ${
-                  isDeleting || updateMutation.isPending
-                    ? "opacity-60 cursor-not-allowed"
-                    : ""
-                }`}
-                onClick={handleDelete}
-                disabled={isDeleting || updateMutation.isPending}>
-                {isDeleting ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5 text-rose-200"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 size={18} />
-                    Delete
-                  </>
-                )}
-              </button>
-              <button
-                className={`px-4 py-2 rounded bg-gradient-to-r from-green-500 to-lime-500 text-white hover:from-green-600 hover:to-lime-600 transition-all duration-200 ${
-                  updateMutation.isPending ||
-                  (reviewStatus === "rejected" && !rejectionReason.trim()) ||
-                  isDeleting
-                    ? "opacity-60 cursor-not-allowed"
-                    : ""
-                }`}
-                onClick={handleReview}
-                disabled={
-                  updateMutation.isPending ||
-                  (reviewStatus === "rejected" && !rejectionReason.trim()) ||
-                  isDeleting
-                }>
-                {updateMutation.isPending ? (
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
+            <button
+              className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
+              onClick={() => setModalState({ type: null })}
+              aria-label="Close modal">
+              <X />
+            </button>
+
+            {modalState.type === "details" && modalState.medication && (
+              <>
+                <h3 className="text-xl sm:text-2xl font-bold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+                  Medication Details
+                </h3>
+                <div className="space-y-4 text-neutral-200 text-sm sm:text-base">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-semibold text-neutral-300">
+                        Medication Name:
+                      </p>
+                      <p>{modalState.medication.medicationName}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-neutral-300">Status:</p>
+                      <StatusBadge status={modalState.medication.status} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-neutral-300">
+                        Submitted By:
+                      </p>
+                      <p>
+                        {users[modalState.medication.userId]?.name +
+                          " " +
+                          (users[modalState.medication.userId]?.surname ||
+                            "") || modalState.medication.userId}
+                      </p>
+                    </div>
+                    {modalState.medication.reviewerName && (
+                      <div>
+                        <p className="font-semibold text-neutral-300">
+                          Reviewed By:
+                        </p>
+                        <p>{modalState.medication.reviewerName ?? "-"}</p>
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-neutral-300">
+                        Submitted At:
+                      </p>
+                      <p>
+                        {modalState.medication.submittedAt
+                          ?.toDate?.()
+                          .toLocaleString() ?? "-"}
+                      </p>
+                    </div>
+                    {modalState.medication.reviewedAt && (
+                      <div>
+                        <p className="font-semibold text-neutral-300">
+                          Reviewed At:
+                        </p>
+                        <p>
+                          {modalState.medication.reviewedAt
+                            .toDate()
+                            .toLocaleString()}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  "Save"
+
+                  <div>
+                    <p className="font-semibold text-neutral-300">
+                      Description:
+                    </p>
+                    <p className="whitespace-pre-line">
+                      {modalState.medication.description}
+                    </p>
+                  </div>
+
+                  {modalState.medication.comment && (
+                    <div>
+                      <p className="font-semibold text-neutral-300">Comment:</p>
+                      <p className="whitespace-pre-line">
+                        {modalState.medication.comment}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="font-semibold text-neutral-300">
+                      Uploaded File:
+                    </p>
+                    {modalState.medication.file ? (
+                      <div className="my-2">
+                        <a
+                          href={modalState.medication.file.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-400 hover:underline">
+                          {modalState.medication.file.name} (
+                          {modalState.medication.file.type.split("/")[1]})
+                        </a>
+                        <span className="text-neutral-500 text-xs ml-2">
+                          Uploaded:{" "}
+                          {new Date(
+                            modalState.medication.file.uploadedAt
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ) : (
+                      <p>No file uploaded.</p>
+                    )}
+                  </div>
+
+                  {modalState.medication.status === "rejected" &&
+                    modalState.medication.rejectionReason && (
+                      <div className="bg-red-900/20 p-4 rounded-xl">
+                        <p className="font-semibold text-red-300">
+                          Rejection Reason:
+                        </p>
+                        <p className="text-red-200 whitespace-pre-line">
+                          {modalState.medication.rejectionReason}
+                        </p>
+                      </div>
+                    )}
+
+                  <div className="mt-6 flex justify-end gap-3 flex-wrap">
+                    {modalState.medication.status === "pending" && (
+                      <>
+                        <button
+                          onClick={() =>
+                            setModalState({
+                              type: "adminAction",
+                              medication: modalState.medication,
+                              adminStatus: "approved",
+                            })
+                          }
+                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-xl transition-colors duration-200">
+                          <Check size={18} /> Approve
+                        </button>
+                        <button
+                          onClick={() =>
+                            setModalState({
+                              type: "adminAction",
+                              medication: modalState.medication,
+                              adminStatus: "rejected",
+                            })
+                          }
+                          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl transition-colors duration-200">
+                          <AlertCircle size={18} /> Reject
+                        </button>
+                      </>
+                    )}
+                    {(modalState.medication.status === "approved" ||
+                      modalState.medication.status === "rejected") && (
+                      <button
+                        onClick={() =>
+                          revertMedication(modalState.medication!.id)
+                        }
+                        disabled={isReverting}
+                        className={`flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-xl transition-colors duration-200 ${
+                          isReverting ? "opacity-60 cursor-not-allowed" : ""
+                        }`}>
+                        {isReverting ? (
+                          <>
+                            <svg
+                              className="animate-spin h-5 w-5 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24">
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Reverting...
+                          </>
+                        ) : (
+                          <>
+                            <RotateCcw size={18} /> Revert to Pending
+                          </>
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={() =>
+                        deleteMedication(modalState.medication!.id)
+                      }
+                      disabled={isDeleting}
+                      className={`flex items-center gap-2 bg-rose-500/10 text-rose-400 border-rose-500/20 py-2 px-4 rounded-xl transition-colors duration-200 hover:bg-rose-500/20 ${
+                        isDeleting ? "opacity-60 cursor-not-allowed" : ""
+                      }`}>
+                      {isDeleting ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5 text-rose-200"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24">
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 size={18} /> Delete
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {modalState.type === "adminAction" && modalState.medication && (
+              <>
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  {modalState.adminStatus === "approved" ? (
+                    <>
+                      <Check className="text-green-400" /> Approve Medication
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="text-red-400" /> Reject Medication
+                    </>
+                  )}
+                </h3>
+                {modalState.adminStatus === "rejected" && (
+                  <div className="mb-4">
+                    <label className="block text-neutral-300 mb-2">
+                      Rejection Reason (required)
+                    </label>
+                    <textarea
+                      value={modalState.rejectionReason ?? ""}
+                      onChange={(e) =>
+                        setModalState({
+                          ...modalState,
+                          rejectionReason: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      className="w-full rounded-xl bg-neutral-900 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Provide reason for rejection..."
+                    />
+                  </div>
                 )}
-              </button>
-            </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => setModalState({ type: null })}
+                    className="px-4 py-2 rounded-xl bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-700 transition-colors duration-200">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAdminAction}
+                    disabled={
+                      isUpdating ||
+                      (modalState.adminStatus === "rejected" &&
+                        !modalState.rejectionReason?.trim())
+                    }
+                    className={`px-4 py-2 rounded-xl ${
+                      modalState.adminStatus === "approved"
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-red-600 hover:bg-red-700"
+                    } text-white transition-colors duration-200 flex items-center gap-2 ${
+                      isUpdating ||
+                      (modalState.adminStatus === "rejected" &&
+                        !modalState.rejectionReason?.trim())
+                        ? "opacity-70 cursor-not-allowed"
+                        : ""
+                    }`}>
+                    {isUpdating ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24">
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        {modalState.adminStatus === "approved" ? (
+                          <Check size={18} />
+                        ) : (
+                          <AlertCircle size={18} />
+                        )}
+                        Confirm
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         </motion.div>
       )}
