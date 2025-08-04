@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect, useMemo } from "react";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { auth, db } from "@/config/firebase";
 import {
   collection,
@@ -17,7 +22,17 @@ import {
 import { del } from "@vercel/blob";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, AlertCircle, X, RotateCcw, Trash2, ArrowRight } from "lucide-react";
+import {
+  Check,
+  AlertCircle,
+  X,
+  RotateCcw,
+  Trash2,
+  ArrowRight,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/admin/medication")({
   component: AdminMedication,
@@ -63,6 +78,12 @@ interface ModalState {
 function AdminMedication() {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [modalState, setModalState] = useState<ModalState>({ type: null });
+  const [search, setSearch] = useState<string>("");
+  const [status, setStatus] = useState<
+    "all" | "pending" | "approved" | "rejected"
+  >("all");
+  const [rowsPerPage, setRowsPerPage] = useState<number>(15);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
   const queryClient = useQueryClient();
 
@@ -112,7 +133,42 @@ function AdminMedication() {
       }));
     },
     enabled: !!currentUser,
+    initialData: [],
+    placeholderData: keepPreviousData,
   });
+
+  const filteredMedications = useMemo(() => {
+    let result = medications;
+    if (status !== "all") {
+      result = result.filter((m) => m.status === status);
+    }
+    if (search.trim() && !isUsersLoading) {
+      const searchLower = search.toLowerCase().trim();
+      result = result.filter((m) => {
+        const user = users[m.userId];
+        return (
+          m.medicationName.toLowerCase().includes(searchLower) ||
+          m.description.toLowerCase().includes(searchLower) ||
+          (user &&
+            (user.name.toLowerCase().includes(searchLower) ||
+              user.surname.toLowerCase().includes(searchLower) ||
+              user.email.toLowerCase().includes(searchLower)))
+        );
+      });
+    }
+    return result;
+  }, [medications, status, search, users, isUsersLoading]);
+
+  const paginatedMedications = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredMedications.slice(start, start + rowsPerPage);
+  }, [filteredMedications, currentPage, rowsPerPage]);
+
+  const totalPages = Math.ceil(filteredMedications.length / rowsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, status, rowsPerPage]);
 
   const { mutate: updateMedication, isPending: isUpdating } = useMutation({
     mutationFn: async ({
@@ -343,76 +399,151 @@ function AdminMedication() {
       <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
         Medication Reviews
       </h1>
+      <p className="text-neutral-500 mb-8 font-light">
+        Review and manage user-submitted medications.
+      </p>
 
-      <section className="max-w-full mx-auto">
-        {isMedsLoading || isUsersLoading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="h-24 bg-neutral-800 rounded-xl animate-pulse"></div>
-            ))}
-          </div>
-        ) : medications.length === 0 ? (
-          <div className="text-neutral-500 text-center py-10 flex flex-col items-center justify-center">
-            <AlertCircle className="text-6xl mb-4 text-neutral-600" />
-            <p className="text-lg">No medication submissions to review.</p>
-          </div>
-        ) : (
-          <>
+      <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
+        <section className="max-w-full mx-auto">
+          {isMedsLoading || isUsersLoading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-24 bg-[#222] rounded-md animate-pulse"></div>
+              ))}
+            </div>
+          ) : (
             <div className="hidden sm:block overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-              <table className="min-w-full text-left text-neutral-300 text-sm">
+              <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
                 <thead className="bg-neutral-700/50">
                   <tr>
-                    <th className="px-6 py-4 font-semibold">Medication</th>
-                    <th className="px-6 py-4 font-semibold">Description</th>
-                    <th className="px-6 py-4 font-semibold">Submitted By</th>
-                    <th className="px-6 py-4 font-semibold">Reviewed By</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">Submitted At</th>
+                    <th colSpan={6} className="px-4 sm:px-6 py-3 font-semibold">
+                      <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <div className="relative w-full sm:w-3/4">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                          <input
+                            type="text"
+                            placeholder="Search by medication, description or user..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                          />
+                        </div>
+                        <select
+                          value={status}
+                          onChange={(e) =>
+                            setStatus(
+                              e.target.value as
+                                | "all"
+                                | "pending"
+                                | "approved"
+                                | "rejected"
+                            )
+                          }
+                          className="w-full sm:w-1/4 px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
+                          <option value="all">All Status</option>
+                          <option value="pending">Pending</option>
+                          <option value="approved">Approved</option>
+                          <option value="rejected">Rejected</option>
+                        </select>
+                        <span className="text-neutral-300 font-semibold">
+                          {filteredMedications.length} total
+                        </span>
+                      </div>
+                    </th>
+                  </tr>
+                  <tr>
+                    <th className="px-4 sm:px-6 py-3 font-semibold">
+                      Medication
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 font-semibold">
+                      Description
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 font-semibold">
+                      Submitted By
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 font-semibold">
+                      Reviewed By
+                    </th>
+                    <th className="px-4 sm:px-6 py-3 font-semibold">Status</th>
+                    <th className="px-4 sm:px-6 py-3 font-semibold">
+                      Submitted At
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <AnimatePresence>
-                    {medications.map((m) => (
+                    {filteredMedications.length === 0 ? (
                       <motion.tr
-                        key={m.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.25 }}
-                        className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer transition-colors duration-200"
-                        onClick={() =>
-                          setModalState({ type: "details", medication: m })
-                        }>
-                        <td className="px-6 py-4 font-semibold">
-                          {m.medicationName}
-                        </td>
-                        <td className="px-6 py-4 max-w-xs truncate">
-                          {m.description}
-                        </td>
-                        <td className="px-6 py-4">
-                          {users[m.userId]?.name +
-                            " " +
-                            (users[m.userId]?.surname || "") || m.userId}
-                        </td>
-                        <td className="px-6 py-4">{m.reviewerName ?? "-"}</td>
-                        <td className="px-6 py-4">
-                          <StatusBadge status={m.status} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {m.submittedAt?.toDate?.().toLocaleString() ?? "-"}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="border-b border-neutral-700">
+                        <td
+                          colSpan={6}
+                          className="px-4 sm:px-6 py-8 text-center text-neutral-500 font-light">
+                          No medications found matching the search criteria.
                         </td>
                       </motion.tr>
-                    ))}
+                    ) : (
+                      paginatedMedications.map((m: MedicationType) => (
+                        <motion.tr
+                          key={m.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.25 }}
+                          className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer"
+                          onClick={() =>
+                            setModalState({ type: "details", medication: m })
+                          }>
+                          <td className="px-4 sm:px-6 py-4 font-semibold">
+                            {m.medicationName}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 max-w-xs truncate">
+                            {m.description}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            {users[m.userId]?.name +
+                              " " +
+                              (users[m.userId]?.surname || "") || m.userId}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            {m.reviewerName ?? "-"}
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            <StatusBadge status={m.status} />
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                            {m.submittedAt?.toDate?.().toLocaleString() ?? "-"}
+                          </td>
+                        </motion.tr>
+                      ))
+                    )}
                   </AnimatePresence>
                 </tbody>
               </table>
             </div>
+          )}
+        </section>
 
-            <div className="sm:hidden space-y-6">
-              <AnimatePresence>
-                {medications.map((m) => (
+        {!(isMedsLoading || isUsersLoading) && (
+          <div className="sm:hidden space-y-6">
+            <AnimatePresence>
+              {filteredMedications.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="text-neutral-500 text-center py-10 flex flex-col items-center justify-center">
+                  <AlertCircle className="text-6xl mb-4 text-neutral-600" />
+                  <p className="text-lg">
+                    No medications found matching the search criteria.
+                  </p>
+                </motion.div>
+              ) : (
+                paginatedMedications.map((m: MedicationType) => (
                   <motion.div
                     key={m.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -441,12 +572,51 @@ function AdminMedication() {
                       </span>
                     </div>
                   </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </>
+                ))
+              )}
+            </AnimatePresence>
+          </div>
         )}
-      </section>
+      </div>
+
+      {!(
+        isMedsLoading ||
+        isUsersLoading ||
+        filteredMedications.length === 0
+      ) && (
+        <div className="flex items-center justify-between mt-4 text-[#999] font-light">
+          <div className="text-sm">
+            Rows per page
+            <select
+              value={rowsPerPage}
+              onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              className="ml-2 px-2 py-1 bg-[#1A1A1A] text-white rounded focus:outline-none">
+              {[5, 10, 15, 25, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
+              <ChevronLeft size="16" />
+            </button>
+            <span className="text-sm">
+              {currentPage} / {totalPages || 1}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
+              <ChevronRight size="16" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {modalState.type && (
         <motion.div
