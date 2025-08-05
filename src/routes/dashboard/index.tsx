@@ -16,6 +16,7 @@ import {
 import { auth, db } from "@/config/firebase";
 import {
   AlertTriangle,
+  ArrowLeft,
   ArrowRight,
   ClipboardList,
   Edit,
@@ -36,6 +37,7 @@ interface UserData {
   surname: string;
   lastLogin: Timestamp | null;
   photoURL?: string;
+  role?: string;
 }
 
 interface Medication {
@@ -113,7 +115,7 @@ const useDashboardData = (user: User | null) => {
         id: med.id,
         date: med.submittedAt?.toDate(),
         Icon: Pill,
-        color: "text-rose-400",
+        color: "text-lime-400",
         title: `Medication: ${med.medicationName}`,
         description: `Status: ${med.status}`,
         link: "/dashboard/medication",
@@ -161,6 +163,8 @@ export const Route = createFileRoute("/dashboard/")({
 function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -169,7 +173,7 @@ function DashboardPage() {
         navigate({ to: "/auth" });
       } else {
         setUser(currentUser);
-        updateDoc(doc(db, "users", currentUser.uid), {
+        await updateDoc(doc(db, "users", currentUser.uid), {
           lastLogin: Timestamp.now(),
         }).catch(() => {});
       }
@@ -200,18 +204,39 @@ function DashboardPage() {
       : defaultMaleAvatar;
   }, [user, userData]);
 
+  // Pagination Logic
+  const totalItems = timelineItems.length;
+  const totalPages = Math.ceil(totalItems / rowsPerPage);
+  const paginatedItems = timelineItems.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const handleRowsPerPageChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setRowsPerPage(Number(event.target.value));
+    setCurrentPage(1); // Reset to first page
+  };
+
   if (isLoading && !userData) return <LoadingState />;
   if (error || !user) return <ErrorState />;
 
   return (
     <>
       <title>DrugWise - My Hub</title>
-      <main className="bricolage-grotesque-light min-h-screen text-neutral-100 font-sans p-0 sm:p-6 lg:p-8">
+      <main className="min-h-screen text-gray-100 font-sans p-0 lg:p-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-5xl mx-auto w-full">
+          className="max-w-full mx-auto w-full ">
           <DashboardHeader
             user={userData}
             profileImage={profileImage}
@@ -231,10 +256,16 @@ function DashboardPage() {
             onUpdateProfile={() => setModalOpen(true)}
           />
           <br />
-          <ActivityFeed activities={timelineItems} />
+          <ActivityFeed
+            activities={paginatedItems}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handlePageChange}
+            onRowsPerPageChange={handleRowsPerPageChange}
+          />
         </motion.div>
       </main>
-
       <EditProfileForm
         isShowing={isModalOpen}
         hide={() => setModalOpen(false)}
@@ -245,47 +276,31 @@ function DashboardPage() {
 }
 
 // --- Child Components ---
-
-const DashboardHeader = ({
-  user,
-  profileImage,
-  onEditProfile,
-  isProfileIncomplete,
-}: any) => (
-  <header className="flex flex-col sm:flex-row items-start justify-between gap-4 w-full mb-8">
-    <div className="flex items-center gap-4">
-      <motion.img
-        src={profileImage}
-        alt="Profile"
-        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-neutral-700"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      />
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">
-          Welcome, {user?.name || "User"}!
-        </h1>
-        <p className="text-neutral-400 text-sm sm:text-base">{user?.email}</p>
-        {isProfileIncomplete && (
-          <div className="mt-2 sm:hidden">
-            <button
-              onClick={onEditProfile}
-              className="flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-1 rounded-md">
-              <AlertTriangle size={14} />
-              Update your profile
-            </button>
-          </div>
-        )}
-      </div>
+const DashboardHeader = ({ user, profileImage, onEditProfile }: any) => (
+  <header className="flex flex-col items-center md:items-start gap-4 w-full h-auto mx-auto mb-8 py-4 sm:px-6 sm:py-6">
+    <motion.img
+      src={profileImage}
+      alt="Profile"
+      className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-lime-500/30 hover:ring-2 hover:ring-lime-500/50 transition-all duration-200 hover:scale-105"
+      initial={{ scale: 0, rotate: -10 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    />
+    <div className="text-center">
+      <h1 className="text-xl sm:text-2xl font-bold text-gray-100">
+        Welcome, {user?.name || "User"}!
+      </h1>
+      <p className="text-sky-300 text-sm">{user?.email}</p>
     </div>
-    <div className="flex items-center gap-2 self-end sm:self-center w-full sm:w-auto">
-      <button
+    <div className="w-full max-w-xs">
+      <motion.button
         onClick={onEditProfile}
-        className="flex items-center justify-center w-full sm:w-auto gap-2 text-sm text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 px-4 py-2 rounded-lg transition-colors">
+        className="flex items-center justify-center w-full gap-2 text-sm text-lime-400 bg-gradient-to-r from-sky-500/20 to-lime-500/20 hover:bg-gradient-to-r hover:from-sky-500/30 hover:to-lime-500/30 px-4 py-2 rounded-lg transition-all duration-200 shadow-md min-h-[44px]"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}>
         <Edit size={16} />
         Edit Profile
-      </button>
+      </motion.button>
     </div>
   </header>
 );
@@ -295,14 +310,21 @@ const QuickNav = ({
   messageCount,
   unreadMessageCount,
 }: any) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+  <motion.div
+    className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 px-4 sm:px-6"
+    initial="hidden"
+    animate="visible"
+    variants={{
+      hidden: {},
+      visible: { transition: { staggerChildren: 0.2 } },
+    }}>
     <NavCard
       to="/dashboard/medication"
       Icon={Pill}
       title="My Medications"
       value={medicationCount}
       label="Tracked"
-      color="text-rose-400 bg-rose-500/10"
+      color="text-lime-400 bg-lime-500/10"
     />
     <NavCard
       to="/dashboard/messages"
@@ -315,30 +337,42 @@ const QuickNav = ({
       color="text-sky-400 bg-sky-500/10"
       hasAlert={unreadMessageCount > 0}
     />
-  </div>
+  </motion.div>
 );
 
 const NavCard = ({ to, Icon, title, value, label, color, hasAlert }: any) => (
-  <Link to={to}>
+  <Link to={to} className="block w-full min-h-[44px]">
     <motion.div
-      whileHover={{ y: -4, transition: { type: "spring", stiffness: 300 } }}
-      className={`relative group p-4 rounded-xl border border-neutral-800 hover:border-neutral-700 bg-neutral-900/50 hover:bg-neutral-800/40 transition-all overflow-hidden`}>
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 },
+      }}
+      whileHover={{
+        scale: 1.03,
+        y: -6,
+        transition: { type: "spring", stiffness: 300 },
+      }}
+      className="relative p-4 rounded-2xl border border-gray-700 bg-[#2A2A2D] hover:bg-gradient-to-r hover:from-rose-500/20 hover:to-sky-500/20 transition-all duration-200 shadow-md">
       <div className="flex justify-between items-start">
         <div className="flex-col">
-          <h3 className="font-bold text-white text-lg">{title}</h3>
-          <p className="text-sm text-neutral-400">
-            <span className="text-2xl font-bold text-white">{value}</span>{" "}
+          <h3 className="font-bold text-gray-100 text-base sm:text-lg">
+            {title}
+          </h3>
+          <p className="text-sm text-gray-300">
+            <span className="text-xl sm:text-2xl font-bold text-gray-100">
+              {value}
+            </span>{" "}
             {label}
           </p>
         </div>
         <div className={`p-2 rounded-lg ${color}`}>
-          <Icon size={24} />
+          <Icon size={24} sm:size={28} />
         </div>
       </div>
       {hasAlert && (
-        <span className="absolute top-3 right-3 block h-2.5 w-2.5 rounded-full bg-sky-500"></span>
+        <span className="absolute top-3 right-3 block h-2.5 w-2.5 rounded-full bg-lime-500"></span>
       )}
-      <div className="absolute bottom-4 right-4 text-neutral-600 group-hover:text-neutral-300 transition-colors">
+      <div className="absolute bottom-4 right-4 text-gray-400 group-hover:text-lime-300 transition-colors duration-200">
         <ArrowRight size={20} />
       </div>
     </motion.div>
@@ -354,7 +388,8 @@ const ActionCenter = ({
     isProfileIncomplete && {
       id: "profile-incomplete",
       Icon: AlertTriangle,
-      color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      color:
+        "bg-gradient-to-r from-amber-500/10 to-rose-500/10 text-amber-400 border-amber-500/20",
       title: "Complete Your Profile",
       description: "Provide required details to get the most out of DrugWise.",
       buttonLabel: "Update Now",
@@ -363,7 +398,8 @@ const ActionCenter = ({
     medicationCount === 0 && {
       id: "add-meds",
       Icon: Plus,
-      color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+      color:
+        "bg-gradient-to-r from-rose-500/10 to-lime-500/10 text-rose-400 border-rose-500/20",
       title: "Add Your First Medication",
       description:
         "Start tracking your medications to get reminders and insights.",
@@ -375,62 +411,148 @@ const ActionCenter = ({
   if (actions.length === 0) return null;
 
   return (
-    <div className="mb-8">
-      <h3 className="text-lg font-semibold text-white mb-3">Next Steps</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <motion.div
+      className="mb-8 px-4 sm:px-6"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: { transition: { staggerChildren: 0.1 } },
+      }}>
+      <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-3">
+        Next Steps
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <AnimatePresence>
           {actions.map((action: any) => (
-            <motion.div
+            <Link
               key={action.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              layout
-              className={`flex items-start gap-4 p-4 rounded-xl border ${action.color}`}>
-              <action.Icon size={24} className="flex-shrink-0 mt-1" />
-              <div className="flex-grow">
-                <h4 className="font-bold text-white">{action.title}</h4>
-                <p className="text-sm text-neutral-400 mb-3">
-                  {action.description}
-                </p>
-                <Link
-                  to={action.actionLink}
-                  onClick={action.onAction}
-                  className="text-sm font-semibold bg-neutral-700/60 hover:bg-neutral-700 px-3 py-1.5 rounded-md transition-colors whitespace-nowrap inline-flex items-center gap-2">
-                  {action.buttonLabel} <ArrowRight size={14} />
-                </Link>
-              </div>
-            </motion.div>
+              to={action.actionLink}
+              onClick={action.onAction}
+              className="block w-full min-h-[44px]">
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 10 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0 }}
+                layout
+                className={`flex items-start gap-4 p-4 rounded-2xl border ${action.color} shadow-md`}>
+                <action.Icon size={20} className="flex-shrink-0 mt-1" />
+                <div className="flex-grow">
+                  <h4 className="font-bold text-gray-100 text-base">
+                    {action.title}
+                  </h4>
+                  <p className="text-sm text-gray-300 mb-3">
+                    {action.description}
+                  </p>
+                  <div className="text-sm font-semibold bg-gradient-to-r from-lime-500/20 to-sky-500/20 hover:bg-gradient-to-r hover:from-lime-500/30 hover:to-sky-500/30 text-lime-400 px-3 py-1.5 rounded-md transition-all duration-200 inline-flex items-center gap-2 min-h-[44px]">
+                    {action.buttonLabel} <ArrowRight size={14} />
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-const ActivityFeed = ({ activities }: any) => (
-  <div>
-    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-      <ClipboardList size={20} />
-      Recent Activity
-    </h3>
-    <div className="border border-neutral-800 rounded-xl">
+const ActivityFeed = ({
+  activities,
+  currentPage,
+  totalPages,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+}: any) => (
+  <motion.div
+    className="px-4 sm:px-6"
+    initial="hidden"
+    animate="visible"
+    variants={{
+      hidden: {},
+      visible: { transition: { staggerChildren: 0.1 } },
+    }}>
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+      <h3 className="text-base sm:text-lg font-semibold text-gray-100 flex items-center gap-2">
+        <ClipboardList size={20} className="text-lime-400" />
+        Recent Activity
+      </h3>
+      <div className="flex items-center gap-2">
+        <label className="text-sm text-gray-300">Rows per page:</label>
+        <select
+          value={rowsPerPage}
+          onChange={onRowsPerPageChange}
+          className="bg-[#2A2A2D] text-gray-100 text-sm rounded-md border border-gray-600 focus:ring-2 focus:ring-lime-500/50 px-2 py-1 min-h-[44px]">
+          <option value={5}>5</option>
+          <option value={10}>10</option>
+          <option value={20}>20</option>
+        </select>
+      </div>
+    </div>
+    <div className="border border-gray-700 rounded-2xl bg-[#2A2A2D] shadow-md">
       {activities.length > 0 ? (
-        <div className="divide-y divide-neutral-800">
+        <div className="divide-y divide-gray-700">
           {activities.map((item: any, index: number) => (
             <ActivityItem key={item.id} {...item} isFirst={index === 0} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 text-neutral-500 bg-neutral-900/20 rounded-xl">
-          <p className="font-semibold text-lg">All caught up!</p>
+        <div className="text-center py-12 sm:py-16 text-sky-300 bg-gradient-to-b from-[#2A2A2D] to-[#1C1C1E] rounded-2xl">
+          <p className="font-semibold text-base sm:text-lg">All caught up!</p>
           <p className="text-sm">
             New events from your medications and messages will appear here.
           </p>
         </div>
       )}
     </div>
-  </div>
+    {totalPages > 1 && (
+      <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+        <motion.button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-lime-400 bg-gradient-to-r from-sky-500/20 to-lime-500/20 hover:bg-gradient-to-r hover:from-sky-500/30 hover:to-lime-500/30 transition-all duration-200 min-h-[44px] ${
+            currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}>
+          <ArrowLeft size={16} />
+          Previous
+        </motion.button>
+        <div className="flex items-center gap-2">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <motion.button
+              key={page}
+              onClick={() => onPageChange(page)}
+              className={`px-3 py-1 rounded-md text-sm min-h-[44px] ${
+                currentPage === page
+                  ? "bg-lime-500/30 text-lime-400"
+                  : "bg-[#2A2A2D] text-gray-300 hover:bg-lime-500/20"
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}>
+              {page}
+            </motion.button>
+          ))}
+        </div>
+        <motion.button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-lime-400 bg-gradient-to-r from-sky-500/20 to-lime-500/20 hover:bg-gradient-to-r hover:from-sky-500/30 hover:to-lime-500/30 transition-all duration-200 min-h-[44px] ${
+            currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}>
+          Next
+          <ArrowRight size={16} />
+        </motion.button>
+      </div>
+    )}
+  </motion.div>
 );
 
 const ActivityItem = ({
@@ -442,54 +564,71 @@ const ActivityItem = ({
   isNew,
   isFirst,
 }: any) => (
-  <motion.div
-    initial={{ opacity: 0, x: -10 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay: isFirst ? 0.2 : 0 }}
-    className="p-4 hover:bg-neutral-800/50 transition-colors">
-    <Link to={link} className="flex items-center gap-4">
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${color.replace("text", "bg")}/10`}>
-        <Icon size={20} className={color} />
+  <Link to={link} className="block w-full min-h-[44px]">
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, x: -10 },
+        visible: { opacity: 1, x: 0 },
+      }}
+      initial="hidden"
+      animate="visible"
+      transition={{ delay: isFirst ? 0.2 : 0 }}
+      whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+      className="p-3 sm:p-4 hover:bg-gradient-to-r hover:from-neutral-800/50 hover:to-neutral-900/50 transition-all duration-200">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div
+          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${color.replace("text", "bg")}/10`}>
+          <Icon size={16} sm:size={20} className={color} />
+        </div>
+        <div className="flex-grow min-w-0">
+          <p className="font-semibold text-gray-100 text-sm sm:text-base truncate flex items-center">
+            {title}
+            {isNew && (
+              <span className="text-xs font-bold text-sky-400 border border-sky-400/50 bg-sky-500/20 px-2 py-0.5 rounded-full ml-2">
+                NEW
+              </span>
+            )}
+          </p>
+          <p className="text-xs sm:text-sm text-gray-300 truncate">
+            {description}
+          </p>
+        </div>
+        <ArrowRight size={16} className="text-lime-400 flex-shrink-0" />
       </div>
-      <div className="flex-grow min-w-0">
-        <p className="font-semibold text-white truncate flex items-center">
-          {title}
-          {isNew && (
-            <span className="text-xs font-bold text-sky-400 border border-sky-400/50 bg-sky-500/10 px-2 py-0.5 rounded-full ml-2">
-              NEW
-            </span>
-          )}
-        </p>
-        <p className="text-sm text-neutral-400 truncate">{description}</p>
-      </div>
-      <ArrowRight size={16} className="text-neutral-500 flex-shrink-0" />
-    </Link>
-  </motion.div>
+    </motion.div>
+  </Link>
 );
 
 const LoadingState = () => (
-  <div className="min-h-screen  flex flex-col items-center justify-center text-neutral-400">
+  <motion.div
+    className="min-h-screen flex flex-col items-center justify-center text-gray-300"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}>
     <motion.div
       animate={{ rotate: 360 }}
       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-      className="w-10 h-10 border-4 border-neutral-800 border-t-sky-500 rounded-full mb-4"
+      className="w-10 h-10 border-4 border-gray-600 border-t-lime-500 rounded-full mb-4"
     />
     <p className="text-lg font-medium">Loading Your Hub...</p>
-  </div>
+  </motion.div>
 );
 
 const ErrorState = () => (
-  <div className="min-h-screen  flex flex-col items-center justify-center text-neutral-400 px-4">
-    <AlertTriangle size={32} className="text-rose-500 mb-4" />
-    <h2 className="text-xl font-bold text-white mb-1">
+  <motion.div
+    className="min-h-screen flex flex-col items-center justify-center text-gray-300 px-4"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}>
+    <AlertTriangle size={32} className="text-rose-400 mb-4" />
+    <h2 className="text-xl font-semibold text-gray-100 mb-1">
       Failed to Load Dashboard
     </h2>
-    <p className="text-center">
+    <p className="text-center text-sm">
       We couldn't retrieve your data. Please check your connection and try
       again.
     </p>
-  </div>
+  </motion.div>
 );
 
 export default DashboardPage;
