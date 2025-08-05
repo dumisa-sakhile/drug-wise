@@ -14,7 +14,7 @@ import {
   orderBy,
   Timestamp,
 } from "firebase/firestore";
-import { Send, Search, Check, X, Trash2, Eye } from "lucide-react";
+import { Send, Search, Check, X, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { onAuthStateChanged } from "firebase/auth";
@@ -257,7 +257,7 @@ function AdminMessages() {
 
   if (loadingCurrentUserData) {
     return (
-      <div className="font-light max-w-5xl mx-auto md:px-4 py-8 min-h-screen text-white">
+      <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white">
         Loading user data...
       </div>
     );
@@ -265,7 +265,7 @@ function AdminMessages() {
 
   if (!currentUserData?.isAdmin) {
     return (
-      <div className="font-light max-w-5xl mx-auto md:px-4 py-8 min-h-screen text-white">
+      <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white">
         <p>You do not have permission to access this page.</p>
       </div>
     );
@@ -283,20 +283,20 @@ function AdminMessages() {
 
       <div className="flex gap-4 mb-8">
         <button
-          className={`px-4 py-2 rounded font-semibold ${
+          className={`px-4 py-2 rounded-xl font-semibold ${
             view === "compose"
-              ? "bg-lime-600 text-white"
+              ? "bg-gradient-to-r from-green-500 to-lime-500 text-white"
               : "bg-neutral-500/10 text-neutral-400 hover:bg-neutral-700"
-          }`}
+          } transition-all duration-200`}
           onClick={() => setView("compose")}>
           Compose
         </button>
         <button
-          className={`px-4 py-2 rounded font-semibold ${
+          className={`px-4 py-2 rounded-xl font-semibold ${
             view === "sent"
-              ? "bg-lime-600 text-white"
+              ? "bg-gradient-to-r from-green-500 to-lime-500 text-white"
               : "bg-neutral-500/10 text-neutral-400 hover:bg-neutral-700"
-          }`}
+          } transition-all duration-200`}
           onClick={() => setView("sent")}>
           Sent Messages
         </button>
@@ -312,7 +312,7 @@ function AdminMessages() {
                 placeholder="Search users..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-neutral-900 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 text-white rounded-xl shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
               />
             </div>
 
@@ -361,8 +361,8 @@ function AdminMessages() {
 
           <div className="flex-1 bg-neutral-800 rounded-xl p-6 border border-neutral-700 shadow-inner flex flex-col">
             <div className="mb-4">
-              <label className="block text-neutral-300 mb-2 font-semibold">
-                To
+              <label className="block text-neutral-200 font-semibold mb-2">
+                To <span className="text-red-400">*</span>
               </label>
               <select
                 value={selectedUser?.uid || ""}
@@ -370,7 +370,7 @@ function AdminMessages() {
                   const user = users.find((u) => u.uid === e.target.value);
                   setSelectedUser(user || null);
                 }}
-                className={`w-full px-3 py-2 bg-neutral-900 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
+                className={`w-full px-4 py-3 bg-neutral-900 text-white rounded-xl border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
                   validationErrors.user ? "border-red-400" : ""
                 }`}>
                 <option value="" disabled>
@@ -382,51 +382,72 @@ function AdminMessages() {
                   </option>
                 ))}
               </select>
-              {validationErrors.user && (
-                <p className="text-red-400 text-xs mt-1 font-light">
-                  {validationErrors.user}
-                </p>
-              )}
+              <AnimatePresence>
+                {validationErrors.user && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-red-400 text-sm mt-1"
+                    id="user-error">
+                    {validationErrors.user}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
             <div className="mb-4">
-              <label className="block text-neutral-300 mb-2 font-semibold">
-                Subject
+              <label className="block text-neutral-200 font-semibold mb-2">
+                Subject <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className={`w-full px-3 py-2 bg-neutral-900 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-light capitalize ${
+                className={`w-full px-4 py-3 bg-neutral-800/50 text-white rounded-xl border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
                   validationErrors.subject ? "border-red-400" : ""
                 }`}
                 placeholder="Enter subject"
               />
-              {validationErrors.subject && (
-                <p className="text-red-400 text-xs mt-1 font-light">
-                  {validationErrors.subject}
-                </p>
-              )}
+              <AnimatePresence>
+                {validationErrors.subject && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-red-400 text-sm mt-1"
+                    id="subject-error">
+                    {validationErrors.subject}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
             <div className="mb-4 flex-1 flex flex-col">
-              <label className="block text-neutral-300 mb-2 font-semibold">
-                Message
+              <label className="block text-neutral-200 font-semibold mb-2">
+                Message <span className="text-red-400">*</span>
               </label>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className={`w-full h-40 px-3 py-2 bg-neutral-900 text-white rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
+                className={`w-full h-40 px-4 py-3 bg-neutral-800/50 text-white rounded-xl resize-none border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
                   validationErrors.content ? "border-red-400" : ""
                 }`}
                 placeholder="Type your message..."
               />
-              {validationErrors.content && (
-                <p className="text-red-400 text-xs mt-1 font-light">
-                  {validationErrors.content}
-                </p>
-              )}
+              <AnimatePresence>
+                {validationErrors.content && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-red-400 text-sm mt-1"
+                    id="content-error">
+                    {validationErrors.content}
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </div>
             <button
-              className="mt-2 bg-lime-600 hover:bg-lime-700 text-white px-4 py-2 rounded-xl font-semibold flex items-center gap-2 self-end transition-colors duration-200"
+              className="mt-2 bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white px-4 py-2 rounded-xl font-semibold flex items-center gap-2 self-end transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={() => sendMutation.mutate()}
               disabled={sendMutation.isPending}>
               <Send size={16} />
@@ -437,13 +458,13 @@ function AdminMessages() {
       ) : (
         <div className="space-y-6">
           <div className="flex items-center gap-4">
-            <label className="text-neutral-300 font-semibold">Filter:</label>
+            <label className="text-neutral-200 font-semibold">Filter:</label>
             <select
               value={filter}
               onChange={(e) =>
                 setFilter(e.target.value as "all" | "admin" | "system")
               }
-              className="px-3 py-2 bg-neutral-900 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
+              className="px-4 py-3 bg-neutral-900 text-white rounded-xl border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
               <option value="all">All Messages</option>
               <option value="admin">Admin Sent</option>
               <option value="system">System Sent</option>
@@ -458,7 +479,6 @@ function AdminMessages() {
                   <th className="px-6 py-4 font-semibold">Sent At</th>
                   <th className="px-6 py-4 font-semibold">Status</th>
                   <th className="px-6 py-4 font-semibold">Type</th>
-                  <th className="px-6 py-4 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -466,7 +486,7 @@ function AdminMessages() {
                   {loadingMessages ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={5}
                         className="px-6 py-8 text-center text-neutral-500 font-light">
                         Loading messages...
                       </td>
@@ -474,7 +494,7 @@ function AdminMessages() {
                   ) : messagesError ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={5}
                         className="px-6 py-8 text-center text-red-400 font-light">
                         Error:{" "}
                         {messagesError instanceof Error
@@ -514,8 +534,8 @@ function AdminMessages() {
                           </td>
                           <td className="px-6 py-4">
                             {msg.isRead ? (
-                              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-900/30 text-green-400 flex items-center gap-1">
-                                <Check size={14} /> Read
+                              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-900/30 text-green-400">
+                                Read
                               </span>
                             ) : (
                               <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-900/30 text-yellow-400">
@@ -526,34 +546,13 @@ function AdminMessages() {
                           <td className="px-6 py-4">
                             {isAdminMessage ? "Admin" : "System"}
                           </td>
-                          <td className="px-6 py-4">
-                            <button
-                              onClick={() => handleViewMessage(msg)}
-                              className={`flex items-center gap-2 px-3 py-1 rounded-xl text-sm font-semibold ${
-                                isAdminMessage
-                                  ? "bg-lime-600 hover:bg-lime-700 text-white"
-                                  : "bg-blue-600 hover:bg-blue-700 text-white"
-                              } transition-colors duration-200`}>
-                              {isAdminMessage ? (
-                                <>
-                                  <Check size={14} />
-                                  Edit
-                                </>
-                              ) : (
-                                <>
-                                  <Eye size={14} />
-                                  View
-                                </>
-                              )}
-                            </button>
-                          </td>
                         </motion.tr>
                       );
                     })
                   ) : (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={5}
                         className="px-6 py-8 text-center text-neutral-500 font-light">
                         No sent messages found
                       </td>
@@ -571,14 +570,14 @@ function AdminMessages() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6 font-light"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
           onClick={() => setIsPopupOpen(false)}>
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100, damping: 15 }}
-            className="bg-neutral-800 rounded-2xl shadow-lg p-6 w-full max-w-md border border-neutral-700 relative"
+            className="bg-neutral-800 rounded-2xl shadow-lg p-6 w-full max-w-md border border-neutral-700 relative overflow-auto max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}>
             <button
               className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
@@ -586,13 +585,13 @@ function AdminMessages() {
               aria-label="Close modal">
               <X />
             </button>
-            <h2 className="text-xl font-bold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+            <h2 className="text-2xl sm:text-2xl font-bold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
               {selectedMessage.senderName === adminName
                 ? "Edit Message"
                 : "View Message"}
             </h2>
             <div className="mb-4">
-              <label className="block text-neutral-300 mb-2 font-semibold">
+              <label className="block text-neutral-200 font-semibold mb-2">
                 Subject
               </label>
               {selectedMessage.senderName === adminName ? (
@@ -605,16 +604,16 @@ function AdminMessages() {
                       subject: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 bg-neutral-900 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                  className="w-full px-4 py-3 bg-neutral-800/50 text-white rounded-xl border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
                 />
               ) : (
-                <p className="w-full px-3 py-2 bg-neutral-900 text-white rounded-xl font-light">
+                <p className="w-full px-4 py-3 bg-neutral-800/50 text-white rounded-xl font-light">
                   {selectedMessage.subject}
                 </p>
               )}
             </div>
             <div className="mb-4">
-              <label className="block text-neutral-300 mb-2 font-semibold">
+              <label className="block text-neutral-200 font-semibold mb-2">
                 Message
               </label>
               {selectedMessage.senderName === adminName ? (
@@ -626,28 +625,34 @@ function AdminMessages() {
                       content: e.target.value,
                     })
                   }
-                  className="w-full h-40 px-3 py-2 bg-neutral-900 text-white rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                  className="w-full h-40 px-4 py-3 bg-neutral-800/50 text-white rounded-xl resize-none border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
                 />
               ) : (
-                <p className="w-full h-40 px-3 py-2 bg-neutral-900 text-white rounded-xl font-light whitespace-pre-wrap">
+                <p className="w-full h-40 px-4 py-3 bg-neutral-800/50 text-white rounded-xl font-light whitespace-pre-wrap">
                   {selectedMessage.content}
                 </p>
               )}
             </div>
-            <div className="flex justify-end gap-3">
-              <button
+            <div className="flex justify-end gap-3 mt-6">
+              <motion.button
+                type="button"
+                onClick={() => setIsPopupOpen(false)}
                 className="px-4 py-2 rounded-xl bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-700 transition-colors duration-200"
-                onClick={() => setIsPopupOpen(false)}>
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}>
                 Close
-              </button>
+              </motion.button>
               {selectedMessage.senderName === adminName && (
                 <>
-                  <button
+                  <motion.button
+                    type="button"
                     className="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 transition-colors duration-200 flex items-center gap-2"
                     onClick={() =>
                       deleteMessageMutation.mutate(selectedMessage.id)
                     }
-                    disabled={deleteMessageMutation.isPending}>
+                    disabled={deleteMessageMutation.isPending}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}>
                     {deleteMessageMutation.isPending ? (
                       <>
                         <svg
@@ -675,15 +680,18 @@ function AdminMessages() {
                         Delete
                       </>
                     )}
-                  </button>
-                  <button
-                    className="px-4 py-2 rounded-xl bg-lime-600 hover:bg-lime-700 text-white flex items-center gap-2 transition-colors duration-200"
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white flex items-center gap-2 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
                     onClick={() => {
                       if (selectedMessage) {
                         updateMessageMutation.mutate(selectedMessage);
                       }
                     }}
-                    disabled={updateMessageMutation.isPending}>
+                    disabled={updateMessageMutation.isPending}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}>
                     {updateMessageMutation.isPending ? (
                       <>
                         <svg
@@ -711,7 +719,7 @@ function AdminMessages() {
                         Save Changes
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </>
               )}
             </div>

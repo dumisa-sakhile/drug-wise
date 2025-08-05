@@ -177,9 +177,9 @@ function DashboardLayout() {
   };
 
   return (
-    <main className="w-full min-h-screen bg-[#151312] text-white">
+    <main className="w-full min-h-screen bg-[#151312] text-white roboto-regular">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex fixed top-4 left-4 w-[260px] h-[calc(100%-32px)] z-50 flex-col rounded-3xl backdrop-blur-md bg-[#1A1A1A]/70 shadow-2xl border border-white/10">
+      <aside className="hidden md:flex fixed top-4 left-4 w-[260px] h-[calc(100%-32px)]  flex-col rounded-3xl backdrop-blur-md bg-[#1A1A1A]/70 shadow-2xl border border-white/10">
         <div className="px-6 pt-6 pb-4 flex items-center gap-4 border-b border-white/10">
           <div className="w-10 h-10 rounded-full bg-[#181C24] overflow-hidden object-cover border border-blue-500">
             <img

@@ -89,7 +89,7 @@ function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#141414] text-white px-4 py-6">
+    <div className="min-h-screen bg-[#141414] text-white px-4 py-6 roboto-regular">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

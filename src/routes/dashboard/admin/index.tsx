@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { auth, db } from "@/config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import type { User as FirebaseUser } from "firebase/auth";
@@ -16,7 +16,13 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Check, X } from "lucide-react";
+import {
+  Search,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+} from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/admin/")({
   component: Admin,
@@ -33,14 +39,6 @@ interface UserData {
   isAdmin: boolean;
 }
 
-interface Medication {
-  id: string;
-  userId: string;
-  medicationName: string;
-  status: string;
-  submittedAt: Timestamp;
-}
-
 function Admin() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,6 +52,8 @@ function Admin() {
     gender?: string;
     dob?: string;
   }>({});
+  const [rowsPerPage, setRowsPerPage] = useState<number>(15);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -90,7 +90,7 @@ function Admin() {
     }
   }, [user, userData, navigate]);
 
-  const { data: allUsers } = useQuery<UserData[]>({
+  const { data: allUsers, isLoading: isUsersLoading } = useQuery<UserData[]>({
     queryKey: ["allUsers"],
     queryFn: async () => {
       if (!user || !userData?.isAdmin) return [];
@@ -103,34 +103,34 @@ function Admin() {
     refetchOnWindowFocus: false,
   });
 
-  const filteredUsers = Array.isArray(allUsers)
-    ? allUsers.filter((u) => {
-        const matchesSearchTerm =
-          u.uid.includes(searchTerm) ||
-          u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.surname.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesGender = filterGender ? u.gender === filterGender : true;
-        return matchesSearchTerm && matchesGender;
-      })
-    : [];
-
-  const { data: medications, isLoading: loadingMedications } = useQuery<
-    Medication[]
-  >({
-    queryKey: ["medications", selectedUser?.uid],
-    queryFn: async () => {
-      if (!selectedUser) return [];
-      const q = query(
-        collection(db, "medications"),
-        orderBy("submittedAt", "desc")
+  const filteredUsers = useMemo(() => {
+    if (!Array.isArray(allUsers)) return [];
+    let result = allUsers;
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      result = result.filter(
+        (u) =>
+          u.uid.includes(searchLower) ||
+          u.name.toLowerCase().includes(searchLower) ||
+          u.surname.toLowerCase().includes(searchLower)
       );
-      const snapshot = await getDocs(q);
-      return snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }) as Medication)
-        .filter((med) => med.userId === selectedUser.uid);
-    },
-    enabled: !!selectedUser?.uid,
-  });
+    }
+    if (filterGender) {
+      result = result.filter((u) => u.gender === filterGender);
+    }
+    return result;
+  }, [allUsers, searchTerm, filterGender]);
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredUsers.slice(start, start + rowsPerPage);
+  }, [filteredUsers, currentPage, rowsPerPage]);
+
+  const totalPages = Math.ceil(filteredUsers.length / rowsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterGender, rowsPerPage]);
 
   const updateUserMutation = useMutation({
     mutationFn: async (updatedUser: Partial<UserData> & { uid: string }) => {
@@ -221,8 +221,36 @@ function Admin() {
   const formatDateForInput = (dob: Timestamp | null): string =>
     dob ? dob.toDate().toISOString().split("T")[0] : "";
 
+  // Check if changes have been made
+  const hasChanges = useMemo(() => {
+    if (!selectedUser) return false;
+    return (
+      editedUser.name !== selectedUser.name ||
+      editedUser.surname !== selectedUser.surname ||
+      editedUser.gender !== selectedUser.gender ||
+      (editedUser.dob &&
+        selectedUser.dob &&
+        formatDateForInput(editedUser.dob as Timestamp) !==
+          formatDateForInput(selectedUser.dob)) ||
+      (!editedUser.dob && selectedUser.dob) ||
+      (editedUser.dob && !selectedUser.dob)
+    );
+  }, [editedUser, selectedUser]);
+
+  const handleCopyEmail = (email: string) => {
+    navigator.clipboard
+      .writeText(email)
+      .then(() => {
+        toast.success("Email copied to clipboard!");
+      })
+      .catch((err) => {
+        toast.error("Failed to copy email.");
+        console.error("Copy failed:", err);
+      });
+  };
+
   return (
-    <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white">
+    <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white ">
       <title>DrugWise - Admin User Management</title>
       <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
         User Management
@@ -232,29 +260,35 @@ function Admin() {
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-        <div className="flex flex-col sm:flex-row gap-4 items-center p-4 bg-neutral-800">
-          <div className="relative w-full sm:w-3/4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
-            <input
-              type="text"
-              placeholder="Search by UID, Name, or Surname..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-neutral-900 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
-            />
-          </div>
-          <select
-            value={filterGender}
-            onChange={(e) => setFilterGender(e.target.value)}
-            className="w-full sm:w-1/4 px-4 py-2 bg-neutral-900 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
-            <option value="">All Genders</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-        </div>
-
-        <table className="min-w-full text-sm text-left text-neutral-300">
+        <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
           <thead className="bg-neutral-700/50">
+            <tr>
+              <th colSpan={8} className="px-6 py-4 font-semibold">
+                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                  <div className="relative w-full sm:w-3/4">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                    <input
+                      type="text"
+                      placeholder="Search by UID, Name, or Surname..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                    />
+                  </div>
+                  <select
+                    value={filterGender}
+                    onChange={(e) => setFilterGender(e.target.value)}
+                    className="w-full sm:w-1/4 px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
+                    <option value="">All Genders</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                  <span className="text-neutral-300 font-semibold">
+                    {filteredUsers.length} total
+                  </span>
+                </div>
+              </th>
+            </tr>
             <tr>
               <th className="px-6 py-4 font-semibold">No.</th>
               <th className="px-6 py-4 font-semibold">UID</th>
@@ -268,8 +302,32 @@ function Admin() {
           </thead>
           <tbody>
             <AnimatePresence>
-              {filteredUsers && filteredUsers.length > 0 ? (
-                filteredUsers.map((u, index) => (
+              {isUsersLoading ? (
+                <motion.tr
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="border-b border-neutral-700">
+                  <td
+                    colSpan={8}
+                    className="px-6 py-8 text-center text-neutral-500 font-light">
+                    Loading users...
+                  </td>
+                </motion.tr>
+              ) : filteredUsers.length === 0 ? (
+                <motion.tr
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="border-b border-neutral-700">
+                  <td
+                    colSpan={8}
+                    className="px-6 py-8 text-center text-neutral-500 font-light">
+                    No users found matching the search criteria.
+                  </td>
+                </motion.tr>
+              ) : (
+                paginatedUsers.map((u, index) => (
                   <motion.tr
                     key={u.uid}
                     initial={{ opacity: 0, y: 10 }}
@@ -278,7 +336,9 @@ function Admin() {
                     transition={{ duration: 0.25 }}
                     className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer"
                     onClick={() => handleViewUser(u)}>
-                    <td className="px-6 py-4 font-semibold">{index + 1}</td>
+                    <td className="px-6 py-4 font-semibold">
+                      {(currentPage - 1) * rowsPerPage + index + 1}
+                    </td>
                     <td className="px-6 py-4 font-semibold">
                       {u.uid.slice(0, 8)}...
                     </td>
@@ -292,274 +352,315 @@ function Admin() {
                     <td className="px-6 py-4">{formatDate(u.joinedAt)}</td>
                   </motion.tr>
                 ))
-              ) : (
-                <motion.tr
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="border-b border-neutral-700">
-                  <td
-                    colSpan={8}
-                    className="px-6 py-8 text-center text-neutral-500 font-light">
-                    No users found matching the search criteria.
-                  </td>
-                </motion.tr>
               )}
             </AnimatePresence>
           </tbody>
         </table>
       </div>
 
+      {!(isUsersLoading || filteredUsers.length === 0) && (
+        <div className="flex items-center justify-between mt-4 text-[#999] font-light">
+          <div className="text-sm">
+            Rows per page
+            <select
+              value={rowsPerPage}
+              onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              className="ml-2 px-2 py-1 bg-[#1A1A1A] text-white rounded focus:outline-none">
+              {[5, 10, 15, 25, 50].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
+              <ChevronLeft size="16" />
+            </button>
+            <span className="text-sm">
+              {currentPage} / {totalPages || 1}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
+              <ChevronRight size="16" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {isModalOpen && selectedUser && (
         <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 sm:p-6 font-light"
-          onClick={() => setIsModalOpen(false)}>
+          transition={{ duration: 0.3 }}
+          onClick={() => {
+            setIsModalOpen(false);
+            setEditedUser({});
+            setValidationErrors({});
+          }}>
           <motion.div
+            className="relative w-full max-w-md bg-neutral-800 rounded-2xl shadow-lg p-6 md:p-8 animate-slide-up overflow-auto max-h-[85vh] border border-neutral-700"
             initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            animate={{
+              y: 0,
+              opacity: 1,
+              transition: { type: "spring", stiffness: 100, damping: 15 },
+            }}
             exit={{ y: 50, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 80, damping: 15 }}
-            className="bg-neutral-800 rounded-2xl shadow-lg p-6 sm:p-8 w-full max-w-lg border border-neutral-700 relative max-h-[85vh] overflow-y-auto"
+            transition={{ delay: 0.1, duration: 0.5 }}
             onClick={(e) => e.stopPropagation()}>
             <button
-              className="absolute top-4 right-4 text-neutral-400 hover:text-white text-2xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
+              className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
               onClick={() => {
                 setIsModalOpen(false);
                 setEditedUser({});
                 setValidationErrors({});
               }}
-              aria-label="Close modal">
-              <X size={20} />
+              aria-label="Close">
+              <X />
             </button>
-            <h2 className="text-2xl font-semibold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
-              User Details
-            </h2>
 
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-neutral-300 mb-1.5 text-sm font-semibold">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    value={editedUser.name ?? selectedUser.name}
-                    onChange={(e) =>
-                      setEditedUser({ ...editedUser, name: e.target.value })
-                    }
-                    className={`w-full px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
-                      validationErrors.name ? "border-red-400" : ""
-                    }`}
-                  />
+            <motion.div
+              className="text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.4 }}>
+              <motion.h3 className="text-2xl sm:text-2xl font-bold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+                Edit User Profile
+              </motion.h3>
+            </motion.div>
+
+            {Object.keys(validationErrors).length > 0 && (
+              <motion.div
+                className="text-red-400 text-sm mb-5 p-3 rounded-xl bg-red-900/20 backdrop-blur-sm border border-red-900/30 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}>
+                Please fix the validation errors.
+              </motion.div>
+            )}
+
+            <motion.form
+              onSubmit={(e) => e.preventDefault()}
+              className="space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.4 }}>
+              <label className="block">
+                <span className="text-neutral-200 font-semibold mb-2 block">
+                  Name <span className="text-red-400">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={editedUser.name ?? selectedUser.name}
+                  onChange={(e) =>
+                    setEditedUser({ ...editedUser, name: e.target.value })
+                  }
+                  className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter name"
+                  aria-invalid={!!validationErrors.name}
+                  aria-describedby="name-error"
+                />
+                <AnimatePresence>
                   {validationErrors.name && (
-                    <p className="text-red-400 text-xs mt-1 font-light">
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-red-400 text-sm mt-1"
+                      id="name-error">
                       {validationErrors.name}
-                    </p>
+                    </motion.p>
                   )}
-                </div>
-                <div>
-                  <label className="block text-neutral-300 mb-1.5 text-sm font-semibold">
-                    Surname
-                  </label>
-                  <input
-                    type="text"
-                    value={editedUser.surname ?? selectedUser.surname}
-                    onChange={(e) =>
-                      setEditedUser({ ...editedUser, surname: e.target.value })
-                    }
-                    className={`w-full px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
-                      validationErrors.surname ? "border-red-400" : ""
-                    }`}
-                  />
+                </AnimatePresence>
+              </label>
+
+              <label className="block">
+                <span className="text-neutral-200 font-semibold mb-2 block">
+                  Surname <span className="text-red-400">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={editedUser.surname ?? selectedUser.surname}
+                  onChange={(e) =>
+                    setEditedUser({ ...editedUser, surname: e.target.value })
+                  }
+                  className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Enter surname"
+                  aria-invalid={!!validationErrors.surname}
+                  aria-describedby="surname-error"
+                />
+                <AnimatePresence>
                   {validationErrors.surname && (
-                    <p className="text-red-400 text-xs mt-1 font-light">
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-red-400 text-sm mt-1"
+                      id="surname-error">
                       {validationErrors.surname}
-                    </p>
+                    </motion.p>
                   )}
-                </div>
-                <div>
-                  <label className="block text-neutral-300 mb-1.5 text-sm font-semibold">
-                    Email
-                  </label>
-                  <p className="w-full px-3 py-2.5 bg-neutral-900 text-base text-neutral-500 rounded-lg shadow-sm border border-neutral-600 font-light">
-                    {selectedUser.email}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-neutral-300 mb-1.5 text-sm font-semibold">
-                    Gender
-                  </label>
-                  <select
-                    value={editedUser.gender ?? selectedUser.gender}
-                    onChange={(e) =>
-                      setEditedUser({ ...editedUser, gender: e.target.value })
-                    }
-                    className={`w-full px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
-                      validationErrors.gender ? "border-red-400" : ""
-                    }`}>
-                    <option value="">Select</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                  </select>
-                  {validationErrors.gender && (
-                    <p className="text-red-400 text-xs mt-1 font-light">
-                      {validationErrors.gender}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-neutral-300 mb-1.5 text-sm font-semibold">
-                    Date of Birth
-                  </label>
+                </AnimatePresence>
+              </label>
+
+              <label className="block">
+                <span className="text-neutral-200 font-semibold mb-2 block">
+                  Email <span className="text-red-400">*</span>
+                </span>
+                <div className="relative">
                   <input
-                    type="date"
-                    value={formatDateForInput(
-                      editedUser.dob ?? selectedUser.dob
-                    )}
-                    onChange={(e) =>
-                      setEditedUser({
-                        ...editedUser,
-                        dob: e.target.value
-                          ? Timestamp.fromDate(new Date(e.target.value))
-                          : null,
-                      })
-                    }
-                    className={`w-full px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light ${
-                      validationErrors.dob ? "border-red-400" : ""
-                    }`}
+                    type="email"
+                    value={selectedUser.email}
+                    readOnly
+                    className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
                   />
-                  {validationErrors.dob && (
-                    <p className="text-red-400 text-xs mt-1 font-light">
-                      {validationErrors.dob}
-                    </p>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyEmail(selectedUser.email)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors duration-200"
+                    aria-label="Copy email">
+                    <Copy size={18} />
+                  </button>
+                </div>
+              </label>
+
+              <label className="block">
+                <span className="text-neutral-200 font-semibold mb-2 block">
+                  Gender <span className="text-red-400">*</span>
+                </span>
+                <select
+                  value={editedUser.gender ?? selectedUser.gender}
+                  onChange={(e) =>
+                    setEditedUser({ ...editedUser, gender: e.target.value })
+                  }
+                  className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  aria-invalid={!!validationErrors.gender}
+                  aria-describedby="gender-error">
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+                <AnimatePresence>
+                  {validationErrors.gender && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-red-400 text-sm mt-1"
+                      id="gender-error">
+                      {validationErrors.gender}
+                    </motion.p>
                   )}
-                </div>
-                <div>
-                  <label className="block text-neutral-300 mb-1.5 text-sm font-semibold">
-                    Joined At
-                  </label>
-                  <p className="w-full px-3 py-2.5 bg-neutral-900 text-base text-neutral-500 rounded-lg shadow-sm border border-neutral-600 font-light">
-                    {formatDate(selectedUser.joinedAt)}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-neutral-300 mb-1.5 text-sm font-semibold">
-                    Admin Status
-                  </label>
-                  <p className="w-full px-3 py-2.5 bg-neutral-900 text-base text-neutral-500 rounded-lg shadow-sm border border-neutral-600 font-light">
-                    {selectedUser.isAdmin ? "Admin" : "User"}
-                  </p>
-                </div>
-              </div>
+                </AnimatePresence>
+              </label>
 
-              <div className="border-t border-neutral-700 pt-6">
-                <h3 className="text-lg font-semibold mb-3 text-neutral-300">
-                  Submitted Medications
-                </h3>
-                <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-                  <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
-                    <thead className="bg-neutral-700/50">
-                      <tr>
-                        <th className="px-4 sm:px-6 py-3 font-semibold">
-                          Medication Name
-                        </th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold">
-                          Submitted At
-                        </th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loadingMedications ? (
-                        <tr>
-                          <td
-                            colSpan={3}
-                            className="px-4 sm:px-6 py-8 text-center text-neutral-500 font-light">
-                            Loading medications...
-                          </td>
-                        </tr>
-                      ) : medications && medications.length > 0 ? (
-                        medications.map((med) => (
-                          <tr
-                            key={med.id}
-                            className="border-b border-neutral-700 min-w-0">
-                            <td className="px-4 sm:px-6 py-4 font-semibold">
-                              {med.medicationName}
-                            </td>
-                            <td className="px-4 sm:px-6 py-4">
-                              {formatDate(med.submittedAt)}
-                            </td>
-                            <td className="px-4 sm:px-6 py-4">{med.status}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={3}
-                            className="px-4 sm:px-6 py-8 text-center text-neutral-500 font-light">
-                            No medications found
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
+              <label className="block">
+                <span className="text-neutral-200 font-semibold mb-2 block">
+                  Date of Birth <span className="text-red-400">*</span>
+                </span>
+                <input
+                  type="date"
+                  value={formatDateForInput(editedUser.dob ?? selectedUser.dob)}
+                  onChange={(e) =>
+                    setEditedUser({
+                      ...editedUser,
+                      dob: e.target.value
+                        ? Timestamp.fromDate(new Date(e.target.value))
+                        : null,
+                    })
+                  }
+                  className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  aria-invalid={!!validationErrors.dob}
+                  aria-describedby="dob-error"
+                />
+                <AnimatePresence>
+                  {validationErrors.dob && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="text-red-400 text-sm mt-1"
+                      id="dob-error">
+                      {validationErrors.dob}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </label>
 
-            <div className="flex justify-end gap-3 mt-8">
-              <button
-                className="px-5 py-2.5 rounded-lg bg-neutral-500/10 text-neutral-400 border border-neutral-500/20 hover:bg-neutral-700 text-sm font-semibold transition-colors duration-200"
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setEditedUser({});
-                  setValidationErrors({});
+              <label className="block">
+                <span className="text-neutral-200 font-semibold mb-2 block">
+                  Joined At <span className="text-red-400">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={formatDate(selectedUser.joinedAt)}
+                  readOnly
+                  className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-neutral-200 font-semibold mb-2 block">
+                  Admin Status <span className="text-red-400">*</span>
+                </span>
+                <input
+                  type="text"
+                  value={selectedUser.isAdmin ? "Admin" : "User"}
+                  readOnly
+                  className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                />
+              </label>
+
+              <motion.div
+                className="flex justify-end gap-3 mt-6"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                  hidden: {},
+                  visible: {
+                    transition: { staggerChildren: 0.1 },
+                  },
                 }}>
-                Close
-              </button>
-              <button
-                className="px-5 py-2.5 rounded-lg bg-lime-600 hover:bg-lime-700 text-white text-sm font-semibold flex items-center gap-2 shadow-md transition-colors duration-200"
-                onClick={() =>
-                  updateUserMutation.mutate({
-                    ...editedUser,
-                    uid: selectedUser.uid,
-                  })
-                }
-                disabled={updateUserMutation.isPending}>
-                {updateUserMutation.isPending ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Check size={18} />
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </div>
+                <motion.button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setEditedUser({});
+                    setValidationErrors({});
+                  }}
+                  className="px-4 py-2 rounded-xl bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-700 transition-colors duration-200"
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.95 },
+                    visible: { opacity: 1, scale: 1 },
+                  }}>
+                  Cancel
+                </motion.button>
+                <motion.button
+                  type="button"
+                  disabled={!hasChanges || updateUserMutation.isPending}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 text-white transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed hover:from-green-600 hover:to-lime-600"
+                  onClick={() =>
+                    updateUserMutation.mutate({
+                      ...editedUser,
+                      uid: selectedUser.uid,
+                    })
+                  }
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.95 },
+                    visible: { opacity: 1, scale: 1 },
+                  }}>
+                  {updateUserMutation.isPending ? "Saving..." : "Save"}
+                </motion.button>
+              </motion.div>
+            </motion.form>
           </motion.div>
         </motion.div>
       )}

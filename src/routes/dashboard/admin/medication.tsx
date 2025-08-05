@@ -28,7 +28,6 @@ import {
   X,
   RotateCcw,
   Trash2,
-  ArrowRight,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -84,6 +83,7 @@ function AdminMedication() {
   >("all");
   const [rowsPerPage, setRowsPerPage] = useState<number>(15);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isImageExpanded, setIsImageExpanded] = useState<boolean>(false);
 
   const queryClient = useQueryClient();
 
@@ -367,7 +367,8 @@ function AdminMedication() {
   };
 
   function StatusBadge({ status }: { status: MedicationType["status"] }) {
-    const baseClasses = "px-2 py-1 rounded-full text-xs font-semibold";
+    const baseClasses =
+      "px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap";
     switch (status) {
       case "approved":
         return (
@@ -394,9 +395,9 @@ function AdminMedication() {
   }
 
   return (
-    <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white">
+    <div className="font-light max-w-5xl mx-auto px-4 py-8 min-h-screen text-white">
       <title>DrugWise - Admin Medication Reviews</title>
-      <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+      <h1 className="text-3xl font-bold mb-8 text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
         Medication Reviews
       </h1>
       <p className="text-neutral-500 mb-8 font-light">
@@ -414,169 +415,112 @@ function AdminMedication() {
               ))}
             </div>
           ) : (
-            <div className="hidden sm:block overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-              <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
-                <thead className="bg-neutral-700/50">
-                  <tr>
-                    <th colSpan={6} className="px-4 sm:px-6 py-3 font-semibold">
-                      <div className="flex flex-col sm:flex-row gap-4 items-center">
-                        <div className="relative w-full sm:w-3/4">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
-                          <input
-                            type="text"
-                            placeholder="Search by medication, description or user..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
-                          />
-                        </div>
-                        <select
-                          value={status}
-                          onChange={(e) =>
-                            setStatus(
-                              e.target.value as
-                                | "all"
-                                | "pending"
-                                | "approved"
-                                | "rejected"
-                            )
-                          }
-                          className="w-full sm:w-1/4 px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
-                          <option value="all">All Status</option>
-                          <option value="pending">Pending</option>
-                          <option value="approved">Approved</option>
-                          <option value="rejected">Rejected</option>
-                        </select>
-                        <span className="text-neutral-300 font-semibold">
-                          {filteredMedications.length} total
-                        </span>
+            <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
+              <thead className="bg-neutral-700/50">
+                <tr>
+                  <th colSpan={6} className="px-6 py-3 font-semibold">
+                    <div className="flex flex-row gap-4 items-center">
+                      <div className="relative w-3/4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                        <input
+                          type="text"
+                          placeholder="Search by medication, description or user..."
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setStatus("all");
+                          }}
+                          className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                        />
                       </div>
-                    </th>
-                  </tr>
-                  <tr>
-                    <th className="px-4 sm:px-6 py-3 font-semibold">
-                      Medication
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 font-semibold">
-                      Description
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 font-semibold">
-                      Submitted By
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 font-semibold">
-                      Reviewed By
-                    </th>
-                    <th className="px-4 sm:px-6 py-3 font-semibold">Status</th>
-                    <th className="px-4 sm:px-6 py-3 font-semibold">
-                      Submitted At
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <AnimatePresence>
-                    {filteredMedications.length === 0 ? (
-                      <motion.tr
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="border-b border-neutral-700">
-                        <td
-                          colSpan={6}
-                          className="px-4 sm:px-6 py-8 text-center text-neutral-500 font-light">
-                          No medications found matching the search criteria.
-                        </td>
-                      </motion.tr>
-                    ) : (
-                      paginatedMedications.map((m: MedicationType) => (
-                        <motion.tr
-                          key={m.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.25 }}
-                          className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer"
-                          onClick={() =>
-                            setModalState({ type: "details", medication: m })
-                          }>
-                          <td className="px-4 sm:px-6 py-4 font-semibold">
-                            {m.medicationName}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 max-w-xs truncate">
-                            {m.description}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            {users[m.userId]?.name +
-                              " " +
-                              (users[m.userId]?.surname || "") || m.userId}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            {m.reviewerName ?? "-"}
-                          </td>
-                          <td className="px-4 sm:px-6 py-4">
-                            <StatusBadge status={m.status} />
-                          </td>
-                          <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                            {m.submittedAt?.toDate?.().toLocaleString() ?? "-"}
-                          </td>
-                        </motion.tr>
-                      ))
-                    )}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-
-        {!(isMedsLoading || isUsersLoading) && (
-          <div className="sm:hidden space-y-6">
-            <AnimatePresence>
-              {filteredMedications.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-neutral-500 text-center py-10 flex flex-col items-center justify-center">
-                  <AlertCircle className="text-6xl mb-4 text-neutral-600" />
-                  <p className="text-lg">
-                    No medications found matching the search criteria.
-                  </p>
-                </motion.div>
-              ) : (
-                paginatedMedications.map((m: MedicationType) => (
-                  <motion.div
-                    key={m.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.25 }}
-                    className="bg-neutral-800 p-5 rounded-xl border border-neutral-700 cursor-pointer shadow-md hover:scale-[1.02] transition-transform duration-200"
-                    onClick={() =>
-                      setModalState({ type: "details", medication: m })
-                    }>
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-lg font-semibold truncate max-w-[70%]">
-                        {m.medicationName}
-                      </h3>
-                      <StatusBadge status={m.status} />
-                    </div>
-                    <p className="text-neutral-400 mt-2 line-clamp-2">
-                      {m.description}
-                    </p>
-                    <div className="flex justify-between items-center mt-4">
-                      <time className="text-neutral-500 text-xs">
-                        {m.submittedAt?.toDate?.().toLocaleDateString() ?? "-"}
-                      </time>
-                      <span className="text-blue-400 text-sm flex items-center gap-1">
-                        Details <ArrowRight size={14} />
+                      <select
+                        value={status}
+                        onChange={(e) =>
+                          setStatus(
+                            e.target.value as
+                              | "all"
+                              | "pending"
+                              | "approved"
+                              | "rejected"
+                          )
+                        }
+                        className="w-1/4 px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
+                      <span className="text-neutral-300 font-semibold">
+                        {filteredMedications.length} total
                       </span>
                     </div>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+                  </th>
+                </tr>
+                <tr>
+                  <th className="px-6 py-3 font-semibold">Medication</th>
+                  <th className="px-6 py-3 font-semibold">Description</th>
+                  <th className="px-6 py-3 font-semibold">Submitted By</th>
+                  <th className="px-6 py-3 font-semibold">Reviewed By</th>
+                  <th className="px-6 py-3 font-semibold">Status</th>
+                  <th className="px-6 py-3 font-semibold">Submitted At</th>
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence>
+                  {filteredMedications.length === 0 ? (
+                    <motion.tr
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="border-b border-neutral-700">
+                      <td
+                        colSpan={6}
+                        className="px-6 py-8 text-center text-neutral-500 font-light">
+                        No medications found matching the search criteria.
+                      </td>
+                    </motion.tr>
+                  ) : (
+                    paginatedMedications.map((m: MedicationType) => (
+                      <motion.tr
+                        key={m.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25 }}
+                        className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer"
+                        onClick={() =>
+                          setModalState({ type: "details", medication: m })
+                        }>
+                        <td
+                          className="px-6 py-4 font-semibold max-w-[150px] truncate"
+                          title={m.medicationName}>
+                          {m.medicationName}
+                        </td>
+                        <td
+                          className="px-6 py-4 max-w-[250px] truncate"
+                          title={m.description}>
+                          {m.description}
+                        </td>
+                        <td className="px-6 py-4">
+                          {users[m.userId]?.name +
+                            " " +
+                            (users[m.userId]?.surname || "") || m.userId}
+                        </td>
+                        <td className="px-6 py-4">{m.reviewerName ?? "-"}</td>
+                        <td className="px-6 py-4">
+                          <StatusBadge status={m.status} />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {m.submittedAt?.toDate?.().toLocaleString() ?? "-"}
+                        </td>
+                      </motion.tr>
+                    ))
+                  )}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          )}
+        </section>
       </div>
 
       {!(
@@ -584,7 +528,7 @@ function AdminMedication() {
         isUsersLoading ||
         filteredMedications.length === 0
       ) && (
-        <div className="flex items-center justify-between mt-4 text-[#999] font-light">
+        <div className="mt-6 flex items-center justify-between text-[#999] font-light">
           <div className="text-sm">
             Rows per page
             <select
@@ -624,30 +568,36 @@ function AdminMedication() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6 font-light"
-          onClick={() => setModalState({ type: null })}>
+          onClick={() => {
+            setModalState({ type: null });
+            setIsImageExpanded(false);
+          }}>
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100, damping: 15 }}
             className={`bg-neutral-800 rounded-2xl shadow-lg p-6 max-w-${
-              modalState.type === "adminAction" ? "md" : "full sm:max-w-3xl"
+              modalState.type === "adminAction" ? "md" : "3xl"
             } w-full border border-neutral-700 relative overflow-auto max-h-[90vh]`}
             onClick={(e) => e.stopPropagation()}>
             <button
               className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
-              onClick={() => setModalState({ type: null })}
+              onClick={() => {
+                setModalState({ type: null });
+                setIsImageExpanded(false);
+              }}
               aria-label="Close modal">
               <X />
             </button>
 
             {modalState.type === "details" && modalState.medication && (
               <>
-                <h3 className="text-xl sm:text-2xl font-bold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-bold mb-6 text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
                   Medication Details
                 </h3>
-                <div className="space-y-4 text-neutral-200 text-sm sm:text-base">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-4 text-neutral-200 text-base">
+                  <div className="space-y-4">
                     <div>
                       <p className="font-semibold text-neutral-300">
                         Medication Name:
@@ -674,7 +624,7 @@ function AdminMedication() {
                         <p className="font-semibold text-neutral-300">
                           Reviewed By:
                         </p>
-                        <p>{modalState.medication.reviewerName ?? "-"}</p>
+                        <p>{modalState.medication.reviewerName}</p>
                       </div>
                     )}
                     <div>
@@ -699,64 +649,59 @@ function AdminMedication() {
                         </p>
                       </div>
                     )}
-                  </div>
-
-                  <div>
-                    <p className="font-semibold text-neutral-300">
-                      Description:
-                    </p>
-                    <p className="whitespace-pre-line">
-                      {modalState.medication.description}
-                    </p>
-                  </div>
-
-                  {modalState.medication.comment && (
                     <div>
-                      <p className="font-semibold text-neutral-300">Comment:</p>
+                      <p className="font-semibold text-neutral-300">
+                        Description:
+                      </p>
                       <p className="whitespace-pre-line">
-                        {modalState.medication.comment}
+                        {modalState.medication.description}
                       </p>
                     </div>
-                  )}
-
-                  <div>
-                    <p className="font-semibold text-neutral-300">
-                      Uploaded File:
-                    </p>
-                    {modalState.medication.file ? (
-                      <div className="my-2">
-                        <a
-                          href={modalState.medication.file.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-400 hover:underline">
-                          {modalState.medication.file.name} (
-                          {modalState.medication.file.type.split("/")[1]})
-                        </a>
-                        <span className="text-neutral-500 text-xs ml-2">
-                          Uploaded:{" "}
-                          {new Date(
-                            modalState.medication.file.uploadedAt
-                          ).toLocaleDateString()}
-                        </span>
+                    {modalState.medication.comment && (
+                      <div>
+                        <p className="font-semibold text-neutral-300">
+                          Comment:
+                        </p>
+                        <p className="whitespace-pre-line">
+                          {modalState.medication.comment}
+                        </p>
                       </div>
-                    ) : (
-                      <p>No file uploaded.</p>
                     )}
+                    <div>
+                      <p className="font-semibold text-neutral-300">
+                        Uploaded Image:
+                      </p>
+                      {modalState.medication.file ? (
+                        <div className="my-2">
+                          <img
+                            src={modalState.medication.file.url}
+                            alt={modalState.medication.file.name}
+                            className="w-32 h-32 object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer"
+                            onClick={() => setIsImageExpanded(true)}
+                          />
+                          <span className="text-neutral-500 text-xs ml-2">
+                            Uploaded:{" "}
+                            {new Date(
+                              modalState.medication.file.uploadedAt
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+                      ) : (
+                        <p>No image uploaded.</p>
+                      )}
+                    </div>
+                    {modalState.medication.status === "rejected" &&
+                      modalState.medication.rejectionReason && (
+                        <div className="bg-red-900/20 p-4 rounded-xl">
+                          <p className="font-semibold text-red-300">
+                            Rejection Reason:
+                          </p>
+                          <p className="text-red-200 whitespace-pre-line">
+                            {modalState.medication.rejectionReason}
+                          </p>
+                        </div>
+                      )}
                   </div>
-
-                  {modalState.medication.status === "rejected" &&
-                    modalState.medication.rejectionReason && (
-                      <div className="bg-red-900/20 p-4 rounded-xl">
-                        <p className="font-semibold text-red-300">
-                          Rejection Reason:
-                        </p>
-                        <p className="text-red-200 whitespace-pre-line">
-                          {modalState.medication.rejectionReason}
-                        </p>
-                      </div>
-                    )}
-
                   <div className="mt-6 flex justify-end gap-3 flex-wrap">
                     {modalState.medication.status === "pending" && (
                       <>
@@ -953,6 +898,35 @@ function AdminMedication() {
                 </div>
               </>
             )}
+          </motion.div>
+        </motion.div>
+      )}
+
+      {isImageExpanded && modalState.medication?.file && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-60 p-6"
+          onClick={() => setIsImageExpanded(false)}>
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 100, damping: 15 }}
+            className="relative max-w-[90vw] max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}>
+            <img
+              src={modalState.medication.file.url}
+              alt={modalState.medication.file.name}
+              className="w-full h-auto object-contain rounded-lg shadow-xl max-w-[90vw] max-h-[90vh]"
+            />
+            <button
+              className="absolute top-2 right-2 text-neutral-200 hover:text-white text-2xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
+              onClick={() => setIsImageExpanded(false)}
+              aria-label="Close image">
+              <X />
+            </button>
           </motion.div>
         </motion.div>
       )}
