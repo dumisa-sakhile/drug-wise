@@ -21,17 +21,13 @@ import {
 } from "firebase/firestore";
 import { del } from "@vercel/blob";
 import { toast } from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Check,
-  AlertCircle,
-  X,
-  RotateCcw,
-  Trash2,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import SearchFilterBar from "@/components/admin/adminMedication/SearchFilterBar";
+import MedicationTable from "@/components/admin/adminMedication/MedicationTable";
+import PaginationControls from "@/components/admin/adminMedication/PaginationControls";
+import MedicationDetailsModal from "@/components/admin/adminMedication/MedicationDetailsModal";
+import AdminActionModal from "@/components/admin/adminMedication/AdminActionModal";
+import ImagePreviewModal from "@/components/admin/adminMedication/ImagePreviewModal";
+import AdminMedicationSkeleton from "@/components/admin/adminMedication/AdminMedicationSkeleton";
 
 export const Route = createFileRoute("/dashboard/admin/medication")({
   component: AdminMedication,
@@ -49,7 +45,7 @@ interface MedicationType {
   reviewedAt?: any;
   reviewedBy?: string;
   reviewerName?: string;
-  file: {
+  file?: {
     url: string;
     name: string;
     type: string;
@@ -346,12 +342,9 @@ function AdminMedication() {
     },
   });
 
-  const handleAdminAction = () => {
+  const handleAdminAction = (rejectionReason?: string) => {
     if (!modalState.medication?.id || !modalState.adminStatus) return;
-    if (
-      modalState.adminStatus === "rejected" &&
-      !modalState.rejectionReason?.trim()
-    ) {
+    if (modalState.adminStatus === "rejected" && !rejectionReason?.trim()) {
       toast.error(
         "Please provide a valid rejection reason (cannot be empty or just spaces)"
       );
@@ -361,41 +354,13 @@ function AdminMedication() {
       medId: modalState.medication.id,
       data: {
         status: modalState.adminStatus,
-        rejectionReason: modalState.rejectionReason,
+        rejectionReason,
       },
     });
   };
 
-  function StatusBadge({ status }: { status: MedicationType["status"] }) {
-    const baseClasses =
-      "px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap";
-    switch (status) {
-      case "approved":
-        return (
-          <span
-            className={`${baseClasses} bg-green-900/30 text-green-400 flex items-center gap-1`}>
-            <Check size={14} /> Approved
-          </span>
-        );
-      case "rejected":
-        return (
-          <span
-            className={`${baseClasses} bg-red-900/30 text-red-400 flex items-center gap-1`}>
-            <AlertCircle size={14} /> Rejected
-          </span>
-        );
-      case "pending":
-      default:
-        return (
-          <span className={`${baseClasses} bg-yellow-900/30 text-yellow-400`}>
-            Pending Review
-          </span>
-        );
-    }
-  }
-
   return (
-    <div className="font-light max-w-5xl mx-auto px-4 py-8 min-h-screen text-white">
+    <div className="font-light max-w-full mx-auto px-4 py-8 min-h-screen text-white">
       <title>DrugWise - Admin Medication Reviews</title>
       <h1 className="text-3xl font-bold mb-8 text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
         Medication Reviews
@@ -404,531 +369,93 @@ function AdminMedication() {
         Review and manage user-submitted medications.
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-        <section className="max-w-full mx-auto">
-          {isMedsLoading || isUsersLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-24 bg-[#222] rounded-md animate-pulse"></div>
-              ))}
-            </div>
-          ) : (
-            <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
-              <thead className="bg-neutral-700/50">
-                <tr>
-                  <th colSpan={6} className="px-6 py-3 font-semibold">
-                    <div className="flex flex-row gap-4 items-center">
-                      <div className="relative w-3/4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
-                        <input
-                          type="text"
-                          placeholder="Search by medication, description or user..."
-                          value={search}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setStatus("all");
-                          }}
-                          className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
-                        />
-                      </div>
-                      <select
-                        value={status}
-                        onChange={(e) =>
-                          setStatus(
-                            e.target.value as
-                              | "all"
-                              | "pending"
-                              | "approved"
-                              | "rejected"
-                          )
-                        }
-                        className="w-1/4 px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
-                        <option value="all">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                      </select>
-                      <span className="text-neutral-300 font-semibold">
-                        {filteredMedications.length} total
-                      </span>
-                    </div>
-                  </th>
-                </tr>
-                <tr>
-                  <th className="px-6 py-3 font-semibold">Medication</th>
-                  <th className="px-6 py-3 font-semibold">Description</th>
-                  <th className="px-6 py-3 font-semibold">Submitted By</th>
-                  <th className="px-6 py-3 font-semibold">Reviewed By</th>
-                  <th className="px-6 py-3 font-semibold">Status</th>
-                  <th className="px-6 py-3 font-semibold">Submitted At</th>
-                </tr>
-              </thead>
-              <tbody>
-                <AnimatePresence>
-                  {filteredMedications.length === 0 ? (
-                    <motion.tr
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                      className="border-b border-neutral-700">
-                      <td
-                        colSpan={6}
-                        className="px-6 py-8 text-center text-neutral-500 font-light">
-                        No medications found matching the search criteria.
-                      </td>
-                    </motion.tr>
-                  ) : (
-                    paginatedMedications.map((m: MedicationType) => (
-                      <motion.tr
-                        key={m.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.25 }}
-                        className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer"
-                        onClick={() =>
-                          setModalState({ type: "details", medication: m })
-                        }>
-                        <td
-                          className="px-6 py-4 font-semibold max-w-[150px] truncate"
-                          title={m.medicationName}>
-                          {m.medicationName}
-                        </td>
-                        <td
-                          className="px-6 py-4 max-w-[250px] truncate"
-                          title={m.description}>
-                          {m.description}
-                        </td>
-                        <td className="px-6 py-4">
-                          {users[m.userId]?.name +
-                            " " +
-                            (users[m.userId]?.surname || "") || m.userId}
-                        </td>
-                        <td className="px-6 py-4">{m.reviewerName ?? "-"}</td>
-                        <td className="px-6 py-4">
-                          <StatusBadge status={m.status} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {m.submittedAt?.toDate?.().toLocaleString() ?? "-"}
-                        </td>
-                      </motion.tr>
-                    ))
-                  )}
-                </AnimatePresence>
-              </tbody>
-            </table>
-          )}
-        </section>
-      </div>
+      {isMedsLoading || isUsersLoading ? (
+        <AdminMedicationSkeleton />
+      ) : (
+        <>
+          <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
+            <section className="max-w-full mx-auto">
+              <SearchFilterBar
+                search={search}
+                setSearch={(value) => {
+                  setSearch(value);
+                  setStatus("all");
+                }}
+                status={status}
+                setStatus={setStatus}
+                totalMedications={filteredMedications.length}
+              />
+              <MedicationTable
+                medications={paginatedMedications}
+                users={users}
+                onRowClick={(medication) =>
+                  setModalState({ type: "details", medication })
+                }
+              />
+            </section>
+          </div>
 
-      {!(
-        isMedsLoading ||
-        isUsersLoading ||
-        filteredMedications.length === 0
-      ) && (
-        <div className="mt-6 flex items-center justify-between text-[#999] font-light">
-          <div className="text-sm">
-            Rows per page
-            <select
-              value={rowsPerPage}
-              onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              className="ml-2 px-2 py-1 bg-[#1A1A1A] text-white rounded focus:outline-none">
-              {[5, 10, 15, 25, 50].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-              className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
-              <ChevronLeft size="16" />
-            </button>
-            <span className="text-sm">
-              {currentPage} / {totalPages || 1}
-            </span>
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-              className="px-2 py-1 rounded hover:bg-[#1A1A1A] disabled:opacity-50">
-              <ChevronRight size="16" />
-            </button>
-          </div>
-        </div>
+          {filteredMedications.length > 0 && (
+            <PaginationControls
+              rowsPerPage={rowsPerPage}
+              setRowsPerPage={setRowsPerPage}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+            />
+          )}
+        </>
       )}
 
-      {modalState.type && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6 font-light"
-          onClick={() => {
+      {modalState.type === "details" && modalState.medication && (
+        <MedicationDetailsModal
+          medication={modalState.medication}
+          users={users}
+          isReverting={isReverting}
+          isDeleting={isDeleting}
+          onClose={() => {
             setModalState({ type: null });
             setIsImageExpanded(false);
-          }}>
-          <motion.div
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 50, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 100, damping: 15 }}
-            className={`bg-neutral-800 rounded-2xl shadow-lg p-6 max-w-${
-              modalState.type === "adminAction" ? "md" : "3xl"
-            } w-full border border-neutral-700 relative overflow-auto max-h-[90vh]`}
-            onClick={(e) => e.stopPropagation()}>
-            <button
-              className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
-              onClick={() => {
-                setModalState({ type: null });
-                setIsImageExpanded(false);
-              }}
-              aria-label="Close modal">
-              <X />
-            </button>
+          }}
+          onApprove={() =>
+            setModalState({
+              type: "adminAction",
+              medication: modalState.medication,
+              adminStatus: "approved",
+            })
+          }
+          onReject={() =>
+            setModalState({
+              type: "adminAction",
+              medication: modalState.medication,
+              adminStatus: "rejected",
+            })
+          }
+          onRevert={() => revertMedication(modalState.medication!.id)}
+          onDelete={() => deleteMedication(modalState.medication!.id)}
+          onImageClick={() => setIsImageExpanded(true)}
+        />
+      )}
 
-            {modalState.type === "details" && modalState.medication && (
-              <>
-                <h3 className="text-2xl font-bold mb-6 text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
-                  Medication Details
-                </h3>
-                <div className="space-y-4 text-neutral-200 text-base">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="font-semibold text-neutral-300">
-                        Medication Name:
-                      </p>
-                      <p>{modalState.medication.medicationName}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-neutral-300">Status:</p>
-                      <StatusBadge status={modalState.medication.status} />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-neutral-300">
-                        Submitted By:
-                      </p>
-                      <p>
-                        {users[modalState.medication.userId]?.name +
-                          " " +
-                          (users[modalState.medication.userId]?.surname ||
-                            "") || modalState.medication.userId}
-                      </p>
-                    </div>
-                    {modalState.medication.reviewerName && (
-                      <div>
-                        <p className="font-semibold text-neutral-300">
-                          Reviewed By:
-                        </p>
-                        <p>{modalState.medication.reviewerName}</p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-neutral-300">
-                        Submitted At:
-                      </p>
-                      <p>
-                        {modalState.medication.submittedAt
-                          ?.toDate?.()
-                          .toLocaleString() ?? "-"}
-                      </p>
-                    </div>
-                    {modalState.medication.reviewedAt && (
-                      <div>
-                        <p className="font-semibold text-neutral-300">
-                          Reviewed At:
-                        </p>
-                        <p>
-                          {modalState.medication.reviewedAt
-                            .toDate()
-                            .toLocaleString()}
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-neutral-300">
-                        Description:
-                      </p>
-                      <p className="whitespace-pre-line">
-                        {modalState.medication.description}
-                      </p>
-                    </div>
-                    {modalState.medication.comment && (
-                      <div>
-                        <p className="font-semibold text-neutral-300">
-                          Comment:
-                        </p>
-                        <p className="whitespace-pre-line">
-                          {modalState.medication.comment}
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-neutral-300">
-                        Uploaded Image:
-                      </p>
-                      {modalState.medication.file ? (
-                        <div className="my-2">
-                          <img
-                            src={modalState.medication.file.url}
-                            alt={modalState.medication.file.name}
-                            className="w-32 h-32 object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer"
-                            onClick={() => setIsImageExpanded(true)}
-                          />
-                          <span className="text-neutral-500 text-xs ml-2">
-                            Uploaded:{" "}
-                            {new Date(
-                              modalState.medication.file.uploadedAt
-                            ).toLocaleDateString()}
-                          </span>
-                        </div>
-                      ) : (
-                        <p>No image uploaded.</p>
-                      )}
-                    </div>
-                    {modalState.medication.status === "rejected" &&
-                      modalState.medication.rejectionReason && (
-                        <div className="bg-red-900/20 p-4 rounded-xl">
-                          <p className="font-semibold text-red-300">
-                            Rejection Reason:
-                          </p>
-                          <p className="text-red-200 whitespace-pre-line">
-                            {modalState.medication.rejectionReason}
-                          </p>
-                        </div>
-                      )}
-                  </div>
-                  <div className="mt-6 flex justify-end gap-3 flex-wrap">
-                    {modalState.medication.status === "pending" && (
-                      <>
-                        <button
-                          onClick={() =>
-                            setModalState({
-                              type: "adminAction",
-                              medication: modalState.medication,
-                              adminStatus: "approved",
-                            })
-                          }
-                          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-xl transition-colors duration-200">
-                          <Check size={18} /> Approve
-                        </button>
-                        <button
-                          onClick={() =>
-                            setModalState({
-                              type: "adminAction",
-                              medication: modalState.medication,
-                              adminStatus: "rejected",
-                            })
-                          }
-                          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-xl transition-colors duration-200">
-                          <AlertCircle size={18} /> Reject
-                        </button>
-                      </>
-                    )}
-                    {(modalState.medication.status === "approved" ||
-                      modalState.medication.status === "rejected") && (
-                      <button
-                        onClick={() =>
-                          revertMedication(modalState.medication!.id)
-                        }
-                        disabled={isReverting}
-                        className={`flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded-xl transition-colors duration-200 ${
-                          isReverting ? "opacity-60 cursor-not-allowed" : ""
-                        }`}>
-                        {isReverting ? (
-                          <>
-                            <svg
-                              className="animate-spin h-5 w-5 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24">
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Reverting...
-                          </>
-                        ) : (
-                          <>
-                            <RotateCcw size={18} /> Revert to Pending
-                          </>
-                        )}
-                      </button>
-                    )}
-                    <button
-                      onClick={() =>
-                        deleteMedication(modalState.medication!.id)
-                      }
-                      disabled={isDeleting}
-                      className={`flex items-center gap-2 bg-rose-500/10 text-rose-400 border-rose-500/20 py-2 px-4 rounded-xl transition-colors duration-200 hover:bg-rose-500/20 ${
-                        isDeleting ? "opacity-60 cursor-not-allowed" : ""
-                      }`}>
-                      {isDeleting ? (
-                        <>
-                          <svg
-                            className="animate-spin h-5 w-5 text-rose-200"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24">
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Deleting...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 size={18} /> Delete
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {modalState.type === "adminAction" && modalState.medication && (
-              <>
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  {modalState.adminStatus === "approved" ? (
-                    <>
-                      <Check className="text-green-400" /> Approve Medication
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="text-red-400" /> Reject Medication
-                    </>
-                  )}
-                </h3>
-                {modalState.adminStatus === "rejected" && (
-                  <div className="mb-4">
-                    <label className="block text-neutral-300 mb-2">
-                      Rejection Reason (required)
-                    </label>
-                    <textarea
-                      value={modalState.rejectionReason ?? ""}
-                      onChange={(e) =>
-                        setModalState({
-                          ...modalState,
-                          rejectionReason: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      className="w-full rounded-xl bg-neutral-900 text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Provide reason for rejection..."
-                    />
-                  </div>
-                )}
-                <div className="flex justify-end gap-3 mt-6">
-                  <button
-                    onClick={() => setModalState({ type: null })}
-                    className="px-4 py-2 rounded-xl bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-700 transition-colors duration-200">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleAdminAction}
-                    disabled={
-                      isUpdating ||
-                      (modalState.adminStatus === "rejected" &&
-                        !modalState.rejectionReason?.trim())
-                    }
-                    className={`px-4 py-2 rounded-xl ${
-                      modalState.adminStatus === "approved"
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "bg-red-600 hover:bg-red-700"
-                    } text-white transition-colors duration-200 flex items-center gap-2 ${
-                      isUpdating ||
-                      (modalState.adminStatus === "rejected" &&
-                        !modalState.rejectionReason?.trim())
-                        ? "opacity-70 cursor-not-allowed"
-                        : ""
-                    }`}>
-                    {isUpdating ? (
-                      <>
-                        <svg
-                          className="animate-spin h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24">
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        {modalState.adminStatus === "approved" ? (
-                          <Check size={18} />
-                        ) : (
-                          <AlertCircle size={18} />
-                        )}
-                        Confirm
-                      </>
-                    )}
-                  </button>
-                </div>
-              </>
-            )}
-          </motion.div>
-        </motion.div>
+      {modalState.type === "adminAction" && modalState.medication && (
+        <AdminActionModal
+          adminStatus={modalState.adminStatus!}
+          isUpdating={isUpdating}
+          rejectionReason={modalState.rejectionReason}
+          onConfirm={handleAdminAction}
+          onCancel={() => setModalState({ type: null })}
+          onRejectionReasonChange={(reason) =>
+            setModalState({ ...modalState, rejectionReason: reason })
+          }
+        />
       )}
 
       {isImageExpanded && modalState.medication?.file && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-60 p-6"
-          onClick={() => setIsImageExpanded(false)}>
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 100, damping: 15 }}
-            className="relative max-w-[90vw] max-h-[90vh]"
-            onClick={(e) => e.stopPropagation()}>
-            <img
-              src={modalState.medication.file.url}
-              alt={modalState.medication.file.name}
-              className="w-full h-auto object-contain rounded-lg shadow-xl max-w-[90vw] max-h-[90vh]"
-            />
-            <button
-              className="absolute top-2 right-2 text-neutral-200 hover:text-white text-2xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
-              onClick={() => setIsImageExpanded(false)}
-              aria-label="Close image">
-              <X />
-            </button>
-          </motion.div>
-        </motion.div>
+        <ImagePreviewModal
+          imageUrl={modalState.medication.file.url}
+          imageName={modalState.medication.file.name}
+          onClose={() => setIsImageExpanded(false)}
+        />
       )}
     </div>
   );

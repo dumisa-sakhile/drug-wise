@@ -90,7 +90,7 @@ function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-[#141414] text-white px-4 py-6 roboto-regular">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto ">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
