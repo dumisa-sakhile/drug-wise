@@ -1,4 +1,4 @@
-@import "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Roboto:wght@100..900&display=swap";
+@import "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Outfit:wght@100..900&display=swap";
 
 @import "tailwindcss";
 
@@ -31,46 +31,28 @@
     font-variation-settings: "width" 100;
   }
 
-  .bricolage-grotesque-unique1 {
-    font-family: "Bricolage Grotesque", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 500;
-    font-style: normal;
-    font-variation-settings: "width" 100;
-  }
-
-  .bricolage-grotesque-unique2 {
-    font-family: "Bricolage Grotesque", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 600;
-    font-style: normal;
-    font-variation-settings: "width" 100;
-  }
-
-  .roboto-light {
-    font-family: "Roboto", sans-serif;
+  .outfit-light {
+    font-family: "Outfit", sans-serif;
     font-optical-sizing: auto;
     font-weight: 300;
     font-style: normal;
-    font-variation-settings: "wdth" 100;
   }
 
-  .roboto-regular {
-    font-family: "Roboto", sans-serif;
+  .outfit-regular {
+    font-family: "Outfit", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
-    font-variation-settings: "wdth" 100;
   }
 
-  .roboto-bold {
-    font-family: "Roboto", sans-serif;
+  .outfit-bold {
+    font-family: "Outfit", sans-serif;
     font-optical-sizing: auto;
     font-weight: 700;
     font-style: normal;
-    font-variation-settings: "wdth" 100;
   }
 }
+
 
 body {
   font-family: "Bricolage Grotesque", sans-serif;
@@ -79,7 +61,7 @@ body {
   font-style: normal;
   font-variation-settings: "width" 100;
   font-size: 1rem;
-  background: #141414;
+  background: var(--color-zinc-950);
   color: #ffffff;
 }
 

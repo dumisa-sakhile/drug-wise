@@ -87,7 +87,7 @@ const Header: React.FC = () => {
           </div>
         </div>
         {/* Desktop Header (Unchanged) */}
-        <div className="hidden md:flex bg-[#141414] h-16 items-center px-6">
+        <div className="hidden md:flex bg-zinc-950 h-16 items-center px-6">
           <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
             <Link to="/" className="text-2xl font-bold text-white">
               DrugWise

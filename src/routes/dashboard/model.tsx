@@ -161,7 +161,7 @@ function Model() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-white font-light ">
+    <div className="min-h-screen flex flex-col text-white outfit-light ">
       {messages.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-4 md:ml-[120px] max-w-4xl mx-auto w-full">
           <motion.div
