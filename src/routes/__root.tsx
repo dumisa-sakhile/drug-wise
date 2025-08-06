@@ -36,14 +36,13 @@ function Layout({ children }: LayoutProps) {
       navigate({ to: "/dashboard" });
     }
   }, [isUserSignedIn, location.pathname, navigate]);
-
   const isDashboard = location.pathname.includes("/dashboard");
 
   return (
     <div className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern">
       <div className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern moving-gradient">
         <Header />
-        <main className="pt-16 py-6 px-4 max-w-6xl mx-auto">
+        <main className="md:pt-16 py-6 px-4 max-w-6xl mx-auto">
           {children}
         </main>
         {!isDashboard && (

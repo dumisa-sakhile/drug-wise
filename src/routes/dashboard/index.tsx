@@ -34,6 +34,7 @@ interface UserData {
   surname: string;
   lastLogin: Timestamp | null;
   role?: string;
+  photoURL?: string;
 }
 
 interface Medication {
@@ -184,118 +185,89 @@ function DashboardPage() {
     <>
       <title>DrugWise - Dashboard</title>
       <main className="min-h-screen text-gray-100 font-sans bg-zinc-950 flex flex-col">
-        {/* Main Content Area */}
-        <div className="flex-grow p-6 md:p-10 overflow-auto max-w-7xl mx-auto w-full">
-          <header className="mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-zinc-800 pb-6">
-            <div className="text-center sm:text-left py-8 sm:py-0">
-              <h1 className="text-3xl font-bold text-lime-400 mb-1">
-                Welcome, {userData?.name}!
-              </h1>
-              <p className="text-gray-400">
-                Here's a quick overview of your health dashboard.
-              </p>
-            </div>
+        <div className="flex-grow p-6 md:p-10 overflow-auto max-w-4xl mx-auto w-full">
+          {/* Sign Out Button */}
+          <div className="flex justify-end mb-8">
             <motion.button
               onClick={handleSignOut}
-              className="flex items-center justify-center gap-2.5 text-base px-5 py-2.5 font-light text-black bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 border border-rose-400/50 hover:border-rose-500 shadow-md hover:shadow-lg transition-colors rounded-full w-full sm:w-auto"
+              className="flex items-center gap-2.5 px-3 py-1 rounded-full text-rose-400 hover:text-red-500 transition-colors bg-gray-800/50"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}>
-              <LogOut size={18} /> Sign Out
+              <LogOut size={16} />
+              Sign Out
             </motion.button>
-          </header>
+          </div>
+
+          {/* Main Title and Description Section */}
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-50 mb-4">
+            Dashboard Overview
+          </h1>
+          <p className="text-lg text-gray-400 max-w-2xl mb-12">
+            Welcome, {userData?.name || "User"}! Here's a quick overview of your
+            health and medication submissions.
+          </p>
 
           <AnimatePresence>
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
               variants={containerVariants}
               initial="hidden"
               animate="visible">
-              {isProfileComplete ? (
-                <DashboardCard
-                  key="profile-complete"
-                  title="Profile Complete"
-                  value="All Set"
-                  icon={CheckCircle}
-                  bgColor="bg-green-500/20"
-                  iconColor="text-green-400"
-                  link={null}
-                  description="Your profile is fully up to date. Edit if needed."
-                  action={() => setModalOpen(true)}
-                />
-              ) : (
-                <DashboardCard
-                  key="profile-incomplete"
-                  title="Profile Incomplete"
+              {/* All cards now use the same MetricCard component */}
+              {!isProfileComplete && (
+                <MetricCard
+                  title="PROFILE INCOMPLETE"
                   value="Action Required"
+                  valueClassName="text-2xl"
                   icon={AlertTriangle}
-                  bgColor="bg-yellow-500/20"
-                  iconColor="text-yellow-400"
+                  iconColor="text-red-500"
                   link={null}
                   description="Complete your profile to unlock all features"
                   action={() => setModalOpen(true)}
                 />
               )}
               {medications.length === 0 && (
-                <DashboardCard
-                  key="no-medications"
-                  title="No Medications"
+                <MetricCard
+                  title="NO MEDICATIONS"
                   value="Action Required"
+                  valueClassName="text-2xl"
                   icon={FileText}
-                  bgColor="bg-gray-500/20"
-                  iconColor="text-gray-400"
+                  iconColor="text-yellow-500"
                   link="/dashboard/medication"
                   description="Submit your first medication for review"
                 />
               )}
-              <DashboardCard
-                key="new-messages"
-                title="New Messages"
-                value={unreadMessages.length}
-                icon={MessagesSquare}
-                bgColor="bg-sky-500/20"
-                iconColor="text-sky-400"
-                link="/dashboard/messages"
-                description="Unread messages from admins"
-              />
-              <DashboardCard
-                key="medications-submitted"
-                title="Medications Submitted"
-                value={medications.length}
-                icon={FileText}
-                bgColor="bg-purple-500/20"
-                iconColor="text-purple-400"
-                link="/dashboard/medication"
-                description="Total number of medications"
-              />
-              <DashboardCard
-                key="pending-approval"
+              <MetricCard
                 title="Pending Approval"
                 value={pendingMedications.length}
                 icon={Clock}
-                bgColor="bg-yellow-500/20"
-                iconColor="text-yellow-400"
+                iconColor="text-yellow-500"
                 link="/dashboard/medication?status=pending"
                 description="Medications awaiting review"
               />
-              <DashboardCard
-                key="approved-medications"
+              <MetricCard
                 title="Approved Medications"
                 value={approvedMedications.length}
                 icon={CheckCircle}
-                bgColor="bg-green-500/20"
-                iconColor="text-green-400"
+                iconColor="text-green-500"
                 link="/dashboard/medication?status=approved"
                 description="Approved medications"
               />
-              <DashboardCard
-                key="rejected-medications"
+              <MetricCard
                 title="Rejected Medications"
                 value={rejectedMedications.length}
                 icon={XCircle}
-                bgColor="bg-red-500/20"
-                iconColor="text-red-400"
+                iconColor="text-red-500"
                 link="/dashboard/medication?status=rejected"
                 description="Rejected medication submissions"
+              />
+              <MetricCard
+                title="New Messages"
+                value={unreadMessages.length}
+                icon={MessagesSquare}
+                iconColor="text-sky-500"
+                link="/dashboard/messages"
+                description="Unread messages from admins"
               />
             </motion.div>
           </AnimatePresence>
@@ -312,11 +284,11 @@ function DashboardPage() {
 
 // --- Child Components ---
 
-const DashboardCard = ({
+const MetricCard = ({
   title,
   value,
+  valueClassName = "text-4xl", // Default to 4xl for number values
   icon: Icon,
-  bgColor,
   iconColor,
   link,
   description,
@@ -331,24 +303,22 @@ const DashboardCard = ({
   const content = (
     <motion.div
       variants={cardVariants}
-      className={`p-6 rounded-xl flex flex-col justify-between h-40 border border-zinc-800 ${bgColor} hover:scale-[1.02] transition-transform duration-200 cursor-pointer w-full`}>
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-sm text-gray-300 font-semibold">{title}</h3>
-          <p className="text-4xl font-bold text-white mt-1">{value}</p>
-        </div>
-        <div className={`p-2 rounded-full ${iconColor} bg-zinc-800`}>
+      className="p-6 rounded-lg bg-zinc-900 flex flex-col justify-between h-40 transition-transform duration-200 cursor-pointer w-full">
+      <div className="flex items-center gap-2">
+        <span className={iconColor}>
           <Icon size={24} />
-        </div>
+        </span>
+        <span className="text-gray-400 text-sm font-medium">{title}</span>
       </div>
-      <p className="text-xs text-gray-400 mt-2">{description}</p>
+      <p className={`font-bold text-gray-100 ${valueClassName}`}>{value}</p>
+      <p className="text-sm text-gray-500 mt-2">{description}</p>
     </motion.div>
   );
 
   return link ? (
     <Link to={link}>{content}</Link>
   ) : (
-    <div onClick={action}>{content}</div>
+    <div onClick={action || (() => {})}>{content}</div>
   );
 };
 

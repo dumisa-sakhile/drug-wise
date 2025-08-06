@@ -10,14 +10,7 @@ import { auth, db } from "@/config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useQuery } from "@tanstack/react-query";
-import {
-  MessagesSquare,
-  Pill,
-  Bot,
-  User,
-  LogOut,
-  Shield,
-} from "lucide-react";
+import { MessagesSquare, Pill, Bot, User, LogOut, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import male from "/male.jpg?url";
@@ -112,7 +105,10 @@ function DashboardLayout() {
     if (to === "/dashboard/admin") {
       return location.pathname.startsWith(to);
     }
-    return location.pathname === to;
+    if (to === "/dashboard") {
+      return location.pathname === to || location.pathname === "/dashboard/";
+    }
+    return location.pathname.startsWith(to);
   };
 
   const getProfileImage = () => {
@@ -126,11 +122,9 @@ function DashboardLayout() {
   };
 
   return (
-    <main className="w-full min-h-screen  text-zinc-50 outfit-regular">
+    <main className="w-full min-h-screen bg-zinc-950 text-zinc-50 outfit-regular">
       {/* Desktop Sidebar */}
-      <aside
-        style={{ borderRadius: "12px" }}
-        className="hidden md:flex fixed top-4 left-4 w-[260px] h-[calc(100%-32px)] flex-col rounded-xl bg-zinc-900 shadow-2xl border border-zinc-800">
+      <aside className="hidden md:flex fixed top-4 left-4 w-[260px] h-[calc(100%-32px)] flex-col rounded-xl bg-zinc-900 shadow-2xl border border-zinc-800">
         <div className="px-6 pt-6 pb-4 flex items-center gap-4 border-b border-zinc-800">
           <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden object-cover border border-green-500 flex-shrink-0">
             <img
@@ -172,16 +166,17 @@ function DashboardLayout() {
         </nav>
 
         <div className="font-light p-4 border-t border-zinc-800">
-          <button
+          <motion.button
             onClick={() => {
               auth.signOut();
               toast.success("Logged out successfully!");
             }}
-            style={{ borderRadius: "9px" }}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2 text-sm font-regular text-black bg-red-600 hover:bg-red-700 transition-all duration-200">
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full flex items-center justify-center gap-3 px-4 py-2 text-sm font-regular rounded-lg text-rose-400 hover:text-red-500 bg-gray-800/50 transition-colors duration-200">
             <LogOut size={18} />
             Sign Out
-          </button>
+          </motion.button>
           <p className="text-xs text-center mt-4 text-zinc-500">
             © {new Date().getFullYear()} DrugWise.
           </p>
@@ -198,9 +193,7 @@ function DashboardLayout() {
       </motion.section>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav
-        style={{ borderRadius: "12px" }}
-        className="fixed top-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/80 backdrop-blur-md border border-zinc-800 shadow-lg p-2 rounded-xl">
+      <nav className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/50 backdrop-blur-md shadow-lg p-2 rounded-xl border border-zinc-800">
         {navLinks.map((link) => (
           <Link
             key={link.to}
