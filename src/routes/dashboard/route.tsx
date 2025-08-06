@@ -200,7 +200,7 @@ function DashboardLayout() {
       {/* Mobile Bottom Navigation Bar */}
       <nav
         style={{ borderRadius: "12px" }}
-        className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/80 backdrop-blur-md border border-zinc-800 shadow-lg p-2 rounded-xl">
+        className="fixed top-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/80 backdrop-blur-md border border-zinc-800 shadow-lg p-2 rounded-xl">
         {navLinks.map((link) => (
           <Link
             key={link.to}
