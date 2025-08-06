@@ -17,9 +17,8 @@ import {
   User,
   LogOut,
   Shield,
-  Menu,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import male from "/male.jpg?url";
 import female from "/female.jpg?url";

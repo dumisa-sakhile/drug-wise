@@ -186,9 +186,9 @@ function DashboardPage() {
       <main className="min-h-screen text-gray-100 font-sans bg-zinc-950 flex flex-col">
         {/* Main Content Area */}
         <div className="flex-grow p-6 md:p-10 overflow-auto max-w-7xl mx-auto w-full">
-          <header className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h1 className="text-3xl font-extrabold text-lime-400 mb-1">
+          <header className="mb-12 flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-zinc-800 pb-6">
+            <div className="text-center sm:text-left py-8 sm:py-0">
+              <h1 className="text-3xl font-bold text-lime-400 mb-1">
                 Welcome, {userData?.name}!
               </h1>
               <p className="text-gray-400">
@@ -197,7 +197,7 @@ function DashboardPage() {
             </div>
             <motion.button
               onClick={handleSignOut}
-              className="flex items-center justify-center gap-2 text-sm px-5 py-2.5 font-semibold text-black bg-gradient-to-r from-red-600 to-rose-500 hover:from-red-700 hover:to-rose-600 shadow-md hover:shadow-lg transition-colors rounded-full w-full sm:w-auto"
+              className="flex items-center justify-center gap-2.5 text-base px-5 py-2.5 font-light text-black bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 border border-rose-400/50 hover:border-rose-500 shadow-md hover:shadow-lg transition-colors rounded-full w-full sm:w-auto"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}>
               <LogOut size={18} /> Sign Out
@@ -206,7 +206,7 @@ function DashboardPage() {
 
           <AnimatePresence>
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
               variants={containerVariants}
               initial="hidden"
               animate="visible">
@@ -331,17 +331,17 @@ const DashboardCard = ({
   const content = (
     <motion.div
       variants={cardVariants}
-      className={`p-6 rounded-xl flex flex-col justify-between h-40 border border-zinc-800 ${bgColor} hover:scale-[1.02] transition-transform duration-200 cursor-pointer`}>
+      className={`p-6 rounded-xl flex flex-col justify-between h-40 border border-zinc-800 ${bgColor} hover:scale-[1.02] transition-transform duration-200 cursor-pointer w-full`}>
       <div className="flex justify-between items-start">
         <div>
-          <h3 className="text-sm text-gray-400 font-semibold">{title}</h3>
-          <p className="text-4xl font-extrabold text-white mt-1">{value}</p>
+          <h3 className="text-sm text-gray-300 font-semibold">{title}</h3>
+          <p className="text-4xl font-bold text-white mt-1">{value}</p>
         </div>
         <div className={`p-2 rounded-full ${iconColor} bg-zinc-800`}>
           <Icon size={24} />
         </div>
       </div>
-      <p className="text-xs text-gray-500 mt-2">{description}</p>
+      <p className="text-xs text-gray-400 mt-2">{description}</p>
     </motion.div>
   );
 
