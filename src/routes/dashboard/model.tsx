@@ -1,13 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import type { FormEvent } from "react";
-import { Send, MessageSquarePlus } from "lucide-react";
+import { Send, MessageSquarePlus, Bot } from "lucide-react";
 import { auth, db } from "@/config/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import male from "/male.jpg?url";
 import female from "/female.jpg?url";
-import logo from "../../logo.svg";
+// import logo from "../../logo.svg";
 
 export const Route = createFileRoute("/dashboard/model")({ component: Model });
 
@@ -161,14 +161,17 @@ function Model() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-white outfit-light ">
+    <div className="min-h-screen flex flex-col text-white font-sans bg-zinc-950">
+           {" "}
       {messages.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center px-4 md:ml-[120px] max-w-4xl mx-auto w-full">
+                   {" "}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="text-center mb-10">
+                       {" "}
             <motion.h1
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -178,24 +181,28 @@ function Model() {
                 type: "spring",
                 stiffness: 150,
               }}
-              className="text-5xl font-bold bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent mb-3">
-              Welcome to WiseBot
+              className="text-5xl font-bold bg-gradient-to-r from-emerald-400 to-lime-400 bg-clip-text text-transparent mb-3">
+                            Welcome to WiseBot            {" "}
             </motion.h1>
+                       {" "}
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
               className="text-lg text-zinc-400 max-w-md mx-auto">
-              Delve into profound perspectives, participate in enriching
-              dialogues, and discover fresh opportunities with WiseBot.
+                            Delve into profound perspectives, participate in
+              enriching               dialogues, and discover fresh
+              opportunities with WiseBot.            {" "}
             </motion.p>
+                     {" "}
           </motion.div>
-
+                   {" "}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.6, staggerChildren: 0.1 }}
             className="flex flex-wrap justify-center gap-3 w-full max-w-2xl">
+                       {" "}
             {INITIAL_SUGGESTIONS.slice(0, 5).map((s, index) => (
               <motion.button
                 key={s}
@@ -205,17 +212,23 @@ function Model() {
                 whileHover={{ scale: 1.05, backgroundColor: "#2A2A2A" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleSuggestionClick(s)}
-                className="flex items-center gap-2 px-5 py-3 text-sm rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-all duration-200">
-                <MessageSquarePlus className="w-4 h-4 text-lime-400" />
-                <span>{s}</span>
+                className="flex items-center gap-2 px-5 py-3 text-sm rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 transition-all duration-200 shadow-md">
+                               {" "}
+                <MessageSquarePlus className="w-4 h-4 text-emerald-400" />     
+                          <span>{s}</span>             {" "}
               </motion.button>
             ))}
+                     {" "}
           </motion.div>
+                 {" "}
         </div>
       ) : (
         <main className="flex-1 px-4 py-6 max-w-3xl mx-auto w-full md:ml-[240px]">
+                   {" "}
           <div className="space-y-6 pb-40">
+                       {" "}
             <AnimatePresence>
+                           {" "}
               {messages.map(({ id, sender, text, timestamp }) => (
                 <motion.div
                   key={id}
@@ -224,9 +237,12 @@ function Model() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3 }}
                   className={`flex ${sender === "user" ? "justify-end" : "justify-start"}`}>
+                                   {" "}
                   <div
                     className={`flex ${sender === "user" ? "flex-row-reverse" : ""} gap-3 max-w-[85%]`}>
+                                       {" "}
                     <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border-2 border-transparent">
+                                           {" "}
                       {sender === "user" ? (
                         <img
                           src={avatarUrl || male}
@@ -235,41 +251,47 @@ function Model() {
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full w-full bg-zinc-800 rounded-full border border-zinc-700">
-                          <img
-                            src={logo}
-                            alt="WiseBot Logo"
-                            className="w-5 h-5 animate-pulse"
-                          />
+                                                   {" "}
+                          <Bot className="w-5 h-5 text-emerald-400 animate-pulse" />
+                                                 {" "}
                         </div>
                       )}
+                                         {" "}
                     </div>
+                                       {" "}
                     <div
                       className={`px-4 py-3 text-sm rounded-2xl shadow-lg transition-colors duration-200 ${
                         sender === "user"
-                          ? "bg-lime-500 text-zinc-900 rounded-br-none"
+                          ? "bg-emerald-500 text-zinc-900 rounded-br-none"
                           : "bg-zinc-800 text-zinc-100 rounded-bl-none border border-zinc-700"
                       }`}>
-                      <p>{text}</p>
+                                            <p>{text}</p>                     {" "}
                       <p
-                        className={`text-xs mt-1 ${sender === "user" ? "text-zinc-700" : "text-zinc-500"}`}>
+                        className={`text-xs mt-1 ${sender === "user" ? "text-zinc-700" : "text-zinc-400"}`}>
+                                               {" "}
                         {timestamp.toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
+                                             {" "}
                       </p>
+                                         {" "}
                     </div>
+                                     {" "}
                   </div>
+                                 {" "}
                 </motion.div>
               ))}
+                         {" "}
             </AnimatePresence>
-
+                       {" "}
             {isLoading && (
               <div className="flex gap-3 items-center">
+                               {" "}
                 <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-zinc-800 border border-zinc-700">
-                  <motion.img
-                    src={logo}
-                    alt="WiseBot Logo"
-                    className="w-5 h-5"
+                                   {" "}
+                  <motion.div
+                    className="w-5 h-5 flex items-center justify-center"
                     initial={{ scale: 0.8, opacity: 0.5 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{
@@ -277,37 +299,50 @@ function Model() {
                       repeat: Infinity,
                       repeatType: "reverse",
                       ease: "easeInOut",
-                    }}
-                  />
+                    }}>
+                                       {" "}
+                    <Bot className="w-5 h-5 text-emerald-400" />               
+                     {" "}
+                  </motion.div>
+                                 {" "}
                 </div>
+                               {" "}
                 <div className="flex gap-1">
+                                   {" "}
                   <motion.div
                     className="w-2 h-2 bg-zinc-400 rounded-full"
                     animate={{ scale: [1, 1.5, 1] }}
                     transition={{ duration: 1, repeat: Infinity, delay: 0.1 }}
                   />
+                                   {" "}
                   <motion.div
                     className="w-2 h-2 bg-zinc-400 rounded-full"
                     animate={{ scale: [1, 1.5, 1] }}
                     transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
                   />
+                                   {" "}
                   <motion.div
                     className="w-2 h-2 bg-zinc-400 rounded-full"
                     animate={{ scale: [1, 1.5, 1] }}
                     transition={{ duration: 1, repeat: Infinity, delay: 0.3 }}
                   />
+                                 {" "}
                 </div>
+                             {" "}
               </div>
             )}
-
-            <div ref={chatEndRef} />
+                        <div ref={chatEndRef} />         {" "}
           </div>
+                 {" "}
         </main>
       )}
-
-      <div className="fixed bottom-0 left-0 right-0 p-4 z-20 md:ml-[300px] backdrop-blur-md">
+           {" "}
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-20 md:ml-[300px] bg-zinc-950/70 backdrop-blur-md">
+               {" "}
         <div className="max-w-3xl mx-auto">
+                   {" "}
           <AnimatePresence>
+                       {" "}
             {showDynamicSuggestions && messages.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -315,7 +350,9 @@ function Model() {
                 exit={{ opacity: 0, y: 20 }}
                 transition={{ duration: 0.3 }}
                 className="mb-4 overflow-x-auto scrollbar-hide">
+                               {" "}
                 <div className="flex gap-3">
+                                   {" "}
                   {filteredSuggestions.map((s, index) => (
                     <motion.button
                       key={s}
@@ -325,24 +362,33 @@ function Model() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleSuggestionClick(s)}
-                      className="flex-shrink-0 flex items-center gap-2 px-5 py-3 text-sm rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 whitespace-nowrap transition-all duration-200">
-                      <MessageSquarePlus className="w-4 h-4 text-lime-400" />
-                      <span>{s}</span>
+                      className="flex-shrink-0 flex items-center gap-2 px-5 py-3 text-sm rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 whitespace-nowrap transition-all duration-200 shadow-md">
+                                           {" "}
+                      <MessageSquarePlus className="w-4 h-4 text-emerald-400" />
+                                            <span>{s}</span>                 
+                       {" "}
                     </motion.button>
                   ))}
+                                 {" "}
                 </div>
+                             {" "}
               </motion.div>
             )}
+                     {" "}
           </AnimatePresence>
-
+                   {" "}
           <form onSubmit={handleSubmit} className="relative flex items-center">
+                       {" "}
             <div className="absolute left-5 top-1/2 -translate-y-1/2">
-              <MessageSquarePlus className="w-5 h-5 text-zinc-500" />
+                           {" "}
+              <MessageSquarePlus className="w-5 h-5 text-zinc-500" />         
+               {" "}
             </div>
+                       {" "}
             <motion.input
               ref={inputRef}
               type="text"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-full pl-12 pr-14 py-4 text-base text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-lime-500 transition-all duration-200"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-full pl-12 pr-14 py-4 text-base text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-200"
               placeholder={
                 isLoading ? "WiseBot is thinking..." : "Message WiseBot..."
               }
@@ -351,6 +397,7 @@ function Model() {
               disabled={isLoading}
               whileFocus={{ scale: 1.01 }}
             />
+                       {" "}
             <motion.button
               type="submit"
               disabled={isLoading || !input.trim()}
@@ -359,22 +406,27 @@ function Model() {
               className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
                 isLoading || !input.trim()
                   ? "bg-zinc-700 text-zinc-500"
-                  : "bg-gradient-to-r from-green-500 to-lime-500 text-black hover:scale-110"
+                  : "bg-gradient-to-r from-emerald-500 to-lime-500 text-black hover:scale-110"
               }`}>
-              <Send className="w-5 h-5" />
+                            <Send className="w-5 h-5" />           {" "}
             </motion.button>
+                     {" "}
           </form>
+                 {" "}
         </div>
+               {" "}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
-          className="md:block text-center text-white text-xs mt-2">
-          WiseBot may generate inaccurate information like any other AI, and is
-          not intended to diagnose, treat, cure, or prevent any disease. Model:
-          WiseBot AI - Beta Version
+          className="md:block text-center text-zinc-400 text-xs mt-2">
+                    WiseBot may generate inaccurate information like any other
+          AI, and is           not intended to diagnose, treat, cure, or prevent
+          any disease. Model:           WiseBot AI - Beta Version        {" "}
         </motion.div>
+             {" "}
       </div>
+         {" "}
     </div>
   );
 }

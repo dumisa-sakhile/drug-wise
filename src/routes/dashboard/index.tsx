@@ -1,3 +1,4 @@
+// Other imports remain the same
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQueries } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
@@ -26,7 +27,7 @@ import {
 import EditProfileForm from "@/components/EditProfileForm";
 import { signOut } from "firebase/auth";
 
-// --- Type Definitions ---
+// --- Type Definitions (No changes) ---
 interface UserData {
   uid: string;
   email: string;
@@ -52,7 +53,7 @@ interface Message {
   isRead: boolean;
 }
 
-// --- Custom Hook for Data Fetching ---
+// --- Custom Hook for Data Fetching (No changes) ---
 const useDashboardData = (user: User | null) => {
   const uid = user?.uid;
 
@@ -117,7 +118,7 @@ const useDashboardData = (user: User | null) => {
   };
 };
 
-// --- Route Definition ---
+// --- Route Definition (No changes) ---
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardPage,
 });
@@ -185,27 +186,36 @@ function DashboardPage() {
     <>
       <title>DrugWise - Dashboard</title>
       <main className="min-h-screen text-gray-100 font-sans bg-zinc-950 flex flex-col">
-        <div className="flex-grow p-6 md:p-10 overflow-auto max-w-4xl mx-auto w-full">
-          {/* Sign Out Button */}
-          <div className="flex justify-end mb-8">
+        <div className="flex-grow p-0 md:p-10 overflow-auto max-w-4xl mx-auto w-full">
+          {/* Header section with welcome message and logout button */}
+          <header className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
+            {/* Welcome Message */}
+            <div className="flex-1">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-50 mb-2">
+                Welcome,{" "}
+                <span className="text-lime-400">
+                  {userData?.name || "User"}
+                </span>
+                !
+              </h1>
+              <p className="text-base text-gray-400 max-w-2xl">
+                Here's a quick overview of your health and medication
+                submissions.
+              </p>
+            </div>
+
+            {/* Logout Button */}
             <motion.button
               onClick={handleSignOut}
-              className="flex items-center gap-2.5 px-3 py-1 rounded-full text-rose-400 hover:text-red-500 transition-colors bg-gray-800/50"
+              className="self-end md:self-auto flex items-center gap-2.5 px-6 py-2 rounded-full text-white transition-colors
+                         bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700
+                         font-light text-base shadow-lg hover:shadow-red-500/30"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}>
-              <LogOut size={16} />
+              <LogOut size={20} />
               Sign Out
             </motion.button>
-          </div>
-
-          {/* Main Title and Description Section */}
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-50 mb-4">
-            Dashboard Overview
-          </h1>
-          <p className="text-lg text-gray-400 max-w-2xl mb-12">
-            Welcome, {userData?.name || "User"}! Here's a quick overview of your
-            health and medication submissions.
-          </p>
+          </header>
 
           <AnimatePresence>
             <motion.div
@@ -282,12 +292,12 @@ function DashboardPage() {
   );
 }
 
-// --- Child Components ---
+// --- Child Components (No changes) ---
 
 const MetricCard = ({
   title,
   value,
-  valueClassName = "text-4xl", // Default to 4xl for number values
+  valueClassName = "text-4xl",
   icon: Icon,
   iconColor,
   link,
