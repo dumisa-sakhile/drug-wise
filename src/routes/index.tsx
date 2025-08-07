@@ -78,7 +78,7 @@ function App() {
       </div>
       {/* Hero Section */}
       <motion.section
-        className="relative z-10 max-w-7xl mx-auto pt-16 pb-16 px-6 text-center"
+        className="relative z-10 max-w-7xl mx-auto md:pt-16 md:pb-16 px-6 text-center"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}>
@@ -134,7 +134,7 @@ function App() {
           {/* "Learn More" button using Link */}
           <Link
             to="/about" // Use 'to' for internal navigation
-            className="inline-flex items-center justify-center px-8 py-3 ml-4 font-semibold text-gray-300 transition duration-300 border border-gray-600 rounded-full hover:border-blue-500 hover:text-blue-400 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900">
+            className="hidden md:inline-flex items-center justify-center px-8 py-3 ml-4 font-semibold text-gray-300 transition duration-300 border border-gray-600 rounded-full hover:border-blue-500 hover:text-blue-400 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900">
             Learn More
           </Link>
         </motion.div>

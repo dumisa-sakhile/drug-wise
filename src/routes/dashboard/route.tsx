@@ -121,6 +121,10 @@ function DashboardLayout() {
     return userData?.gender === "female" ? female : male;
   };
 
+  const isModelRoute =
+    location.pathname === "/dashboard/model" ||
+    location.pathname.startsWith("/dashboard/model/");
+
   return (
     <main className="w-full min-h-screen bg-zinc-950 text-zinc-50 outfit-regular">
       {/* Desktop Sidebar */}
@@ -173,7 +177,7 @@ function DashboardLayout() {
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2 text-sm font-regular rounded-lg text-rose-400 hover:text-red-500 bg-gray-800/50 transition-colors duration-200">
+            className="w-full flex items-center justify-center gap-3 px-4 py-2 text-sm font-regular rounded-lg text-rose-200 hover:text-red-500 bg-rose-900 transition-colors duration-200">
             <LogOut size={18} />
             Sign Out
           </motion.button>
@@ -193,27 +197,29 @@ function DashboardLayout() {
       </motion.section>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/50 backdrop-blur-md shadow-lg p-2 rounded-xl border border-zinc-800">
-        {navLinks.map((link) => (
-          <Link
-            key={link.to}
-            to={link.to}
-            style={{ borderRadius: "9px" }}
-            className={`flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 ${
-              isActiveLink(link.to)
-                ? "text-lime-300 font-bold bg-lime-400/20"
-                : "text-gray-400 hover:text-white"
-            }`}>
-            <link.icon
-              size={20}
-              className={
-                isActiveLink(link.to) ? "text-lime-300" : "text-gray-400"
-              }
-            />
-            <span className="mt-1">{link.label}</span>
-          </Link>
-        ))}
-      </nav>
+      {!isModelRoute && (
+        <nav className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/50 backdrop-blur-md shadow-lg p-2 rounded-xl border border-zinc-800">
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              style={{ borderRadius: "9px" }}
+              className={`flex flex-col items-center justify-center p-2 text-xs transition-all duration-200 ${
+                isActiveLink(link.to)
+                  ? "text-lime-300 font-bold bg-lime-400/20"
+                  : "text-gray-400 hover:text-white"
+              }`}>
+              <link.icon
+                size={20}
+                className={
+                  isActiveLink(link.to) ? "text-lime-300" : "text-gray-400"
+                }
+              />
+              <span className="mt-1">{link.label}</span>
+            </Link>
+          ))}
+        </nav>
+      )}
     </main>
   );
 }

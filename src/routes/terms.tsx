@@ -62,7 +62,7 @@ function Terms() {
     <>
       <title>DrugWise - Terms</title>
       <motion.div
-        className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern py-12 px-4 sm:px-6 overflow-hidden max-w-full"
+        className="min-h-screen bg-inherit text-gray-200 bg-grid-pattern pt-0 md:pt-16 py-12 px-4 sm:px-6 overflow-hidden max-w-full"
         initial={{ opacity: 0, y: 50 }}
         animate={{
           opacity: 1,

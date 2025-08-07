@@ -20,7 +20,7 @@ function About() {
 
       {/* Hero Section */}
       <motion.section
-        className="relative z-10 max-w-7xl mx-auto pt-16 pb-16 px-6 text-center"
+        className="relative z-10 max-w-7xl mx-auto md:pt-16 md:pb-16 px-6 text-center"
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}>

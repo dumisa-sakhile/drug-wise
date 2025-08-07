@@ -87,7 +87,7 @@ const Header: React.FC = () => {
 
       {/* Mobile Bottom Navigation Bar */}
       {/* This nav is only visible on screens smaller than 'md' breakpoint */}
-      <nav className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/50 backdrop-blur-md shadow-lg p-2 rounded-xl border border-zinc-800">
+      <nav className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-center justify-around bg-zinc-900/50 backdrop-blur-md shadow-lg p-2 rounded-xl ">
         {navLinks.map((link) => (
           <Link
             key={link.to}

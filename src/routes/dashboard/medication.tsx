@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import type { ChangeEvent, DragEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { auth, db } from "@/config/firebase";
@@ -18,7 +18,18 @@ import {
 import { put, del } from "@vercel/blob";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pill, X, ArrowRight, Trash2, Edit, Check, Upload } from "lucide-react";
+import {
+  Search,
+  Pill,
+  X,
+  ArrowRight,
+  Trash2,
+  Edit,
+  Check,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/medication")({
   component: Medication,
@@ -74,6 +85,12 @@ function Medication() {
   const [editFormErrors, setEditFormErrors] = useState<FormErrors>({});
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isImageExpanded, setIsImageExpanded] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "pending" | "approved" | "rejected"
+  >("all");
+  const [rowsPerPage, setRowsPerPage] = useState<number>(15);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const queryClient = useQueryClient();
@@ -102,15 +119,13 @@ function Medication() {
       errors.description = "Description must be at least 10 characters";
     }
 
-    if (!isEdit) {
-      if (!file) {
-        errors.file = "An image file is required";
-      } else {
-        if (file.size > 3 * 1024 * 1024) {
-          errors.file = "Image size must be less than 3MB";
-        } else if (!["image/jpeg", "image/png"].includes(file.type)) {
-          errors.file = "Only JPEG or PNG images are allowed";
-        }
+    if (!isEdit && !file) {
+      errors.file = "An image file is required";
+    } else if (!isEdit && file) {
+      if (file.size > 3 * 1024 * 1024) {
+        errors.file = "Image size must be less than 3MB";
+      } else if (!["image/jpeg", "image/png"].includes(file.type)) {
+        errors.file = "Only JPEG or PNG images are allowed";
       }
     }
 
@@ -122,7 +137,6 @@ function Medication() {
     return Object.keys(errors).length === 0;
   };
 
-  // Revalidate edit form when editForm changes
   useEffect(() => {
     if (isEditing) {
       validateForm(true);
@@ -145,6 +159,36 @@ function Medication() {
     },
     enabled: !!currentUser,
   });
+
+  // Memoized filter and search logic
+  const filteredMedications = useMemo(() => {
+    let result = medications;
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      result = result.filter(
+        (m) =>
+          (m.medicationName?.toLowerCase() || "").includes(searchLower) ||
+          (m.description?.toLowerCase() || "").includes(searchLower) ||
+          (m.comment?.toLowerCase() || "").includes(searchLower)
+      );
+    }
+    if (filterStatus !== "all" && !searchTerm.trim()) {
+      result = result.filter((m) => m.status === filterStatus);
+    }
+    return result;
+  }, [medications, searchTerm, filterStatus]);
+
+  // Memoized pagination logic
+  const paginatedMedications = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    return filteredMedications.slice(start, start + rowsPerPage);
+  }, [filteredMedications, currentPage, rowsPerPage]);
+
+  const totalPages = Math.ceil(filteredMedications.length / rowsPerPage);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, rowsPerPage]);
 
   const { mutate: submitMedication, isPending: isSubmitting } = useMutation({
     mutationFn: async () => {
@@ -335,14 +379,23 @@ function Medication() {
     validateForm();
   };
 
-  const summaryLimit = 5;
-  const summaryMeds = medications.slice(0, summaryLimit);
-  const hasMore = medications.length > summaryLimit;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setFilterStatus("all");
+  };
+
+  if (!currentUser) {
+    return (
+      <div className="p-6 text-gray-300 font-light min-h-screen flex items-center justify-center bg-zinc-950">
+        Please sign in to view medications
+      </div>
+    );
+  }
 
   return (
-    <div className="font-light max-w-5xl mx-auto md:px-4 py-8 min-h-screen text-white">
+    <div className="font-light max-w-5xl mx-auto md:px-4 py-8 min-h-screen text-gray-100 bg-zinc-950">
       <title>DrugWise - Medication Management</title>
-      <h1 className="text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
         Submit New Medication
       </h1>
 
@@ -351,10 +404,10 @@ function Medication() {
           e.preventDefault();
           submitMedication();
         }}
-        className="bg-neutral-900/50 p-8 rounded-2xl border border-neutral-700/50 mb-10 max-w-3xl mx-auto shadow-xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl">
+        className="bg-zinc-900 p-8 rounded-xl border border-zinc-800 mb-10 max-w-3xl mx-auto shadow-xl">
         <div className="space-y-6">
           <label className="block">
-            <span className="text-neutral-200 font-semibold mb-2 block">
+            <span className="text-gray-200 font-semibold mb-2 block">
               Medication Name <span className="text-red-400">*</span>
             </span>
             <input
@@ -364,7 +417,7 @@ function Medication() {
                 setMedicationName(e.target.value);
                 validateForm();
               }}
-              className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full rounded-lg bg-zinc-900 text-base text-gray-100 px-4 py-2.5 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
               placeholder="Enter medication name (e.g., Ibuprofen)"
               disabled={isSubmitting}
               aria-invalid={!!formErrors.medicationName}
@@ -385,7 +438,7 @@ function Medication() {
           </label>
 
           <label className="block">
-            <span className="text-neutral-200 font-semibold mb-2 block">
+            <span className="text-gray-200 font-semibold mb-2 block">
               Description <span className="text-red-400">*</span>
             </span>
             <textarea
@@ -397,7 +450,7 @@ function Medication() {
               rows={4}
               placeholder="Describe the medication (e.g., dosage, purpose, side effects)"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full rounded-lg bg-zinc-900 text-base text-gray-100 px-4 py-2.5 border border-zinc-700 resize-none focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
               aria-invalid={!!formErrors.description}
               aria-describedby="description-error"
             />
@@ -416,9 +469,9 @@ function Medication() {
           </label>
 
           <label className="block">
-            <span className="text-neutral-200 font-semibold mb-2 block">
+            <span className="text-gray-200 font-semibold mb-2 block">
               Medication Image <span className="text-red-400">*</span>
-              <span className="text-neutral-400 text-sm ml-2">
+              <span className="text-gray-400 text-sm ml-2">
                 (Max 3MB, JPEG, PNG)
               </span>
             </span>
@@ -426,12 +479,12 @@ function Medication() {
               onDrop={(e) => !file && handleDrop(e)}
               onDragOver={(e) => !file && handleDragOver(e)}
               onDragLeave={() => !file && handleDragLeave()}
-              className={`relative w-full rounded-xl border-2 border-dashed p-6 transition-all duration-200 ${
+              className={`relative w-full rounded-lg border-2 border-dashed p-6 transition-all duration-200 ${
                 file
-                  ? "border-neutral-700 bg-neutral-800/30 opacity-60 cursor-not-allowed"
+                  ? "border-zinc-700 bg-zinc-900 opacity-60 cursor-not-allowed"
                   : isDragging
-                    ? "border-blue-500 bg-blue-500/10"
-                    : "border-neutral-600 bg-neutral-800/50"
+                    ? "border-lime-500 bg-lime-500/10"
+                    : "border-zinc-700 bg-zinc-900"
               }`}>
               <input
                 type="file"
@@ -447,20 +500,20 @@ function Medication() {
                 <Upload
                   className={`h-8 w-8 mb-2 ${
                     file
-                      ? "text-neutral-500"
+                      ? "text-gray-500"
                       : isDragging
-                        ? "text-blue-500"
-                        : "text-neutral-400"
+                        ? "text-lime-500"
+                        : "text-gray-400"
                   }`}
                 />
-                <p className="text-neutral-300">
+                <p className="text-gray-300 font-light">
                   {file
                     ? "Image selected. Remove to upload another."
                     : isDragging
                       ? "Drop your image here"
                       : "Drag & drop or click to upload"}
                 </p>
-                <p className="text-neutral-400 text-sm mt-1">
+                <p className="text-gray-400 text-sm mt-1 font-light">
                   Supports JPEG or PNG (max 3MB)
                 </p>
               </div>
@@ -474,8 +527,10 @@ function Medication() {
                   onClick={() => setIsImageExpanded(true)}
                 />
                 <div className="flex-1">
-                  <p className="text-neutral-300 truncate">{file.name}</p>
-                  <p className="text-neutral-400 text-sm">
+                  <p className="text-gray-300 truncate font-light">
+                    {file.name}
+                  </p>
+                  <p className="text-gray-400 text-sm font-light">
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
@@ -494,7 +549,7 @@ function Medication() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="text-red-400 text-sm mt-1"
+                  className="text-red-400 text-sm mt-1 font-light"
                   id="file-error">
                   {formErrors.file}
                 </motion.p>
@@ -503,7 +558,7 @@ function Medication() {
           </label>
 
           <label className="block">
-            <span className="text-neutral-200 font-semibold mb-2 block">
+            <span className="text-gray-200 font-semibold mb-2 block">
               Comment (optional)
             </span>
             <textarea
@@ -512,37 +567,25 @@ function Medication() {
               rows={2}
               placeholder="Add any additional notes or context"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full rounded-lg bg-zinc-900 text-base text-gray-100 px-4 py-2.5 border border-zinc-700 resize-none focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
             />
           </label>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`w-full rounded-xl bg-gradient-to-r from-green-500 to-lime-500 text-white font-semibold py-3 px-4 transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+            className={`w-full rounded-lg bg-gradient-to-r from-green-500 to-lime-500 text-white font-semibold py-2.5 px-4 transition-all duration-200 hover:shadow-lg ${
               isSubmitting
                 ? "opacity-60 cursor-not-allowed"
                 : "hover:from-green-600 hover:to-lime-600"
             }`}>
             {isSubmitting ? (
               <div className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-5 h-5 border-2 border-gray-100 border-t-lime-500 rounded-full"
+                />
                 Submitting...
               </div>
             ) : (
@@ -553,130 +596,243 @@ function Medication() {
       </form>
 
       <section className="max-w-5xl mx-auto mt-12">
-        <h2 className="text-2xl font-bold mb-6 text-center sm:text-left">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-8 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
           Your Submitted Medications
         </h2>
 
         {medsLoading ? (
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="h-24 bg-neutral-800 rounded-xl animate-pulse"></div>
-            ))}
-          </div>
-        ) : medications.length === 0 ? (
-          <div className="text-neutral-500 text-center py-10 flex flex-col items-center justify-center">
-            <Pill className="text-6xl mb-4 text-neutral-600" />
-            <p className="text-lg">
-              You haven't submitted any medications yet.
-            </p>
-            <p className="text-sm mt-2">
-              Start by using the form above to submit your first medication.
-            </p>
+          <div className="flex justify-center items-center h-64">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="w-12 h-12 border-4 border-gray-600 border-t-lime-500 rounded-full"
+            />
           </div>
         ) : (
           <>
-            <div className="hidden sm:block overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-              <table className="min-w-full text-left text-neutral-300 text-sm">
-                <thead className="bg-neutral-700/50">
+            {/* Mobile Filters */}
+            <div className="px-4 sm:hidden mb-6">
+              <div className="flex flex-col gap-4 items-center">
+                <div className="relative w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 text-base text-gray-100 rounded-lg shadow-sm border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
+                  />
+                </div>
+                <select
+                  value={filterStatus}
+                  onChange={(e) =>
+                    setFilterStatus(
+                      e.target.value as
+                        | "all"
+                        | "pending"
+                        | "approved"
+                        | "rejected"
+                    )
+                  }
+                  className="w-full px-3 py-2.5 bg-zinc-900 text-base text-gray-100 rounded-lg shadow-sm border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light">
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <span className="text-gray-400 font-light text-sm">
+                  Showing {filteredMedications.length} medications
+                </span>
+              </div>
+            </div>
+
+            {/* Desktop Table and Search Bar */}
+            <div className="hidden sm:block overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-xl">
+              <div className="flex flex-col sm:flex-row gap-4 items-center p-6 bg-zinc-900">
+                <div className="relative flex-1 w-full">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search by name, description, or comment..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-950 text-base text-gray-100 rounded-full shadow-inner border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
+                  />
+                </div>
+                <select
+                  value={filterStatus}
+                  onChange={(e) =>
+                    setFilterStatus(
+                      e.target.value as
+                        | "all"
+                        | "pending"
+                        | "approved"
+                        | "rejected"
+                    )
+                  }
+                  className="w-full sm:w-1/4 px-4 py-2.5 bg-zinc-950 text-base text-gray-100 rounded-full shadow-inner border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light">
+                  <option value="all">All</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+                <span className="text-gray-400 font-light text-sm">
+                  {filteredMedications.length} total
+                </span>
+              </div>
+
+              <table className="min-w-full text-left text-gray-300 text-sm">
+                <thead className="bg-zinc-800">
                   <tr>
-                    <th className="px-6 py-4 font-semibold w-1/5">
-                      Medication
-                    </th>
-                    <th className="px-6 py-4 font-semibold w-2/5">
-                      Description
-                    </th>
-                    <th className="px-6 py-4 font-semibold w-1/6">Status</th>
-                    <th className="px-6 py-4 font-semibold w-1/5">
-                      Submitted At
-                    </th>
-                    <th className="px-6 py-4 font-semibold w-1/6">Actions</th>
+                    <th className="px-6 py-4 font-semibold">Medication</th>
+                    <th className="px-6 py-4 font-semibold">Description</th>
+                    <th className="px-6 py-4 font-semibold">Status</th>
+                    <th className="px-6 py-4 font-semibold">Submitted At</th>
+                    <th className="px-6 py-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <AnimatePresence>
-                    {summaryMeds.map((med) => (
+                    {filteredMedications.length === 0 ? (
                       <motion.tr
-                        key={med.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.25 }}
-                        className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer transition-colors duration-200"
-                        onClick={() =>
-                          setModalState({ type: "details", medication: med })
-                        }>
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="border-b border-zinc-800">
                         <td
-                          className="px-6 py-4 font-semibold max-w-[150px] truncate"
-                          title={med.medicationName}>
-                          {med.medicationName}
-                        </td>
-                        <td
-                          className="px-6 py-4 max-w-[250px] truncate"
-                          title={med.description}>
-                          {med.description}
-                        </td>
-                        <td className="px-6 py-4">
-                          <StatusBadge status={med.status} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {med.submittedAt?.toDate?.().toLocaleString() ?? "-"}
-                        </td>
-                        <td className="px-6 py-4 text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                          View Details <ArrowRight size={16} />
+                          colSpan={5}
+                          className="px-6 py-8 text-center text-gray-500 font-light">
+                          No medications found.
                         </td>
                       </motion.tr>
-                    ))}
+                    ) : (
+                      paginatedMedications.map((med) => (
+                        <motion.tr
+                          key={med.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className={`border-b border-zinc-800 cursor-pointer transition-colors duration-200 hover:bg-zinc-800`}
+                          onClick={() =>
+                            setModalState({ type: "details", medication: med })
+                          }>
+                          <td
+                            className="px-6 py-4 font-light max-w-[150px] truncate"
+                            title={med.medicationName}>
+                            {med.medicationName}
+                          </td>
+                          <td
+                            className="px-6 py-4 font-light max-w-[250px] truncate"
+                            title={med.description}>
+                            {med.description}
+                          </td>
+                          <td className="px-6 py-4">
+                            <StatusBadge status={med.status} />
+                          </td>
+                          <td className="px-6 py-4 font-light whitespace-nowrap">
+                            {med.submittedAt?.toDate?.().toLocaleDateString() ??
+                              "-"}
+                          </td>
+                          <td className="px-6 py-4 text-lime-400 hover:text-lime-300 flex items-center gap-1 font-light">
+                            View <ArrowRight size={16} />
+                          </td>
+                        </motion.tr>
+                      ))
+                    )}
                   </AnimatePresence>
                 </tbody>
               </table>
             </div>
 
-            <div className="sm:hidden space-y-6">
-              <AnimatePresence>
-                {summaryMeds.map((med) => (
-                  <motion.div
-                    key={med.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.25 }}
-                    className="bg-neutral-800 p-5 rounded-xl border border-neutral-700 cursor-pointer shadow-md hover:scale-[1.02] transition-transform duration-200"
-                    onClick={() =>
-                      setModalState({ type: "details", medication: med })
-                    }>
-                    <div className="flex justify-between items-start gap-2">
-                      <h3
-                        className="text-lg font-semibold max-w-[60%] truncate"
-                        title={med.medicationName}>
-                        {med.medicationName}
-                      </h3>
-                      <StatusBadge status={med.status} />
-                    </div>
-                    <p className="text-neutral-400 mt-2 line-clamp-2">
-                      {med.description}
-                    </p>
-                    <div className="flex justify-between items-center mt-4">
-                      <time className="text-neutral-500 text-xs">
+            {/* Mobile Cards */}
+            <div className="px-4 sm:hidden space-y-4">
+              {filteredMedications.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-center py-12 flex flex-col items-center justify-center text-gray-500">
+                  <Pill className="text-6xl mb-4 select-none" />
+                  <h2 className="text-xl font-bold mb-2 text-gray-200">
+                    No Medications Found
+                  </h2>
+                  <p className="font-light max-w-md text-gray-400">
+                    No medications found matching your criteria.
+                  </p>
+                </motion.div>
+              ) : (
+                <AnimatePresence>
+                  {paginatedMedications.map((med, index) => (
+                    <motion.div
+                      key={med.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="bg-zinc-900 p-5 rounded-xl border border-zinc-800 cursor-pointer shadow-md hover:bg-zinc-800 transition-colors duration-200"
+                      onClick={() =>
+                        setModalState({ type: "details", medication: med })
+                      }>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3
+                          className="text-lg font-medium truncate max-w-[75%]"
+                          title={med.medicationName}>
+                          {med.medicationName}
+                        </h3>
+                        <StatusBadge status={med.status} />
+                      </div>
+                      <p className="text-gray-400 font-light text-sm mb-2 truncate">
+                        <span className="font-medium">Description:</span>{" "}
+                        {med.description}
+                      </p>
+                      <p className="text-gray-500 font-light text-xs">
+                        <span className="font-medium">Date:</span>{" "}
                         {med.submittedAt?.toDate?.().toLocaleDateString() ??
                           "-"}
-                      </time>
-                      <span className="text-blue-400 text-sm flex items-center gap-1">
-                        Details <ArrowRight size={14} />
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                      </p>
+                      <p className="text-lime-400 text-sm mt-2 text-right font-bold">
+                        View Details
+                      </p>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              )}
             </div>
 
-            {hasMore && (
-              <button
-                onClick={() => setModalState({ type: "viewAll" })}
-                className="mt-6 block mx-auto sm:mx-0 text-blue-400 font-semibold hover:text-blue-300 transition-colors duration-200 py-2 px-4 rounded-md border border-blue-400 hover:border-blue-300">
-                View All Medications ({medications.length})
-              </button>
+            {/* Pagination */}
+            {!(medsLoading || filteredMedications.length === 0) && (
+              <div className="flex items-center justify-between mt-6 px-4 text-gray-400 font-light">
+                <div className="text-sm">
+                  <select
+                    value={rowsPerPage}
+                    onChange={(e) => setRowsPerPage(Number(e.target.value))}
+                    className="bg-zinc-900 text-gray-100 rounded px-3 py-1 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-lime-500">
+                    {[5, 10, 15, 25, 50].map((n) => (
+                      <option key={n} value={n}>
+                        {n} per page
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    className="p-2 rounded-full hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <ChevronLeft size="16" />
+                  </button>
+                  <span className="text-sm text-gray-300 font-medium">
+                    Page {currentPage} of {totalPages || 1}
+                  </span>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    className="p-2 rounded-full hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <ChevronRight size="16" />
+                  </button>
+                </div>
+              </div>
             )}
           </>
         )}
@@ -699,10 +855,10 @@ function Medication() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             transition={{ type: "spring", stiffness: 100, damping: 15 }}
-            className="bg-neutral-800 rounded-2xl shadow-lg p-6 max-w-full sm:max-w-3xl w-full border border-neutral-700 relative overflow-auto max-h-[90vh]"
+            className="bg-zinc-900 rounded-xl shadow-2xl p-6 max-w-full sm:max-w-3xl w-full border border-zinc-800 relative max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}>
             <button
-              className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-full transition-colors duration-200"
               onClick={() => {
                 setModalState({ type: null });
                 setIsEditing(false);
@@ -710,7 +866,7 @@ function Medication() {
                 setIsImageExpanded(false);
               }}
               aria-label="Close modal">
-              <X />
+              <X size={24} />
             </button>
 
             {modalState.type === "details" && modalState.medication && (
@@ -721,19 +877,19 @@ function Medication() {
                 {isEditing ? (
                   <div className="space-y-6">
                     <label className="block">
-                      <span className="text-neutral-200 font-semibold mb-2 block">
+                      <span className="text-gray-200 font-semibold mb-2 block">
                         Medication Name <span className="text-red-400">*</span>
                       </span>
                       <input
                         type="text"
                         value={editForm.medicationName}
-                        onChange={(e) => {
+                        onChange={(e) =>
                           setEditForm({
                             ...editForm,
                             medicationName: e.target.value,
-                          });
-                        }}
-                        className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          })
+                        }
+                        className="w-full rounded-lg bg-zinc-900 text-base text-gray-100 px-4 py-2.5 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
                         placeholder="Enter medication name (e.g., Ibuprofen)"
                         disabled={isUpdating}
                         aria-invalid={!!editFormErrors.medicationName}
@@ -745,7 +901,7 @@ function Medication() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-red-400 text-sm mt-1"
+                            className="text-red-400 text-sm mt-1 font-light"
                             id="edit-medicationName-error">
                             {editFormErrors.medicationName}
                           </motion.p>
@@ -754,19 +910,19 @@ function Medication() {
                     </label>
 
                     <label className="block">
-                      <span className="text-neutral-200 font-semibold mb-2 block">
+                      <span className="text-gray-200 font-semibold mb-2 block">
                         Description <span className="text-red-400">*</span>
                       </span>
                       <textarea
                         value={editForm.description}
-                        onChange={(e) => {
+                        onChange={(e) =>
                           setEditForm({
                             ...editForm,
                             description: e.target.value,
-                          });
-                        }}
+                          })
+                        }
                         rows={4}
-                        className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="w-full rounded-lg bg-zinc-900 text-base text-gray-100 px-4 py-2.5 border border-zinc-700 resize-none focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
                         placeholder="Describe the medication (e.g., dosage, purpose, side effects)"
                         disabled={isUpdating}
                         aria-invalid={!!editFormErrors.description}
@@ -778,7 +934,7 @@ function Medication() {
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="text-red-400 text-sm mt-1"
+                            className="text-red-400 text-sm mt-1 font-light"
                             id="edit-description-error">
                             {editFormErrors.description}
                           </motion.p>
@@ -787,10 +943,10 @@ function Medication() {
                     </label>
 
                     <label className="block">
-                      <span className="text-neutral-200 font-semibold mb-2 block">
+                      <span className="text-gray-200 font-semibold mb-2 block">
                         Medication Image
                       </span>
-                      <div className="relative w-full rounded-xl border-2 border-dashed border-neutral-700 bg-neutral-800/30 p-6 transition-all duration-200 opacity-60 cursor-not-allowed">
+                      <div className="relative w-full rounded-lg border-2 border-dashed border-zinc-700 bg-zinc-900 p-6 transition-all duration-200 opacity-60 cursor-not-allowed">
                         <input
                           type="file"
                           accept="image/jpeg,image/png"
@@ -798,8 +954,8 @@ function Medication() {
                           disabled={true}
                         />
                         <div className="flex flex-col items-center justify-center text-center">
-                          <Upload className="h-8 w-8 mb-2 text-neutral-500" />
-                          <p className="text-neutral-300">
+                          <Upload className="h-8 w-8 mb-2 text-gray-500" />
+                          <p className="text-gray-300 font-light">
                             Images cannot be changed. To update the image,
                             delete this medication and submit a new one.
                           </p>
@@ -814,10 +970,10 @@ function Medication() {
                             onClick={() => setIsImageExpanded(true)}
                           />
                           <div className="flex-1">
-                            <p className="text-neutral-300 truncate">
+                            <p className="text-gray-300 truncate font-light">
                               {modalState.medication.file.name}
                             </p>
-                            <p className="text-neutral-400 text-sm">
+                            <p className="text-gray-400 text-sm font-light">
                               {(
                                 modalState.medication.file.size /
                                 1024 /
@@ -831,7 +987,7 @@ function Medication() {
                     </label>
 
                     <label className="block">
-                      <span className="text-neutral-200 font-semibold mb-2 block">
+                      <span className="text-gray-200 font-semibold mb-2 block">
                         Comment (optional)
                       </span>
                       <textarea
@@ -843,7 +999,7 @@ function Medication() {
                           })
                         }
                         rows={2}
-                        className="w-full rounded-xl bg-neutral-800/50 text-white px-4 py-3 border border-neutral-600 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="w-full rounded-lg bg-zinc-900 text-base text-gray-100 px-4 py-2.5 border border-zinc-700 resize-none focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
                         placeholder="Add any additional notes or context"
                         disabled={isUpdating}
                       />
@@ -855,7 +1011,7 @@ function Medication() {
                           setIsEditing(false);
                           setEditFormErrors({});
                         }}
-                        className="px-4 py-2 rounded-xl bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-700 transition-colors duration-200"
+                        className="px-4 py-2 rounded-lg bg-zinc-800 text-gray-400 border border-zinc-700 hover:bg-zinc-700 transition-colors duration-200 font-light"
                         disabled={isUpdating}>
                         Cancel
                       </button>
@@ -864,30 +1020,22 @@ function Medication() {
                         disabled={
                           isUpdating || Object.keys(editFormErrors).length > 0
                         }
-                        className={`px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 text-white transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+                        className={`px-4 py-2 rounded-lg bg-gradient-to-r from-green-500 to-lime-500 text-white transition-all duration-200 hover:shadow-lg ${
                           isUpdating || Object.keys(editFormErrors).length > 0
                             ? "opacity-60 cursor-not-allowed"
                             : "hover:from-green-600 hover:to-lime-600"
                         }`}>
                         {isUpdating ? (
                           <div className="flex items-center justify-center gap-2">
-                            <svg
-                              className="animate-spin h-5 w-5 text-white"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24">
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"></circle>
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: "linear",
+                              }}
+                              className="w-5 h-5 border-2 border-gray-100 border-t-lime-500 rounded-full"
+                            />
                             Updating...
                           </div>
                         ) : (
@@ -897,22 +1045,20 @@ function Medication() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4 text-neutral-200 text-sm sm:text-base">
+                  <div className="space-y-4 text-gray-200 text-sm sm:text-base font-light">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <p className="font-semibold text-neutral-300">
+                        <p className="font-semibold text-gray-300">
                           Medication Name:
                         </p>
                         <p>{modalState.medication.medicationName}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-neutral-300">
-                          Status:
-                        </p>
+                        <p className="font-semibold text-gray-300">Status:</p>
                         <StatusBadge status={modalState.medication.status} />
                       </div>
                       <div>
-                        <p className="font-semibold text-neutral-300">
+                        <p className="font-semibold text-gray-300">
                           Submitted At:
                         </p>
                         <p>
@@ -924,7 +1070,7 @@ function Medication() {
                     </div>
 
                     <div>
-                      <p className="font-semibold text-neutral-300">
+                      <p className="font-semibold text-gray-300">
                         Description:
                       </p>
                       <p className="whitespace-pre-line">
@@ -934,9 +1080,7 @@ function Medication() {
 
                     {modalState.medication.comment && (
                       <div>
-                        <p className="font-semibold text-neutral-300">
-                          Comment:
-                        </p>
+                        <p className="font-semibold text-gray-300">Comment:</p>
                         <p className="whitespace-pre-line">
                           {modalState.medication.comment}
                         </p>
@@ -944,7 +1088,7 @@ function Medication() {
                     )}
 
                     <div>
-                      <p className="font-semibold text-neutral-300">
+                      <p className="font-semibold text-gray-300">
                         Uploaded Image:
                       </p>
                       {modalState.medication.file ? (
@@ -955,7 +1099,7 @@ function Medication() {
                             className="w-32 h-32 object-cover rounded-lg shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer"
                             onClick={() => setIsImageExpanded(true)}
                           />
-                          <span className="text-neutral-500 text-xs ml-2">
+                          <span className="text-gray-500 text-xs ml-2 font-light">
                             Uploaded:{" "}
                             {new Date(
                               modalState.medication.file.uploadedAt
@@ -969,7 +1113,7 @@ function Medication() {
 
                     {modalState.medication.status === "rejected" &&
                       modalState.medication.rejectionReason && (
-                        <div className="bg-red-900/20 p-4 rounded-xl">
+                        <div className="bg-red-900/20 p-4 rounded-lg">
                           <p className="font-semibold text-red-300">
                             Rejection Reason:
                           </p>
@@ -989,7 +1133,7 @@ function Medication() {
                                 modalState.medication &&
                                 handleEditClick(modalState.medication)
                               }
-                              className="flex items-center gap-2 bg-lime-500/10 text-lime-400 border-lime-500/20 py-2 px-4 rounded-xl transition-colors duration-200 hover:bg-lime-500/20">
+                              className="flex items-center gap-2 bg-lime-900/20 text-lime-400 border border-lime-900/50 py-2 px-4 rounded-lg transition-colors duration-200 hover:bg-lime-900/30 font-light">
                               <Edit size={18} /> Edit
                             </button>
                           )}
@@ -1000,28 +1144,20 @@ function Medication() {
                               }
                             }}
                             disabled={isDeleting}
-                            className={`flex items-center gap-2 bg-rose-500/10 text-rose-400 border-rose-500/20 py-2 px-4 rounded-xl transition-colors duration-200 hover:bg-rose-500/20 ${
+                            className={`flex items-center gap-2 bg-red-900/20 text-red-400 border border-red-900/50 py-2 px-4 rounded-lg transition-colors duration-200 hover:bg-red-900/30 font-light ${
                               isDeleting ? "opacity-60 cursor-not-allowed" : ""
                             }`}>
                             {isDeleting ? (
                               <>
-                                <svg
-                                  className="animate-spin h-5 w-5 text-rose-200"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24">
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"></circle>
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
+                                <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{
+                                    duration: 1,
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                  }}
+                                  className="w-5 h-5 border-2 border-gray-100 border-t-red-500 rounded-full"
+                                />
                                 Deleting...
                               </>
                             ) : (
@@ -1043,34 +1179,38 @@ function Medication() {
                 <h3 className="text-xl sm:text-2xl font-bold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
                   All Submitted Medications
                 </h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm text-neutral-300">
-                    <thead>
-                      <tr className="text-left bg-neutral-700/50 border-b border-neutral-700 font-bold">
-                        <th className="px-4 py-3 w-1/5">Name</th>
-                        <th className="px-4 py-3 w-2/5 hidden sm:table-cell">
+                <div className="overflow-x-auto rounded-lg border border-zinc-800">
+                  <table className="min-w-full text-sm text-gray-300">
+                    <thead className="bg-zinc-800">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Name</th>
+                        <th className="px-4 py-3 font-semibold hidden sm:table-cell">
                           Description
                         </th>
-                        <th className="px-4 py-3 w-1/6 hidden md:table-cell">
+                        <th className="px-4 py-3 font-semibold hidden md:table-cell">
                           Comment
                         </th>
-                        <th className="px-4 py-3 w-1/6">Status</th>
-                        <th className="px-4 py-3 w-1/5 hidden sm:table-cell">
+                        <th className="px-4 py-3 font-semibold">Status</th>
+                        <th className="px-4 py-3 font-semibold hidden sm:table-cell">
                           Submitted At
                         </th>
-                        <th className="px-4 py-3 w-1/6">Actions</th>
+                        <th className="px-4 py-3 font-semibold">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {medications.map((med) => (
-                        <tr
+                      {paginatedMedications.map((med) => (
+                        <motion.tr
                           key={med.id}
-                          className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer transition-colors duration-200"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className="border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer transition-colors duration-200"
                           onClick={() => {
                             setModalState({ type: "details", medication: med });
                           }}>
                           <td
-                            className="px-4 py-3 font-bold max-w-[150px] truncate"
+                            className="px-4 py-3 font-light max-w-[150px] truncate"
                             title={med.medicationName}>
                             {med.medicationName}
                           </td>
@@ -1091,10 +1231,10 @@ function Medication() {
                             {med.submittedAt?.toDate?.().toLocaleDateString() ??
                               "-"}
                           </td>
-                          <td className="px-4 py-3 text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                          <td className="px-4 py-3 text-lime-400 hover:text-lime-300 flex items-center gap-1 font-light">
                             View <ArrowRight size={16} />
                           </td>
-                        </tr>
+                        </motion.tr>
                       ))}
                     </tbody>
                   </table>
@@ -1125,10 +1265,10 @@ function Medication() {
               className="w-full h-auto object-contain rounded-lg shadow-xl max-w-[90vw] max-h-[90vh]"
             />
             <button
-              className="absolute top-2 right-2 text-neutral-200 hover:text-white text-2xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
+              className="absolute top-2 right-2 text-gray-200 hover:text-white p-2 rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors duration-200"
               onClick={() => setIsImageExpanded(false)}
               aria-label="Close image">
-              <X />
+              <X size={24} />
             </button>
           </motion.div>
         </motion.div>
@@ -1144,21 +1284,21 @@ function StatusBadge({ status }: { status: MedicationType["status"] }) {
     case "approved":
       return (
         <span
-          className={`${baseClasses} bg-green-900/30 text-green-400 flex items-center gap-1`}>
+          className={`${baseClasses} bg-green-900 text-green-300 flex items-center gap-1`}>
           <Check size={14} /> Approved
         </span>
       );
     case "rejected":
       return (
         <span
-          className={`${baseClasses} bg-red-900/30 text-red-400 flex items-center gap-1`}>
+          className={`${baseClasses} bg-red-900 text-red-300 flex items-center gap-1`}>
           <X size={14} /> Rejected
         </span>
       );
     case "pending":
     default:
       return (
-        <span className={`${baseClasses} bg-yellow-900/30 text-yellow-400`}>
+        <span className={`${baseClasses} bg-yellow-900 text-yellow-300`}>
           Pending Review
         </span>
       );

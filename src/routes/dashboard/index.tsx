@@ -185,7 +185,7 @@ function DashboardPage() {
   return (
     <>
       <title>DrugWise - Dashboard</title>
-      <main className="min-h-screen text-gray-100 font-sans bg-zinc-950 flex flex-col">
+      <main className="min-h-screen text-gray-100 outfit-light bg-zinc-950 flex flex-col">
         <div className="flex-grow p-0 md:p-10 overflow-auto max-w-4xl mx-auto w-full">
           {/* Header section with welcome message and logout button */}
           <header className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
@@ -207,7 +207,7 @@ function DashboardPage() {
             {/* Logout Button */}
             <motion.button
               onClick={handleSignOut}
-              className="self-end md:self-auto flex items-center gap-2.5 px-6 py-2 rounded-full text-white transition-colors
+              className="self-end md:self-auto flex items-center gap-2.5 px-6 py-2 rounded-full text-black transition-colors
                          bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700
                          font-light text-base shadow-lg hover:shadow-red-500/30"
               whileHover={{ scale: 1.05 }}
