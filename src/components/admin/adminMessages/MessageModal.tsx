@@ -35,19 +35,30 @@ function MessageModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 50, opacity: 0 }}
         transition={{ type: "spring", stiffness: 100, damping: 15 }}
-        className="bg-neutral-800 rounded-2xl shadow-lg p-6 w-full max-w-md border border-neutral-700 relative overflow-auto max-h-[85vh]"
+        className="bg-zinc-950 rounded-2xl shadow-lg p-6 w-full max-w-md border border-zinc-800 relative overflow-auto max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}>
-        <button
-          className="absolute top-2 right-2 text-neutral-400 hover:text-white text-3xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
+        <motion.button
+          className="absolute top-2 right-2 text-gray-400 hover:text-white text-3xl font-light p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 transition-colors duration-200"
           onClick={onClose}
-          aria-label="Close modal">
+          aria-label="Close modal"
+          initial={{ opacity: 0, rotate: -90 }}
+          animate={{ opacity: 1, rotate: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}>
           <X />
-        </button>
-        <h2 className="text-2xl sm:text-2xl font-bold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
+        </motion.button>
+        <motion.h2
+          className="text-2xl sm:text-2xl font-semibold mb-6 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}>
           {message.senderName === adminName ? "Edit Message" : "View Message"}
-        </h2>
-        <div className="mb-4">
-          <label className="block text-neutral-200 font-semibold mb-2">
+        </motion.h2>
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.4 }}>
+          <label className="block text-gray-100 font-semibold mb-2">
             Subject
           </label>
           {message.senderName === adminName ? (
@@ -57,16 +68,20 @@ function MessageModal({
               onChange={(e) =>
                 setMessage({ ...message, subject: e.target.value })
               }
-              className="w-full px-4 py-3 bg-neutral-800/50 text-white rounded-xl border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+              className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-xl border border-zinc-800 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
             />
           ) : (
-            <p className="w-full px-4 py-3 bg-neutral-800/50 text-white rounded-xl font-light">
+            <p className="w-full px-4 py-3 bg-zinc-900/50 text-white rounded-xl font-light">
               {message.subject}
             </p>
           )}
-        </div>
-        <div className="mb-4">
-          <label className="block text-neutral-200 font-semibold mb-2">
+        </motion.div>
+        <motion.div
+          className="mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.4 }}>
+          <label className="block text-gray-100 font-semibold mb-2">
             Message
           </label>
           {message.senderName === adminName ? (
@@ -75,32 +90,45 @@ function MessageModal({
               onChange={(e) =>
                 setMessage({ ...message, content: e.target.value })
               }
-              className="w-full h-40 px-4 py-3 bg-neutral-800/50 text-white rounded-xl resize-none border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+              className="w-full h-40 px-4 py-3 bg-zinc-900/50 text-white rounded-xl resize-none border border-zinc-800 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
             />
           ) : (
-            <p className="w-full h-40 px-4 py-3 bg-neutral-800/50 text-white rounded-xl font-light whitespace-pre-wrap">
+            <p className="w-full h-40 px-4 py-3 bg-zinc-900/50 text-white rounded-xl font-light whitespace-pre-wrap">
               {message.content}
             </p>
           )}
-        </div>
-        <div className="flex justify-end gap-3 mt-6">
+        </motion.div>
+        <motion.div
+          className="flex justify-end gap-3 mt-6"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.1 } },
+          }}>
           <motion.button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-neutral-500/10 text-neutral-400 border-neutral-500/20 hover:bg-neutral-700 transition-colors duration-200"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}>
+            className="px-4 py-2 rounded-xl bg-zinc-800/10 text-gray-400 border border-zinc-800/20 hover:bg-zinc-800 transition-colors duration-200 font-light"
+            variants={{
+              hidden: { opacity: 0, scale: 0.95 },
+              visible: { opacity: 1, scale: 1 },
+            }}
+            transition={{ delay: 0.6, duration: 0.4 }}>
             Close
           </motion.button>
           {message.senderName === adminName && (
             <>
               <motion.button
                 type="button"
-                className="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 transition-colors duration-200 flex items-center gap-2"
+                className="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors duration-200 flex items-center gap-2 font-light"
                 onClick={() => deleteMutation.mutate(message.id)}
                 disabled={deleteMutation.isPending}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}>
+                variants={{
+                  hidden: { opacity: 0, scale: 0.95 },
+                  visible: { opacity: 1, scale: 1 },
+                }}
+                transition={{ delay: 0.7, duration: 0.4 }}>
                 {deleteMutation.isPending ? (
                   <>
                     <svg
@@ -131,15 +159,18 @@ function MessageModal({
               </motion.button>
               <motion.button
                 type="button"
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white flex items-center gap-2 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-gray-900 flex items-center gap-2 transition-all duration-200 hover:shadow-lg hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed font-light"
                 onClick={() => updateMutation.mutate(message)}
                 disabled={updateMutation.isPending}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}>
+                variants={{
+                  hidden: { opacity: 0, scale: 0.95 },
+                  visible: { opacity: 1, scale: 1 },
+                }}
+                transition={{ delay: 0.8, duration: 0.4 }}>
                 {updateMutation.isPending ? (
                   <>
                     <svg
-                      className="animate-spin h-5 w-5 text-white"
+                      className="animate-spin h-5 w-5 text-gray-900"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24">
@@ -166,7 +197,7 @@ function MessageModal({
               </motion.button>
             </>
           )}
-        </div>
+        </motion.div>
       </motion.div>
     </motion.div>
   );

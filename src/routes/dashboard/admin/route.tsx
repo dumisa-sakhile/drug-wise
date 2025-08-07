@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth, db } from "@/config/firebase";
+import { ArrowLeft } from "lucide-react";
 import type { User } from "firebase/auth";
 
 export const Route = createFileRoute("/dashboard/admin")({
@@ -77,11 +78,14 @@ function AdminLayout() {
     [location.pathname]
   );
 
+  const handleBack = () => {
+    window.history.back();
+  };
+
   if (isLoading || !userData) {
     return (
-      <div className="flex items-center justify-center min-h-screen  text-white">
+      <div className="flex items-center justify-center min-h-screen text-white">
         <div className="flex flex-col items-center">
-          {/* Green loader with a more defined style */}
           <div className="relative">
             <motion.div
               className="w-16 h-16 border-4 border-green-500 rounded-full"
@@ -100,7 +104,6 @@ function AdminLayout() {
               transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
             />
           </div>
-
           <motion.p
             className="mt-6 text-lg font-medium text-gray-400"
             initial={{ opacity: 0 }}
@@ -147,7 +150,21 @@ function AdminLayout() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen  text-white p-6 md:p-10 roboto-regular">
+      {!isSmallScreen && (
+        <motion.button
+          onClick={handleBack}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="md:hidden fixed top-4 left-4 z-30 flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-gray-300 transition-all duration-200 shadow-md font-light">
+          <ArrowLeft className="w-4 h-4 text-lime-400" />
+          Back
+        </motion.button>
+      )}
+
+      <div className="min-h-screen text-white p-6 md:p-10 pt-16 md:pt-10 roboto-regular">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <header className="mb-10 text-center md:text-left">
@@ -162,20 +179,18 @@ function AdminLayout() {
                 <Link
                   key={to}
                   to={to}
-                  className={`flex-1 text-center text-sm font-medium px-4 py-2 rounded-lg transition-all
-                    ${
-                      isActive(to)
-                        ? "bg-white/10 text-white shadow-inner backdrop-blur-md border border-white/20"
-                        : "text-gray-400 hover:text-white hover:bg-white/5"
-                    }
-                  `}>
+                  className={`flex-1 text-center text-sm font-medium px-4 py-2 rounded-lg transition-all ${
+                    isActive(to)
+                      ? "bg-white/10 text-white shadow-inner backdrop-blur-md border border-white/20"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                  }`}>
                   {label}
                 </Link>
               ))}
             </div>
           </nav>
           {/* Content */}
-          <main className=" min-h-[400px]">
+          <main className="min-h-[400px]">
             <Outlet />
           </main>
         </div>

@@ -21,6 +21,8 @@ import {
 } from "firebase/firestore";
 import { del } from "@vercel/blob";
 import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 import SearchFilterBar from "@/components/admin/adminMedication/SearchFilterBar";
 import MedicationTable from "@/components/admin/adminMedication/MedicationTable";
 import PaginationControls from "@/components/admin/adminMedication/PaginationControls";
@@ -359,105 +361,134 @@ function AdminMedication() {
     });
   };
 
+  const handleBack = () => {
+    window.history.back();
+  };
+
   return (
-    <div className="font-light max-w-full mx-auto px-4 py-8 min-h-screen text-white">
-      <title>DrugWise - Admin Medication Reviews</title>
-      <h1 className="text-3xl font-bold mb-8 text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent">
-        Medication Reviews
-      </h1>
-      <p className="text-neutral-500 mb-8 font-light">
-        Review and manage user-submitted medications.
-      </p>
+    <>
+      <motion.button
+        onClick={handleBack}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="md:hidden fixed top-4 left-4 z-30 flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-gray-300 transition-all duration-200 shadow-md font-light">
+        <ArrowLeft className="w-4 h-4 text-lime-400" />
+        Back
+      </motion.button>
+      <motion.div
+        className="font-light max-w-full mx-auto md:px-4 py-8 pt-16 md:pt-8 min-h-screen text-white bg-zinc-950"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}>
+        <title>DrugWise - Admin Medication Reviews</title>
+        <motion.h1
+          className="text-3xl font-semibold mb-8 text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}>
+          Medication Reviews
+        </motion.h1>
+        <motion.p
+          className="text-gray-400 mb-8 font-light"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.4 }}>
+          Review and manage user-submitted medications.
+        </motion.p>
 
-      {isMedsLoading || isUsersLoading ? (
-        <AdminMedicationSkeleton />
-      ) : (
-        <>
-          <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-            <section className="max-w-full mx-auto">
-              <SearchFilterBar
-                search={search}
-                setSearch={(value) => {
-                  setSearch(value);
-                  setStatus("all");
-                }}
-                status={status}
-                setStatus={setStatus}
-                totalMedications={filteredMedications.length}
+        {isMedsLoading || isUsersLoading ? (
+          <AdminMedicationSkeleton />
+        ) : (
+          <>
+            <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900 shadow-inner">
+              <section className="max-w-full mx-auto">
+                <SearchFilterBar
+                  search={search}
+                  setSearch={(value) => {
+                    setSearch(value);
+                    setStatus("all");
+                  }}
+                  status={status}
+                  setStatus={setStatus}
+                  totalMedications={filteredMedications.length}
+                />
+                <MedicationTable
+                  medications={paginatedMedications}
+                  users={users}
+                  onRowClick={(medication) =>
+                    setModalState({ type: "details", medication })
+                  }
+                />
+              </section>
+            </div>
+
+            {filteredMedications.length > 0 && (
+              <PaginationControls
+                rowsPerPage={rowsPerPage}
+                setRowsPerPage={setRowsPerPage}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
               />
-              <MedicationTable
-                medications={paginatedMedications}
-                users={users}
-                onRowClick={(medication) =>
-                  setModalState({ type: "details", medication })
-                }
-              />
-            </section>
-          </div>
+            )}
+          </>
+        )}
 
-          {filteredMedications.length > 0 && (
-            <PaginationControls
-              rowsPerPage={rowsPerPage}
-              setRowsPerPage={setRowsPerPage}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              totalPages={totalPages}
-            />
-          )}
-        </>
-      )}
+        {modalState.type === "details" && modalState.medication && (
+          <MedicationDetailsModal
+            medication={modalState.medication}
+            users={users}
+            isReverting={isReverting}
+            isDeleting={isDeleting}
+            onClose={() => {
+              setModalState({ type: null });
+              setIsImageExpanded(false);
+            }}
+            onApprove={() =>
+              setModalState({
+                type: "adminAction",
+                medication: modalState.medication,
+                adminStatus: "approved",
+              })
+            }
+            onReject={() =>
+              setModalState({
+                type: "adminAction",
+                medication: modalState.medication,
+                adminStatus: "rejected",
+              })
+            }
+            onRevert={() => revertMedication(modalState.medication!.id)}
+            onDelete={() => deleteMedication(modalState.medication!.id)}
+            onImageClick={() => setIsImageExpanded(true)}
+          />
+        )}
 
-      {modalState.type === "details" && modalState.medication && (
-        <MedicationDetailsModal
-          medication={modalState.medication}
-          users={users}
-          isReverting={isReverting}
-          isDeleting={isDeleting}
-          onClose={() => {
-            setModalState({ type: null });
-            setIsImageExpanded(false);
-          }}
-          onApprove={() =>
-            setModalState({
-              type: "adminAction",
-              medication: modalState.medication,
-              adminStatus: "approved",
-            })
-          }
-          onReject={() =>
-            setModalState({
-              type: "adminAction",
-              medication: modalState.medication,
-              adminStatus: "rejected",
-            })
-          }
-          onRevert={() => revertMedication(modalState.medication!.id)}
-          onDelete={() => deleteMedication(modalState.medication!.id)}
-          onImageClick={() => setIsImageExpanded(true)}
-        />
-      )}
+        {modalState.type === "adminAction" && modalState.medication && (
+          <AdminActionModal
+            adminStatus={modalState.adminStatus!}
+            isUpdating={isUpdating}
+            rejectionReason={modalState.rejectionReason}
+            onConfirm={handleAdminAction}
+            onCancel={() => setModalState({ type: null })}
+            onRejectionReasonChange={(reason) =>
+              setModalState({ ...modalState, rejectionReason: reason })
+            }
+          />
+        )}
 
-      {modalState.type === "adminAction" && modalState.medication && (
-        <AdminActionModal
-          adminStatus={modalState.adminStatus!}
-          isUpdating={isUpdating}
-          rejectionReason={modalState.rejectionReason}
-          onConfirm={handleAdminAction}
-          onCancel={() => setModalState({ type: null })}
-          onRejectionReasonChange={(reason) =>
-            setModalState({ ...modalState, rejectionReason: reason })
-          }
-        />
-      )}
-
-      {isImageExpanded && modalState.medication?.file && (
-        <ImagePreviewModal
-          imageUrl={modalState.medication.file.url}
-          imageName={modalState.medication.file.name}
-          onClose={() => setIsImageExpanded(false)}
-        />
-      )}
-    </div>
+        {isImageExpanded && modalState.medication?.file && (
+          <ImagePreviewModal
+            imageUrl={modalState.medication.file.url}
+            imageName={modalState.medication.file.name}
+            onClose={() => setIsImageExpanded(false)}
+          />
+        )}
+      </motion.div>
+    </>
   );
 }
 

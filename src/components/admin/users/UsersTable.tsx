@@ -40,31 +40,31 @@ function UsersTable({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-        <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
-          <thead className="bg-neutral-700/50">
+      <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900 shadow-inner">
+        <table className="min-w-full text-sm text-left text-gray-300 divide-y divide-zinc-800">
+          <thead className="bg-zinc-900/50">
             <tr>
               <th colSpan={8} className="px-6 py-4 font-semibold">
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
                   <div className="relative w-full sm:w-3/4">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                     <input
                       type="text"
                       placeholder="Search by UID, Name, or Surname..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light"
+                      className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 text-base text-white rounded-lg shadow-sm border border-zinc-800 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
                     />
                   </div>
                   <select
                     value={filterGender}
                     onChange={(e) => setFilterGender(e.target.value)}
-                    className="w-full sm:w-1/4 px-3 py-2.5 bg-neutral-900 text-base text-white rounded-lg shadow-sm border border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-light">
+                    className="w-full sm:w-1/4 px-3 py-2.5 bg-zinc-900 text-base text-white rounded-lg shadow-sm border border-zinc-800 focus:outline-none focus:ring-2 focus:ring-lime-500 font-light">
                     <option value="">All Genders</option>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
-                  <span className="text-neutral-300 font-semibold">
+                  <span className="text-gray-300 font-semibold">
                     {totalUsers} total
                   </span>
                 </div>
@@ -88,10 +88,10 @@ function UsersTable({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
-                  className="border-b border-neutral-700">
+                  className="border-b border-zinc-800">
                   <td
                     colSpan={8}
-                    className="px-6 py-8 text-center text-neutral-500 font-light">
+                    className="px-6 py-8 text-center text-gray-400 font-light">
                     Loading users...
                   </td>
                 </motion.tr>
@@ -100,10 +100,10 @@ function UsersTable({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
-                  className="border-b border-neutral-700">
+                  className="border-b border-zinc-800">
                   <td
                     colSpan={8}
-                    className="px-6 py-8 text-center text-neutral-500 font-light">
+                    className="px-6 py-8 text-center text-gray-400 font-light">
                     No users found matching the search criteria.
                   </td>
                 </motion.tr>
@@ -114,8 +114,8 @@ function UsersTable({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.25 }}
-                    className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer"
+                    transition={{ duration: 0.25, delay: index * 0.05 }}
+                    className="border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer"
                     onClick={() => onViewUser(u)}>
                     <td className="px-6 py-4 font-semibold">
                       {(currentPage - 1) * rowsPerPage + index + 1}
@@ -125,12 +125,16 @@ function UsersTable({
                     </td>
                     <td className="px-6 py-4 font-semibold">{u.name}</td>
                     <td className="px-6 py-4 font-semibold">{u.surname}</td>
-                    <td className="px-6 py-4 text-neutral-500">{u.email}</td>
+                    <td className="px-6 py-4 text-gray-400">{u.email}</td>
                     <td className="px-6 py-4 font-semibold">
                       {u.gender || "-"}
                     </td>
-                    <td className="px-6 py-4">{formatDate(u.dob)}</td>
-                    <td className="px-6 py-4">{formatDate(u.joinedAt)}</td>
+                    <td className="px-6 py-4 font-light">
+                      {formatDate(u.dob)}
+                    </td>
+                    <td className="px-6 py-4 font-light">
+                      {formatDate(u.joinedAt)}
+                    </td>
                   </motion.tr>
                 ))
               )}

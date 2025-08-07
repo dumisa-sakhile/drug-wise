@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
+import { ArrowLeft } from "lucide-react";
 import UsersTable from "@/components/admin/users/UsersTable";
 import UserModal from "@/components/admin/users/UserModal";
 import AdminUsersSkeleton from "@/components/admin/users/AdminUsersSkeleton";
@@ -213,60 +214,77 @@ function Admin() {
     setIsModalOpen(true);
   };
 
+  const handleBack = () => {
+    window.history.back();
+  };
+
   if (isUsersLoading || isUserDataLoading || !userData?.isAdmin) {
     return <AdminUsersSkeleton />;
   }
 
   return (
-    <motion.div
-      className="max-w-full mx-auto md:px-4 py-8 min-h-screen text-white "
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}>
-      <title>DrugWise - Admin User Management</title>
-      <motion.h1
-        className="text-2xl max-sm:text-xl font-semibold mb-2 text-center sm:text-left text-gray-100"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}>
-        User Management
-      </motion.h1>
-      <motion.p
-        className="text-sm text-gray-400 mb-8"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.4 }}>
-        Manage users, edit their details, and view their information.
-      </motion.p>
-      <UsersTable
-        users={paginatedUsers}
-        totalUsers={filteredUsers.length}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        filterGender={filterGender}
-        setFilterGender={setFilterGender}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        totalPages={totalPages}
-        isLoading={isUsersLoading}
-        onViewUser={handleViewUser}
-      />
-      <UserModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditedUser({});
-          setValidationErrors({});
-        }}
-        selectedUser={selectedUser}
-        editedUser={editedUser}
-        setEditedUser={setEditedUser}
-        validationErrors={validationErrors}
-        updateMutation={updateUserMutation}
-      />
-    </motion.div>
+    <>
+      <motion.button
+        onClick={handleBack}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="md:hidden fixed top-4 left-4 z-30 flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-gray-300 transition-all duration-200 shadow-md font-light">
+        <ArrowLeft className="w-4 h-4 text-lime-400" />
+        Back
+      </motion.button>
+      <motion.div
+        className="max-w-full mx-auto md:px-4 py-8 pt-16 md:pt-8 min-h-screen text-white bg-zinc-950"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}>
+        <title>DrugWise - Admin User Management</title>
+        <motion.h1
+          className="text-2xl max-sm:text-xl font-semibold mb-2 text-center sm:text-left bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}>
+          User Management
+        </motion.h1>
+        <motion.p
+          className="text-sm text-gray-400 mb-8 font-light"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.4 }}>
+          Manage users, edit their details, and view their information.
+        </motion.p>
+        <UsersTable
+          users={paginatedUsers}
+          totalUsers={filteredUsers.length}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterGender={filterGender}
+          setFilterGender={setFilterGender}
+          rowsPerPage={rowsPerPage}
+          setRowsPerPage={setRowsPerPage}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          totalPages={totalPages}
+          isLoading={isUsersLoading}
+          onViewUser={handleViewUser}
+        />
+        <UserModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditedUser({});
+            setValidationErrors({});
+          }}
+          selectedUser={selectedUser}
+          editedUser={editedUser}
+          setEditedUser={setEditedUser}
+          validationErrors={validationErrors}
+          updateMutation={updateUserMutation}
+        />
+      </motion.div>
+    </>
   );
 }
 

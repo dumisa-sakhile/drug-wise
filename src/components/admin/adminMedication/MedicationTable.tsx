@@ -38,21 +38,21 @@ function StatusBadge({ status }: { status: MedicationType["status"] }) {
     case "approved":
       return (
         <span
-          className={`${baseClasses} bg-green-900/30 text-green-400 flex items-center gap-1`}>
+          className={`${baseClasses} bg-green-500/20 text-green-400 flex items-center gap-1`}>
           <Check size={14} /> Approved
         </span>
       );
     case "rejected":
       return (
         <span
-          className={`${baseClasses} bg-red-900/30 text-red-400 flex items-center gap-1`}>
+          className={`${baseClasses} bg-rose-500/20 text-rose-400 flex items-center gap-1`}>
           <AlertCircle size={14} /> Rejected
         </span>
       );
     case "pending":
     default:
       return (
-        <span className={`${baseClasses} bg-yellow-900/30 text-yellow-400`}>
+        <span className={`${baseClasses} bg-yellow-500/20 text-yellow-400`}>
           Pending Review
         </span>
       );
@@ -65,8 +65,8 @@ function MedicationTable({
   onRowClick,
 }: MedicationTableProps) {
   return (
-    <table className="min-w-full text-sm text-left text-neutral-300 divide-y divide-neutral-700">
-      <thead className="bg-neutral-700/50">
+    <table className="min-w-full text-sm text-left text-gray-300 divide-y divide-zinc-800">
+      <thead className="bg-zinc-900/50">
         <tr>
           <th className="px-6 py-3 font-semibold">Medication</th>
           <th className="px-6 py-3 font-semibold">Description</th>
@@ -81,23 +81,23 @@ function MedicationTable({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="border-b border-neutral-700">
+            className="border-b border-zinc-800">
             <td
               colSpan={5}
-              className="px-6 py-8 text-center text-neutral-500 font-light">
+              className="px-6 py-8 text-center text-gray-400 font-light">
               No medications found matching the search criteria.
             </td>
           </motion.tr>
         ) : (
           <AnimatePresence>
-            {medications.map((m) => (
+            {medications.map((m, index) => (
               <motion.tr
                 key={m.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer"
+                transition={{ duration: 0.25, delay: index * 0.05 }}
+                className="border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer"
                 onClick={() => onRowClick(m)}>
                 <td
                   className="px-6 py-4 font-semibold max-w-[150px] truncate"
@@ -105,11 +105,11 @@ function MedicationTable({
                   {m.medicationName}
                 </td>
                 <td
-                  className="px-6 py-4 max-w-[250px] truncate"
+                  className="px-6 py-4 max-w-[250px] truncate font-light"
                   title={m.description}>
                   {m.description}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 font-light">
                   {users[m.userId]?.name +
                     " " +
                     (users[m.userId]?.surname || "") || m.userId}
@@ -117,7 +117,7 @@ function MedicationTable({
                 <td className="px-6 py-4">
                   <StatusBadge status={m.status} />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap font-light">
                   {m.submittedAt?.toDate?.().toLocaleString() ?? "-"}
                 </td>
               </motion.tr>

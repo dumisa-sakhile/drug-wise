@@ -31,9 +31,9 @@ function MessagesTable({
 }: MessagesTableProps) {
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-xl border border-neutral-700 bg-neutral-800 shadow-inner">
-        <table className="min-w-full text-left text-neutral-300 text-sm">
-          <thead className="bg-neutral-700/50">
+      <div className="overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900 shadow-inner">
+        <table className="min-w-full text-left text-gray-300 text-sm divide-y divide-zinc-800">
+          <thead className="bg-zinc-900/50">
             <tr>
               <th className="px-6 py-4 font-semibold">To</th>
               <th className="px-6 py-4 font-semibold">Subject</th>
@@ -45,23 +45,29 @@ function MessagesTable({
           <tbody>
             <AnimatePresence>
               {isLoading ? (
-                <tr>
+                <motion.tr
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}>
                   <td
                     colSpan={5}
-                    className="px-6 py-8 text-center text-neutral-500 font-light">
+                    className="px-6 py-8 text-center text-gray-400 font-light">
                     Loading messages...
                   </td>
-                </tr>
+                </motion.tr>
               ) : error ? (
-                <tr>
+                <motion.tr
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}>
                   <td
                     colSpan={5}
-                    className="px-6 py-8 text-center text-red-400 font-light">
+                    className="px-6 py-8 text-center text-red-300 font-light">
                     Error: {error.message || "Failed to load messages"}
                   </td>
-                </tr>
+                </motion.tr>
               ) : messages.length > 0 ? (
-                messages.map((msg) => {
+                messages.map((msg, index) => {
                   const recipient = users.find(
                     (u) => u.uid === msg.recipientId
                   );
@@ -72,8 +78,8 @@ function MessagesTable({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.25 }}
-                      className="border-b border-neutral-700 hover:bg-neutral-700 cursor-pointer transition-colors duration-200"
+                      transition={{ duration: 0.25, delay: index * 0.05 }}
+                      className="border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer transition-colors duration-200"
                       onClick={() => onViewMessage(msg)}>
                       <td className="px-6 py-4 font-semibold">
                         {recipient
@@ -81,34 +87,37 @@ function MessagesTable({
                           : msg.recipientId}
                       </td>
                       <td className="px-6 py-4 font-semibold">{msg.subject}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap font-light">
                         {msg.sentAt?.toDate()?.toLocaleString() || "-"}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 font-light">
                         {msg.isRead ? (
-                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-900/30 text-green-400">
+                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">
                             Read
                           </span>
                         ) : (
-                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-900/30 text-yellow-400">
+                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400">
                             Unread
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 font-light">
                         {isAdminMessage ? "Admin" : "System"}
                       </td>
                     </motion.tr>
                   );
                 })
               ) : (
-                <tr>
+                <motion.tr
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}>
                   <td
                     colSpan={5}
-                    className="px-6 py-8 text-center text-neutral-500 font-light">
+                    className="px-6 py-8 text-center text-gray-400 font-light">
                     No sent messages found
                   </td>
-                </tr>
+                </motion.tr>
               )}
             </AnimatePresence>
           </tbody>

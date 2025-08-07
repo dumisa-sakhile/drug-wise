@@ -1,7 +1,7 @@
+import { Timestamp } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
 import { Copy } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { Timestamp } from "firebase/firestore";
 import type { UserData } from "./types";
 import type { UseMutationResult } from "@tanstack/react-query";
 
@@ -72,7 +72,7 @@ function UserModal({
       transition={{ duration: 0.3 }}
       onClick={onClose}>
       <motion.div
-        className="relative w-full max-w-md bg-[#1C1C1E] text-white rounded-2xl shadow-xl p-6 md:p-8 animate-slide-up"
+        className="relative w-full max-w-md bg-zinc-950 text-white rounded-2xl shadow-xl p-6 md:p-8"
         initial={{ y: 50, opacity: 0 }}
         animate={{
           y: 0,
@@ -84,7 +84,7 @@ function UserModal({
         onClick={(e) => e.stopPropagation()}>
         <motion.button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/30 rounded-full"
+          className="absolute top-4 right-4 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-lime-500 rounded-full"
           initial={{ opacity: 0, rotate: -90 }}
           animate={{ opacity: 1, rotate: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
@@ -109,14 +109,14 @@ function UserModal({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.4 }}>
           <motion.h2
-            className="text-2xl max-sm:text-xl font-semibold mb-2"
+            className="text-2xl max-sm:text-xl font-semibold mb-2 bg-gradient-to-r from-green-400 to-lime-400 bg-clip-text text-transparent"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.4 }}>
             Edit User Details
           </motion.h2>
           <motion.p
-            className="text-sm text-gray-400 mb-6"
+            className="text-sm text-gray-400 mb-6 font-light"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.4 }}>
@@ -126,7 +126,7 @@ function UserModal({
 
         {Object.keys(validationErrors).length > 0 && (
           <motion.div
-            className="text-red-300 text-sm font-medium mb-5 p-3 rounded-md bg-[rgba(255,75,75,0.15)] backdrop-blur-sm border border-[rgba(255,75,75,0.25)] text-center"
+            className="text-red-300 text-sm font-medium mb-5 p-3 rounded-md bg-red-500/15 border border-red-500/25 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}>
@@ -156,7 +156,7 @@ function UserModal({
               transition={{ delay: 0.7, duration: 0.4 }}>
               <label
                 htmlFor="name"
-                className="text-sm text-gray-300 block mb-1">
+                className="text-sm text-gray-300 block mb-1 font-light">
                 Name
               </label>
               <input
@@ -167,7 +167,7 @@ function UserModal({
                   setEditedUser({ ...editedUser, name: e.target.value })
                 }
                 placeholder="Enter name"
-                className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="w-full rounded-lg bg-zinc-900 text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
                 required
                 aria-invalid={!!validationErrors.name}
                 aria-describedby="name-error"
@@ -179,7 +179,7 @@ function UserModal({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="text-red-300 text-sm mt-1"
+                    className="text-red-300 text-sm mt-1 font-light"
                     id="name-error">
                     {validationErrors.name}
                   </motion.div>
@@ -194,7 +194,7 @@ function UserModal({
               transition={{ delay: 0.8, duration: 0.4 }}>
               <label
                 htmlFor="surname"
-                className="text-sm text-gray-300 block mb-1">
+                className="text-sm text-gray-300 block mb-1 font-light">
                 Surname
               </label>
               <input
@@ -205,7 +205,7 @@ function UserModal({
                   setEditedUser({ ...editedUser, surname: e.target.value })
                 }
                 placeholder="Enter surname"
-                className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+                className="w-full rounded-lg bg-zinc-900 text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
                 required
                 aria-invalid={!!validationErrors.surname}
                 aria-describedby="surname-error"
@@ -217,7 +217,7 @@ function UserModal({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="text-red-300 text-sm mt-1"
+                    className="text-red-300 text-sm mt-1 font-light"
                     id="surname-error">
                     {validationErrors.surname}
                   </motion.div>
@@ -230,7 +230,9 @@ function UserModal({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.4 }}>
-            <label htmlFor="email" className="text-sm text-gray-300 block mb-1">
+            <label
+              htmlFor="email"
+              className="text-sm text-gray-300 block mb-1 font-light">
               Email
             </label>
             <div className="relative">
@@ -239,12 +241,12 @@ function UserModal({
                 type="email"
                 value={selectedUser.email}
                 readOnly
-                className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none"
+                className="w-full rounded-lg bg-zinc-900 text-white px-4 py-3 placeholder-gray-500 text-sm focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => handleCopyEmail(selectedUser.email)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-lime-400 transition-colors duration-200"
                 aria-label="Copy email">
                 <Copy size={18} />
               </button>
@@ -257,7 +259,7 @@ function UserModal({
             transition={{ delay: 1.0, duration: 0.4 }}>
             <label
               htmlFor="gender"
-              className="text-sm text-gray-300 block mb-1">
+              className="text-sm text-gray-300 block mb-1 font-light">
               Gender
             </label>
             <select
@@ -266,7 +268,7 @@ function UserModal({
               onChange={(e) =>
                 setEditedUser({ ...editedUser, gender: e.target.value })
               }
-              className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="w-full rounded-lg bg-zinc-900 text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
               required
               aria-invalid={!!validationErrors.gender}
               aria-describedby="gender-error">
@@ -281,7 +283,7 @@ function UserModal({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="text-red-300 text-sm mt-1"
+                  className="text-red-300 text-sm mt-1 font-light"
                   id="gender-error">
                   {validationErrors.gender}
                 </motion.div>
@@ -293,7 +295,9 @@ function UserModal({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 0.4 }}>
-            <label htmlFor="dob" className="text-sm text-gray-300 block mb-1">
+            <label
+              htmlFor="dob"
+              className="text-sm text-gray-300 block mb-1 font-light">
               Date of Birth
             </label>
             <input
@@ -308,7 +312,7 @@ function UserModal({
                     : null,
                 })
               }
-              className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="w-full rounded-lg bg-zinc-900 text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-lime-500 font-light"
               required
               aria-invalid={!!validationErrors.dob}
               aria-describedby="dob-error"
@@ -320,7 +324,7 @@ function UserModal({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="text-red-300 text-sm mt-1"
+                  className="text-red-300 text-sm mt-1 font-light"
                   id="dob-error">
                   {validationErrors.dob}
                 </motion.div>
@@ -334,7 +338,7 @@ function UserModal({
             transition={{ delay: 1.2, duration: 0.4 }}>
             <label
               htmlFor="joinedAt"
-              className="text-sm text-gray-300 block mb-1">
+              className="text-sm text-gray-300 block mb-1 font-light">
               Joined At
             </label>
             <input
@@ -342,7 +346,7 @@ function UserModal({
               type="text"
               value={formatDate(selectedUser.joinedAt)}
               readOnly
-              className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 text-sm focus:outline-none"
+              className="w-full rounded-lg bg-zinc-900 text-white px-4 py-3 text-sm focus:outline-none font-light"
             />
           </motion.div>
 
@@ -352,7 +356,7 @@ function UserModal({
             transition={{ delay: 1.3, duration: 0.4 }}>
             <label
               htmlFor="isAdmin"
-              className="text-sm text-gray-300 block mb-1">
+              className="text-sm text-gray-300 block mb-1 font-light">
               Admin Status
             </label>
             <input
@@ -360,7 +364,7 @@ function UserModal({
               type="text"
               value={selectedUser.isAdmin ? "Admin" : "User"}
               readOnly
-              className="w-full rounded-lg bg-[#2A2A2D] text-white px-4 py-3 text-sm focus:outline-none"
+              className="w-full rounded-lg bg-zinc-900 text-white px-4 py-3 text-sm focus:outline-none font-light"
             />
           </motion.div>
 
@@ -375,7 +379,7 @@ function UserModal({
             <motion.button
               type="button"
               disabled={!hasChanges || updateMutation.isPending}
-              className="bg-lime-500/10 text-lime-400 border-lime-500/20 font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-green-500 to-lime-500 text-gray-900 font-semibold px-5 py-2 rounded-lg hover:from-green-600 hover:to-lime-600 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={() =>
                 updateMutation.mutate({ ...editedUser, uid: selectedUser.uid })
               }
@@ -389,7 +393,7 @@ function UserModal({
             <motion.button
               type="button"
               onClick={onClose}
-              className="text-sm bg-rose-500/10 text-rose-400 border-rose-500/20 px-4 py-3 rounded-full transition"
+              className="bg-gradient-to-r from-rose-500 to-rose-600 text-gray-100 font-semibold px-4 py-2 rounded-lg hover:from-rose-600 hover:to-rose-700 transition-all"
               variants={{
                 hidden: { opacity: 0, scale: 0.95 },
                 visible: { opacity: 1, scale: 1 },

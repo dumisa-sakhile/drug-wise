@@ -31,12 +31,15 @@ function ImagePreviewModal({
           alt={imageName}
           className="w-full h-auto object-contain rounded-lg shadow-xl max-w-[90vw] max-h-[90vh]"
         />
-        <button
-          className="absolute top-2 right-2 text-neutral-200 hover:text-white text-2xl font-light p-2 rounded-full bg-neutral-700 hover:bg-neutral-600 transition-colors duration-200"
+        <motion.button
+          className="absolute top-2 right-2 text-gray-100 hover:text-white text-2xl font-light p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 transition-colors duration-200"
           onClick={onClose}
-          aria-label="Close image">
+          aria-label="Close image"
+          initial={{ opacity: 0, rotate: -90 }}
+          animate={{ opacity: 1, rotate: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}>
           <X />
-        </button>
+        </motion.button>
       </motion.div>
     </motion.div>
   );

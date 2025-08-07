@@ -17,6 +17,8 @@ import {
 import { toast } from "react-hot-toast";
 import { onAuthStateChanged } from "firebase/auth";
 import type { User as FirebaseUser } from "firebase/auth";
+import { motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 import MessagesHeader from "@/components/admin/adminMessages/MessagesHeader";
 import ViewToggle from "@/components/admin/adminMessages/ViewToggle";
 import UserList from "@/components/admin/adminMessages/UserList";
@@ -242,73 +244,96 @@ function AdminMessages() {
     setIsPopupOpen(true);
   };
 
+  const handleBack = () => {
+    window.history.back();
+  };
+
   if (loadingCurrentUserData || loadingMessages) {
     return <AdminMessagesSkeleton view={view} />;
   }
 
   if (!currentUserData?.isAdmin) {
     return (
-      <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white">
-        <p>You do not have permission to access this page.</p>
+      <div className="font-light max-w-full mx-auto md:px-4 py-8 pt-16 md:pt-8 min-h-screen text-white bg-zinc-950">
+        <p className="text-gray-400">
+          You do not have permission to access this page.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="font-light max-w-full mx-auto md:px-4 py-8 min-h-screen text-white">
-      <MessagesHeader />
-      <ViewToggle view={view} setView={setView} />
-      {view === "compose" ? (
-        <div className="flex flex-col md:flex-row gap-6">
-          <UserList
-            search={search}
-            setSearch={setSearch}
-            users={users}
-            selectedUser={selectedUser}
-            setSelectedUser={setSelectedUser}
-            isLoading={loadingUsers}
-            error={usersError}
-          />
-          <MessageForm
-            selectedUser={selectedUser}
-            setSelectedUser={setSelectedUser}
-            subject={subject}
-            setSubject={setSubject}
-            content={content}
-            setContent={setContent}
-            users={users}
-            validationErrors={validationErrors}
-            sendMutation={sendMutation}
-          />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <MessagesFilter filter={filter} setFilter={setFilter} />
-          <MessagesTable
-            messages={paginatedMessages}
-            users={users}
-            adminName={adminName}
-            isLoading={loadingMessages}
-            error={messagesError}
-            onViewMessage={handleViewMessage}
-            rowsPerPage={rowsPerPage}
-            setRowsPerPage={setRowsPerPage}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            totalPages={totalPages}
-          />
-        </div>
-      )}
-      <MessageModal
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        message={selectedMessage}
-        adminName={adminName}
-        setMessage={setSelectedMessage}
-        updateMutation={updateMessageMutation}
-        deleteMutation={deleteMessageMutation}
-      />
-    </div>
+    <>
+      <motion.button
+        onClick={handleBack}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="md:hidden fixed top-4 left-4 z-30 flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-gray-300 transition-all duration-200 shadow-md font-light">
+        <ArrowLeft className="w-4 h-4 text-lime-400" />
+        Back
+      </motion.button>
+      <motion.div
+        className="font-light max-w-full mx-auto md:px-4 py-8 pt-16 md:pt-8 min-h-screen text-white bg-zinc-950"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}>
+        <MessagesHeader />
+        <ViewToggle view={view} setView={setView} />
+        {view === "compose" ? (
+          <div className="flex flex-col md:flex-row gap-6">
+            <UserList
+              search={search}
+              setSearch={setSearch}
+              users={users}
+              selectedUser={selectedUser}
+              setSelectedUser={setSelectedUser}
+              isLoading={loadingUsers}
+              error={usersError}
+            />
+            <MessageForm
+              selectedUser={selectedUser}
+              setSelectedUser={setSelectedUser}
+              subject={subject}
+              setSubject={setSubject}
+              content={content}
+              setContent={setContent}
+              users={users}
+              validationErrors={validationErrors}
+              sendMutation={sendMutation}
+            />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <MessagesFilter filter={filter} setFilter={setFilter} />
+            <MessagesTable
+              messages={paginatedMessages}
+              users={users}
+              adminName={adminName}
+              isLoading={loadingMessages}
+              error={messagesError}
+              onViewMessage={handleViewMessage}
+              rowsPerPage={rowsPerPage}
+              setRowsPerPage={setRowsPerPage}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+            />
+          </div>
+        )}
+        <MessageModal
+          isOpen={isPopupOpen}
+          onClose={() => setIsPopupOpen(false)}
+          message={selectedMessage}
+          adminName={adminName}
+          setMessage={setSelectedMessage}
+          updateMutation={updateMessageMutation}
+          deleteMutation={deleteMessageMutation}
+        />
+      </motion.div>
+    </>
   );
 }
 
