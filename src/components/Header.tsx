@@ -77,7 +77,7 @@ const Header: React.FC = () => {
         </div>
       </header>
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-end justify-between bg-zinc-900/50 backdrop-blur-md border border-zinc-700/50 shadow-lg p-2 rounded-2xl">
+      <nav className="fixed bottom-4 left-4 right-4 z-40 md:hidden flex items-end justify-between bg-zinc-900/50 backdrop-blur-md shadow-lg p-2 rounded-2xl">
         {navLinks.map((link) => {
           const isSignIn = link.to === "/auth";
           const isActive = location.pathname === link.to;
