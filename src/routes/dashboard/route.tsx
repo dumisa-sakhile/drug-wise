@@ -177,11 +177,12 @@ function DashboardLayout() {
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2 text-sm font-regular rounded-lg text-rose-200 hover:text-red-500 bg-rose-900 transition-colors duration-200">
+            className="w-full flex items-center justify-center gap-3 px-4 py-2 text-black font-regular bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700
+                         font-light text-base shadow-lg hover:shadow-red-500/30">
             <LogOut size={18} />
             Sign Out
           </motion.button>
-          <p className="text-xs text-center mt-4 text-zinc-500">
+          <p className="text-xs text-center mt-4 text-zinc-200">
             © {new Date().getFullYear()} DrugWise.
           </p>
         </div>

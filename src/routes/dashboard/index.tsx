@@ -18,7 +18,6 @@ import { auth, db } from "@/config/firebase";
 import {
   AlertTriangle,
   MessagesSquare,
-  LogOut,
   FileText,
   CheckCircle,
   Clock,
@@ -192,15 +191,15 @@ function DashboardPage() {
             {/* Welcome Message */}
             <div className="flex-1">
               <h1 className="text-3xl sm:text-4xl font-bold text-gray-50 mb-2">
-                Welcome,{" "}
+                Welcome back to your DrugWise dashboard,{" "}
                 <span className="text-lime-400">
                   {userData?.name || "User"}
                 </span>
                 !
               </h1>
               <p className="text-base text-gray-400 max-w-2xl">
-                Here's a quick overview of your health and medication
-                submissions.
+                Here's a quick overview of your messages and medication
+                submissions. Click on any card to view details or take action.
               </p>
             </div>
 
@@ -212,7 +211,6 @@ function DashboardPage() {
                          font-light text-base shadow-lg hover:shadow-red-500/30"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}>
-              <LogOut size={20} />
               Sign Out
             </motion.button>
           </header>

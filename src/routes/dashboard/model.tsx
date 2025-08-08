@@ -305,45 +305,41 @@ function Model() {
           </div>
         </main>
       )}
-      <div className="fixed bottom-0 left-0 right-0 p-4 z-20 md:ml-[296px] bg-zinc-950/70 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 p-4 z-20 md:ml-[296px] bg-zinc-900/90 rounded-t-lg md:bg-transparent backdrop-blur-sm">
+        <div className="max-w-2xl mx-auto">
           <AnimatePresence>
             {showDynamicSuggestions && messages.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3 }}
-                className="mb-4 overflow-x-auto scrollbar-hide">
-                <div className="flex gap-3">
-                  {filteredSuggestions.map((s, index) => (
-                    <motion.button
-                      key={s}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2, delay: index * 0.05 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleSuggestionClick(s)}
-                      className="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 text-sm rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-gray-300 whitespace-nowrap transition-all duration-200 shadow-md font-light">
-                      <MessageSquarePlus className="w-4 h-4 text-lime-400" />
-                      <span>{s}</span>
-                    </motion.button>
-                  ))}
-                </div>
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+                className="mb-3 flex flex-wrap gap-2 justify-center">
+                {filteredSuggestions.map((s, index) => (
+                  <motion.button
+                    key={s}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleSuggestionClick(s)}
+                    className="px-3 py-1.5 text-sm rounded-md bg-zinc-800/60 hover:bg-zinc-700/60 border border-lime-500/20 text-gray-200 font-medium">
+                    {s}
+                  </motion.button>
+                ))}
               </motion.div>
             )}
           </AnimatePresence>
-          <form onSubmit={handleSubmit} className="relative flex items-center">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2">
-              <MessageSquarePlus className="w-5 h-5 text-gray-500" />
-            </div>
+          <form
+            onSubmit={handleSubmit}
+            className="flex items-center gap-2 bg-zinc-800/70 rounded-xl p-2 shadow-md">
             <motion.input
               ref={inputRef}
               type="text"
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg pl-10 pr-14 py-2.5 text-base text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-lime-500 transition-all duration-200 font-light"
+              className="flex-1 bg-transparent border-none text-base text-gray-100 placeholder-gray-400/50 focus:outline-none focus:ring-0 font-light w-full px-3"
               placeholder={
-                isLoading ? "WiseBot is thinking..." : "Message WiseBot..."
+                isLoading ? "WiseBot is thinking..." : "Type your message..."
               }
               value={input}
               onChange={handleInputChange}
@@ -353,12 +349,13 @@ function Model() {
             <motion.button
               type="submit"
               disabled={isLoading || !input.trim()}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              className={`absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center ${
                 isLoading || !input.trim()
-                  ? "bg-zinc-800 text-gray-500"
-                  : "bg-gradient-to-r from-green-500 to-lime-500 text-gray-900 hover:from-green-600 hover:to-lime-600"
+                  ? "bg-zinc-700/50 text-gray-500"
+                  : "bg-gradient-to-r from-green-400 to-lime-400 text-gray-900"
               }`}>
               <Send className="w-5 h-5" />
             </motion.button>
@@ -367,7 +364,7 @@ function Model() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="text-center text-gray-100 text-xs mt-2 font-light">
+            className="text-center text-gray-400 text-xs mt-2 font-light opacity-60">
             WiseBot may generate inaccurate information like any other AI, and
             is not intended to diagnose, treat, cure, or prevent any disease.
             Model: WiseBot AI - Beta Version
